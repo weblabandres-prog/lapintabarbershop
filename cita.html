@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agendar cita | La Pinta Barber</title>
+  <meta
+    name="description"
+    content="Reserva tu cita en La Pinta Barber de forma rápida, clara y profesional."
+  />
+
+  <link rel="icon" type="image/jpeg" href="logo.jpeg" />
+  <link rel="apple-touch-icon" href="logo.jpeg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --bg: #05070b;
+      --bg-soft: #0b1018;
+      --bg-deep: #03050a;
+      --panel: rgba(14, 20, 30, 0.92);
+      --panel-strong: #101722;
+      --panel-soft: #121b28;
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(255, 255, 255, 0.14);
+      --text: #f3f7ff;
+      --muted: #b8c6da;
+      --muted-2: #8ea2bf;
+      --primary: #1f86ff;
+      --primary-strong: #57a7ff;
+      --primary-dark: #0d6fe6;
+      --primary-soft: rgba(31, 134, 255, 0.12);
+      --success: #c7f1c2;
+      --success-bg: rgba(25, 62, 35, 0.88);
+      --warning: #ffe29c;
+      --warning-bg: rgba(92, 65, 11, 0.88);
+      --danger: #ffbcbc;
+      --danger-bg: rgba(77, 22, 22, 0.88);
+      --white: #ffffff;
+      --shadow-lg: 0 25px 70px rgba(0, 0, 0, 0.42);
+      --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.28);
+      --radius: 28px;
+      --radius-md: 20px;
+      --radius-sm: 16px;
+      --max: 1200px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body.booking-page {
+      font-family: "Inter", sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(31, 134, 255, 0.08), transparent 24%),
+        linear-gradient(180deg, #05070b 0%, #0b1018 45%, #03050a 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(6, 10, 17, 0.82);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .topbar-inner {
+      width: min(var(--max), 92%);
+      margin: 0 auto;
+      min-height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      z-index: 5;
+      flex-shrink: 0;
+      min-width: 0;
+      max-width: calc(100% - 95px);
+    }
+
+    .brand-logo-wrap {
+      position: relative;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: none;
+      overflow: hidden;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      transition: none;
+      flex-shrink: 0;
+    }
+
+    .brand-logo-wrap::before {
+      display: none;
+    }
+
+    .brand:hover .brand-logo-wrap {
+      transform: none;
+    }
+
+    .brand-logo {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      display: block;
+      object-fit: contain;
+      image-rendering: auto;
+    }
+
+    .brand-copy {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+      min-width: 0;
+    }
+
+    .brand-copy small {
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+      font-weight: 700;
+      margin-bottom: 6px;
+      white-space: nowrap;
+    }
+
+    .brand-copy strong {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-size: 0.94rem;
+      font-weight: 700;
+      transition: 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .back-btn:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(31,134,255,0.22);
+      transform: translateY(-1px);
+    }
+
+    .view-cita-btn {
+      background: rgba(31, 134, 255, 0.12);
+      border-color: rgba(31, 134, 255, 0.22);
+      color: #d9ecff;
+    }
+
+    .view-cita-btn:hover {
+      background: rgba(31, 134, 255, 0.18);
+      border-color: rgba(31, 134, 255, 0.32);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 430px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.72)),
+        linear-gradient(90deg, rgba(0,0,0,0.76), rgba(0,0,0,0.28)),
+        url("interior.jpeg") center center / cover no-repeat;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 54%, var(--bg) 100%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      width: min(var(--max), 92%);
+      margin: 0 auto;
+      padding: 58px 0 98px;
+    }
+
+    .hero-content {
+      max-width: 720px;
+    }
+
+    .hero-kicker {
+      display: inline-block;
+      margin-bottom: 12px;
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 16px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      border: 1px solid transparent;
+    }
+
+    .status-badge.open {
+      background: var(--success-bg);
+      border-color: rgba(76, 175, 80, 0.45);
+      color: var(--success);
+    }
+
+    .status-badge.break {
+      background: var(--warning-bg);
+      border-color: rgba(255, 193, 7, 0.42);
+      color: var(--warning);
+    }
+
+    .status-badge.closed {
+      background: var(--danger-bg);
+      border-color: rgba(255, 82, 82, 0.36);
+      color: var(--danger);
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      max-width: 9ch;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 560px;
+      font-size: 1.02rem;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.84);
+    }
+
+    .hidden-admin-btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .admin-hidden-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .main-shell {
+      width: min(var(--max), 92%);
+      margin: -60px auto 60px;
+      position: relative;
+      z-index: 3;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.14fr) minmax(320px, 0.82fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background:
+        linear-gradient(180deg, rgba(16,23,34,0.94), rgba(12,18,27,0.96));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .form-panel {
+      padding: 28px;
+    }
+
+    .side-panel {
+      padding: 22px;
+      position: sticky;
+      top: 102px;
+    }
+
+    .panel-head {
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .panel-head h2,
+    .panel-head h3 {
+      margin: 0 0 8px;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .panel-head p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.96rem;
+    }
+
+    #bookingForm {
+      display: grid;
+      gap: 16px;
+    }
+
+    .section-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      transition: 0.22s ease;
+    }
+
+    .section-card:hover {
+      border-color: rgba(31,134,255,0.16);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-number {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #61a9ff);
+      color: #07111f;
+      font-weight: 900;
+      font-size: 0.96rem;
+      box-shadow: 0 10px 20px rgba(31,134,255,0.18);
+    }
+
+    .section-title h3 {
+      margin: 0 0 4px;
+      font-size: 1.05rem;
+      font-family: "Inter", sans-serif;
+    }
+
+    .section-title p {
+      margin: 0;
+      color: var(--muted-2);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .two-cols {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      min-height: 52px;
+      padding: 14px 15px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      outline: none;
+      font-size: 0.97rem;
+      transition: 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: rgba(31,134,255,0.38);
+      box-shadow: 0 0 0 3px rgba(31,134,255,0.10);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .form-group input::placeholder {
+      color: rgba(255,255,255,0.45);
+    }
+
+    .form-group select option {
+      color: #111;
+    }
+
+    .hours-wrap {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .hours-note {
+      margin: 0 0 12px;
+      color: var(--muted-2);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .hours-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+      gap: 10px;
+    }
+
+    .hour-btn {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 12px 10px;
+      font-size: 0.94rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .hour-btn:hover {
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-1px);
+      border-color: rgba(31,134,255,0.18);
+    }
+
+    .hour-btn.active {
+      background: linear-gradient(135deg, var(--primary), #61a9ff);
+      color: #08111f;
+      border-color: transparent;
+      box-shadow: 0 10px 22px rgba(31,134,255,0.18);
+    }
+
+    .hour-btn.disabled,
+    .hour-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .anonimo-box {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+    }
+
+    .anonimo-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.55;
+      cursor: pointer;
+    }
+
+    .anonimo-label input {
+      width: auto;
+      margin-top: 3px;
+      accent-color: var(--primary);
+    }
+
+    .anonimo-box small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted-2);
+      line-height: 1.45;
+      font-size: 0.88rem;
+    }
+
+    .payment-box {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(31,134,255,0.07);
+      border: 1px solid rgba(31,134,255,0.18);
+    }
+
+    .payment-method {
+      display: grid;
+      gap: 10px;
+    }
+
+    .payment-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .payment-option:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(31,134,255,0.20);
+    }
+
+    .payment-option input {
+      accent-color: var(--primary);
+    }
+
+    .payment-transfer-info {
+      margin-top: 16px;
+    }
+
+    .payment-transfer-info.hidden {
+      display: none;
+    }
+
+    .payment-title {
+      margin: 0 0 12px;
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #8fc0ff;
+    }
+
+    .transfer-accounts {
+      display: grid;
+      gap: 12px;
+    }
+
+    .transfer-card {
+      display: block;
+      cursor: pointer;
+    }
+
+    .transfer-card input {
+      display: none;
+    }
+
+    .transfer-card-content {
+      padding: 14px 15px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      transition: 0.2s ease;
+    }
+
+    .transfer-card-content strong {
+      display: block;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .transfer-card-content span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 6px;
+    }
+
+    .transfer-card-content small {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(31,134,255,0.12);
+      color: #8fc0ff;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .transfer-card input:checked + .transfer-card-content {
+      border-color: rgba(31,134,255,0.45);
+      background: rgba(31,134,255,0.10);
+      box-shadow: 0 10px 24px rgba(31,134,255,0.10);
+    }
+
+    .submit-btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 17px 18px;
+      background: linear-gradient(135deg, var(--primary), #61a9ff);
+      color: #07111f;
+      font-weight: 900;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s ease;
+      box-shadow: 0 14px 28px rgba(31,134,255,0.20);
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    .box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .box + .box {
+      margin-top: 14px;
+    }
+
+    .box h4 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .booking-summary p {
+      margin: 6px 0;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.55;
+      font-size: 0.95rem;
+      word-break: break-word;
+    }
+
+    .info-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .info-item {
+      padding: 12px 13px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: rgba(255,255,255,0.84);
+      font-size: 0.93rem;
+      line-height: 1.55;
+    }
+
+    .closed-banner {
+      display: none;
+      margin-bottom: 14px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      background: rgba(120, 23, 23, 0.28);
+      border: 1px solid rgba(255, 90, 90, 0.22);
+      color: #ffcbcb;
+      font-size: 0.93rem;
+      line-height: 1.55;
+    }
+
+    .closed-banner.show {
+      display: block;
+    }
+
+    .foot-note {
+      margin-top: 14px;
+      text-align: center;
+      color: var(--muted-2);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 930px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .brand-copy {
+        display: flex;
+      }
+
+      .brand-copy small {
+        font-size: 0.54rem;
+        letter-spacing: 0.14em;
+        margin-bottom: 3px;
+      }
+
+      .brand-copy strong {
+        font-size: 0.88rem;
+        letter-spacing: 0.02em;
+      }
+
+      .topbar-inner {
+        min-height: 76px;
+      }
+
+      .hero {
+        min-height: 380px;
+      }
+
+      .hero-inner {
+        padding: 46px 0 86px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .two-cols {
+        grid-template-columns: 1fr;
+      }
+
+      .hours-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .main-shell {
+        margin-top: -44px;
+      }
+
+      .form-panel,
+      .side-panel {
+        padding: 18px;
+      }
+
+      .hero p {
+        font-size: 0.96rem;
+        line-height: 1.7;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .topbar-inner {
+        width: 94%;
+        min-height: 72px;
+        gap: 10px;
+      }
+
+      .brand {
+        gap: 10px;
+        max-width: calc(100% - 88px);
+      }
+
+      .brand-logo-wrap {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        padding: 4px;
+      }
+
+      .brand-logo {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        object-fit: contain;
+      }
+
+      .brand-copy {
+        display: flex;
+      }
+
+      .brand-copy small {
+        font-size: 0.48rem;
+        letter-spacing: 0.12em;
+        margin-bottom: 3px;
+        white-space: nowrap;
+      }
+
+      .brand-copy strong {
+        font-size: 0.82rem;
+        white-space: nowrap;
+      }
+
+      .topbar-actions {
+        gap: 8px;
+      }
+
+      .back-btn {
+        padding: 10px 12px;
+        font-size: 0.84rem;
+      }
+
+      .hero {
+        min-height: 345px;
+      }
+
+      .hero-inner {
+        padding: 34px 0 72px;
+      }
+
+      .hero h1 {
+        font-size: 2.2rem;
+        line-height: 1.02;
+      }
+
+      .hours-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .section-card {
+        padding: 16px;
+      }
+
+      .section-head {
+        gap: 10px;
+      }
+
+      .section-number {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        font-size: 0.9rem;
+      }
+
+      .submit-btn,
+      .payment-option,
+      .hour-btn {
+        font-size: 0.92rem;
+      }
+    }
+  </style>
+</head>
+<body class="booking-page">
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="index.html" class="brand" id="logoSecret">
+        <div class="brand-logo-wrap">
+          <img src="logo.jpeg" alt="La Pinta Barber" class="brand-logo" />
+        </div>
+        <div class="brand-copy">
+          <small>Barbería premium</small>
+          <strong>La Pinta Barber</strong>
+        </div>
+      </a>
+
+      <div class="topbar-actions">
+        <a href="ver-citas.html" class="back-btn view-cita-btn">Ver mi cita</a>
+        <a href="index.html" class="back-btn">← Volver</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <span class="hero-kicker">Reserva online</span>
+        <div class="status-badge" id="shopStatusBadge">Consultando horario...</div>
+        <h1>Agenda tu cita</h1>
+        <p>
+          Reserva tu turno de forma clara y rápida. Elige el servicio, selecciona
+          la fecha y marca una hora disponible sin perder tiempo.
+        </p>
+
+        <div class="hidden-admin-btns">
+          <a href="aprobar.html" class="admin-hidden-btn" id="btnAprobarHero">Aprobar citas</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="main-shell">
+    <section class="layout">
+      <div class="panel form-panel">
+        <div class="panel-head">
+          <span class="eyebrow">Reserva online</span>
+          <h2>Completa tus datos</h2>
+          <p>
+            Todo está organizado por pasos para que la reserva se sienta limpia,
+            clara y profesional.
+          </p>
+        </div>
+
+        <div class="closed-banner" id="shopClosedBanner">
+          La barbería está cerrada en este momento. Puedes revisar disponibilidad para otro día.
+        </div>
+
+        <form id="bookingForm">
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">1</div>
+              <div class="section-title">
+                <h3>Información personal</h3>
+                <p>Escribe tus datos para registrar correctamente tu cita.</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" required placeholder="Tu nombre completo" />
+              </div>
+
+              <div class="form-group">
+                <label for="telefono">Teléfono</label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  required
+                  inputmode="numeric"
+                  maxlength="10"
+                  pattern="[0-9]{10}"
+                  placeholder="Número obligatorio"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">2</div>
+              <div class="section-title">
+                <h3>Servicio y fecha</h3>
+                <p>Selecciona el servicio, el barbero y el día en que quieres tu turno.</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="servicio">Servicio</label>
+                <select id="servicio" required>
+                  <option value="">Selecciona un servicio</option>
+                  <option value="Corte + Fade">Corte + Fade - RD$550</option>
+                  <option value="Cortes Niños">Cortes Niños - RD$350</option>
+                  <option value="Corte Clásico">Corte Clásico - RD$500</option>
+                  <option value="Cerquillo + Fade">Cerquillo + Fade - RD$400</option>
+                  <option value="Corte + Fade + Facial + Lavado de cabello">Corte completo + Facial + Lavado - RD$700</option>
+                </select>
+              </div>
+
+              <div class="form-grid two-cols">
+                <div class="form-group">
+                  <label for="barbero">Barbero</label>
+                  <select id="barbero" required>
+                    <option value="">Selecciona</option>
+                    <option value="Chocho la pinta">Chocho la pinta</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="fecha">Fecha</label>
+                  <input type="date" id="fecha" required />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">3</div>
+              <div class="section-title">
+                <h3>Hora disponible</h3>
+                <p>Las horas se cargan automáticamente según el día, el servicio y la disponibilidad.</p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Horas disponibles</label>
+              <div class="hours-wrap">
+                <p class="hours-note">
+                  Primero elige servicio, barbero y fecha para mostrar las horas libres.
+                </p>
+                <div class="hours-grid" id="hoursGrid"></div>
+              </div>
+              <input type="hidden" id="hora" required />
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">4</div>
+              <div class="section-title">
+                <h3>Detalles finales</h3>
+                <p>Puedes elegir si tu nombre se verá como anónimo en la parte pública.</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="anonimo-box">
+                <label class="anonimo-label">
+                  <input type="checkbox" id="anonimo" />
+                  <span>Mostrar mi nombre como <strong>Anónimo</strong> en la vista pública</span>
+                </label>
+                <small>El administrador sí podrá ver tu nombre real y tu teléfono.</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">5</div>
+              <div class="section-title">
+                <h3>Método de pago</h3>
+                <p>Selecciona cómo vas a pagar tu cita.</p>
+              </div>
+            </div>
+
+            <div class="payment-box">
+              <div class="payment-method">
+                <label class="payment-option">
+                  <input type="radio" name="metodo_pago" id="metodo_efectivo" value="Efectivo" checked />
+                  <span>Efectivo</span>
+                </label>
+
+                <label class="payment-option">
+                  <input type="radio" name="metodo_pago" id="metodo_transferencia" value="Transferencia" />
+                  <span>Transferencia bancaria</span>
+                </label>
+              </div>
+
+              <div class="payment-transfer-info hidden" id="paymentTransferInfo">
+                <p class="payment-title">Cuentas disponibles para transferencia</p>
+
+                <div class="transfer-accounts">
+                  <label class="transfer-card">
+                    <input
+                      type="radio"
+                      name="cuenta_transferencia"
+                      id="cuenta_banreservas"
+                      value="Banreservas - Ahorro - 960200381"
+                      checked
+                    />
+                    <div class="transfer-card-content">
+                      <strong>Banreservas</strong>
+                      <span>Cuenta de ahorro</span>
+                      <small>960200381</small>
+                    </div>
+                  </label>
+
+                  <label class="transfer-card">
+                    <input
+                      type="radio"
+                      name="cuenta_transferencia"
+                      id="cuenta_popular"
+                      value="Popular - Ahorro - 853557841"
+                    />
+                    <div class="transfer-card-content">
+                      <strong>Popular</strong>
+                      <span>Cuenta de ahorro</span>
+                      <small>853557841</small>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn">Confirmar cita</button>
+        </form>
+      </div>
+
+      <aside class="panel side-panel">
+        <div class="panel-head">
+          <span class="eyebrow">Resumen</span>
+          <h3>Revisa antes de confirmar</h3>
+          <p>Aquí ves el resumen de tu cita y la información rápida del horario.</p>
+        </div>
+
+        <div class="box">
+          <h4>Tu cita</h4>
+          <div class="booking-summary" id="bookingSummary">
+            <p>Completa el formulario para ver el detalle de tu cita.</p>
+          </div>
+        </div>
+
+        <div class="box">
+          <h4>Horario</h4>
+          <div class="info-list">
+            <div class="info-item"><strong>Lunes, miércoles y jueves:</strong> 8:00 AM a 8:00 PM</div>
+            <div class="info-item"><strong>Viernes y sábado:</strong> 8:00 AM a 9:00 PM</div>
+            <div class="info-item"><strong>Cortes niños:</strong> 30 minutos</div>
+            <div class="info-item"><strong>Demás servicios:</strong> 1 hora</div>
+            <div class="info-item"><strong>Recomendación:</strong> llega 10 minutos antes</div>
+          </div>
+        </div>
+
+        <p class="foot-note">
+          Reserva con calma. El sistema te mostrará solo las horas disponibles.
+        </p>
+      </aside>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

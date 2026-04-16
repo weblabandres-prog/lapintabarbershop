@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestionar cita | La Pinta Barber</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpeg" />
+  <link rel="apple-touch-icon" href="logo.jpeg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --bg: #05070b;
+      --bg-soft: #0b1018;
+      --bg-deep: #03050a;
+      --panel: rgba(14, 20, 30, 0.92);
+      --panel-strong: #101722;
+      --panel-soft: #121b28;
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(255, 255, 255, 0.14);
+      --text: #f3f7ff;
+      --muted: #b8c6da;
+      --muted-2: #8ea2bf;
+      --primary: #1f86ff;
+      --primary-strong: #57a7ff;
+      --primary-dark: #0d6fe6;
+      --primary-soft: rgba(31, 134, 255, 0.12);
+      --success: #8ff0bc;
+      --success-bg: rgba(62, 207, 142, 0.12);
+      --warning: #ffc76b;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --danger: #ff9e99;
+      --danger-bg: rgba(229, 57, 53, 0.12);
+      --white: #ffffff;
+      --shadow-lg: 0 25px 70px rgba(0, 0, 0, 0.42);
+      --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.28);
+      --radius: 28px;
+      --radius-md: 20px;
+      --radius-sm: 16px;
+      --max: 1100px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Inter", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(31, 134, 255, 0.08), transparent 24%),
+        linear-gradient(180deg, #05070b 0%, #0b1018 45%, #03050a 100%);
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page-shell {
+      width: min(var(--max), 92%);
+      margin: 0 auto;
+      padding: 32px 0 48px;
+    }
+
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      background:
+        linear-gradient(180deg, rgba(16,23,34,0.96), rgba(12,18,27,0.98));
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 24px;
+    }
+
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top right, rgba(31, 134, 255, 0.16), transparent 24%),
+        linear-gradient(135deg, rgba(255,255,255,0.03), transparent 38%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      padding: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      min-width: 0;
+      max-width: calc(100% - 90px);
+    }
+
+    .brand-badge {
+      position: relative;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: none;
+      overflow: hidden;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      flex-shrink: 0;
+    }
+
+    .brand-badge::before {
+      display: none;
+    }
+
+    .brand-logo {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      display: block;
+      object-fit: contain;
+      image-rendering: auto;
+    }
+
+    .brand-copy {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+      min-width: 0;
+    }
+
+    .brand-copy small {
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+      font-weight: 700;
+      margin-bottom: 6px;
+      white-space: nowrap;
+    }
+
+    .brand-copy strong {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .hero-copy {
+      flex: 1 1 420px;
+      min-width: 280px;
+    }
+
+    .hero-kicker {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: var(--primary);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+    }
+
+    .hero-copy h1 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(2.3rem, 5vw, 3.8rem);
+      line-height: 0.96;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+
+    .hero-copy p {
+      color: var(--muted);
+      max-width: 620px;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.7fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background:
+        linear-gradient(180deg, rgba(16,23,34,0.94), rgba(12,18,27,0.96));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .main-panel {
+      padding: 24px;
+    }
+
+    .side-panel {
+      padding: 22px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .panel-head {
+      margin-bottom: 18px;
+    }
+
+    .panel-head span {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: var(--primary);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+
+    .panel-head h2,
+    .panel-head h3 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 2rem;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .panel-head p {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 0.96rem;
+    }
+
+    .status-box {
+      padding: 18px;
+      border-radius: 18px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      border: 1px solid transparent;
+    }
+
+    .status-loading {
+      background: rgba(31, 134, 255, 0.10);
+      color: #d9ecff;
+      border-color: rgba(31, 134, 255, 0.18);
+    }
+
+    .status-success {
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: rgba(62, 207, 142, 0.22);
+    }
+
+    .status-error {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-color: rgba(229, 57, 53, 0.22);
+    }
+
+    .status-warning {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border-color: rgba(245, 158, 11, 0.22);
+    }
+
+    .info-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 18px;
+    }
+
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .info-table tr + tr td {
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .info-table td {
+      padding: 14px 0;
+      vertical-align: top;
+      font-size: 0.98rem;
+      line-height: 1.5;
+      color: var(--white);
+    }
+
+    .info-table td:first-child {
+      width: 40%;
+      padding-right: 16px;
+      color: var(--muted-2);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .actions {
+      margin-top: 22px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 50px;
+      padding: 0 22px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #07111f;
+      box-shadow: 0 16px 32px rgba(31, 134, 255, 0.22);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      color: #ffffff;
+      box-shadow: 0 16px 32px rgba(220, 38, 38, 0.18);
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.04);
+      color: var(--white);
+      border-color: var(--line);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(31,134,255,0.22);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .side-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 16px;
+    }
+
+    .side-box + .side-box {
+      margin-top: 14px;
+    }
+
+    .side-box h4 {
+      margin-bottom: 10px;
+      font-size: 1rem;
+      color: var(--white);
+    }
+
+    .side-box p,
+    .side-box li {
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.65;
+    }
+
+    .side-box ul {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+
+    .side-box li {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .small-note {
+      margin-top: 18px;
+      color: var(--muted-2);
+      font-size: 0.9rem;
+      line-height: 1.65;
+    }
+
+    @media (max-width: 920px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .brand-copy {
+        display: flex;
+      }
+
+      .brand-copy small {
+        font-size: 0.54rem;
+        letter-spacing: 0.14em;
+        margin-bottom: 3px;
+      }
+
+      .brand-copy strong {
+        font-size: 0.88rem;
+        letter-spacing: 0.02em;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-shell {
+        padding-top: 20px;
+      }
+
+      .hero-inner,
+      .main-panel,
+      .side-panel {
+        padding: 20px;
+      }
+
+      .brand {
+        gap: 10px;
+        max-width: calc(100% - 10px);
+      }
+
+      .brand-copy {
+        display: flex;
+      }
+
+      .brand-badge {
+        width: 56px;
+        height: 56px;
+        padding: 5px;
+      }
+
+      .brand-copy small {
+        font-size: 0.5rem;
+        letter-spacing: 0.12em;
+        margin-bottom: 3px;
+      }
+
+      .brand-copy strong {
+        font-size: 0.82rem;
+      }
+
+      .hero-copy h1 {
+        font-size: 2.3rem;
+      }
+
+      .info-table td {
+        display: block;
+        width: 100%;
+        padding: 8px 0;
+      }
+
+      .info-table td:first-child {
+        width: 100%;
+        padding-right: 0;
+        padding-bottom: 2px;
+        border-top: none;
+      }
+
+      .info-table tr {
+        display: block;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+      }
+
+      .info-table tr:last-child {
+        border-bottom: none;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .btn,
+      .hero-actions .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <section class="hero-card">
+      <div class="hero-inner">
+        <a href="index.html" class="brand" aria-label="La Pinta Barber">
+          <div class="brand-badge">
+            <img src="logo.jpeg" alt="La Pinta Barber" class="brand-logo" />
+          </div>
+          <div class="brand-copy">
+            <small>Barbería premium</small>
+            <strong>La Pinta Barber</strong>
+          </div>
+        </a>
+
+        <div class="hero-copy">
+          <span class="hero-kicker">Gestión de cita</span>
+          <h1>Aprobar o cancelar cita</h1>
+          <p>
+            Esta vista valida el enlace de aprobación y te permite gestionar la cita
+            de forma clara, limpia y rápida.
+          </p>
+        </div>
+
+        <div class="hero-actions">
+          <a href="index2.html" class="btn btn-secondary">Panel Admin</a>
+          <a href="ver-citas.html" class="btn btn-secondary">Ver citas</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <div class="panel main-panel">
+        <div class="panel-head">
+          <span>Estado</span>
+          <h2>Detalle de la cita</h2>
+          <p>
+            Si el enlace tiene un ID y token válidos, aquí podrás aprobar o cancelar la reserva.
+          </p>
+        </div>
+
+        <div id="statusBox" class="status-box status-loading">
+          Estamos procesando la solicitud...
+        </div>
+
+        <div class="info-card">
+          <table class="info-table hidden" id="infoTable">
+            <tr>
+              <td>Cliente real</td>
+              <td id="cliente_nombre">-</td>
+            </tr>
+            <tr>
+              <td>Nombre público</td>
+              <td id="nombre_publico">-</td>
+            </tr>
+            <tr>
+              <td>Teléfono</td>
+              <td id="cliente_telefono">-</td>
+            </tr>
+            <tr>
+              <td>Servicio</td>
+              <td id="servicio">-</td>
+            </tr>
+            <tr>
+              <td>Barbero</td>
+              <td id="barbero">-</td>
+            </tr>
+            <tr>
+              <td>Fecha</td>
+              <td id="fecha">-</td>
+            </tr>
+            <tr>
+              <td>Hora</td>
+              <td id="hora">-</td>
+            </tr>
+            <tr>
+              <td>Duración</td>
+              <td id="duracion">-</td>
+            </tr>
+            <tr>
+              <td>Método de pago</td>
+              <td id="metodo_pago">-</td>
+            </tr>
+            <tr>
+              <td>Estado</td>
+              <td id="estado_cita">-</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="actions hidden" id="actionsBox">
+          <button id="acceptBtn" class="btn btn-primary">Aceptar cita</button>
+          <button id="cancelBtn" class="btn btn-danger">Cancelar cita</button>
+          <a href="index2.html" class="btn btn-secondary">Ir al panel admin</a>
+          <a href="ver-citas.html" class="btn btn-secondary">Ver citas</a>
+        </div>
+
+        <p class="small-note">
+          Esta página valida el enlace con el ID y token de la cita. Si el enlace es correcto,
+          podrás aprobarla o cancelarla aquí.
+        </p>
+      </div>
+
+      <aside class="panel side-panel">
+        <div class="panel-head">
+          <span>Referencia</span>
+          <h3>Qué hace esta página</h3>
+          <p>
+            Está diseñada para entrar directo desde el enlace del correo y resolver la cita sin vueltas.
+          </p>
+        </div>
+
+        <div class="side-box">
+          <h4>Acciones disponibles</h4>
+          <ul>
+            <li>Aprobar la cita y enviar al cliente a WhatsApp</li>
+            <li>Cancelar la cita y enviar el aviso por WhatsApp</li>
+            <li>Verificar los datos antes de cambiar el estado</li>
+          </ul>
+        </div>
+
+        <div class="side-box">
+          <h4>Importante</h4>
+          <p>
+            Si la cita ya fue aprobada o cancelada, el sistema lo mostrará aquí y bloqueará la acción para evitar errores.
+          </p>
+        </div>
+      </aside>
+    </section>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4WCEUcsgfjK_LgNkY5rexqvPMxQ-RdEE",
+      authDomain: "barberia2-bb033.firebaseapp.com",
+      databaseURL: "https://barberia2-bb033-default-rtdb.firebaseio.com",
+      projectId: "barberia2-bb033",
+      storageBucket: "barberia2-bb033.firebasestorage.app",
+      messagingSenderId: "763008264452",
+      appId: "1:763008264452:web:4adb64267606266deb4851",
+      measurementId: "G-QHN4PX48D4"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const db = firebase.database();
+    const appointmentsRef = db.ref("appointments");
+
+    const params = new URLSearchParams(window.location.search);
+    const appointmentId = params.get("id");
+    const token = params.get("token");
+
+    const statusBox = document.getElementById("statusBox");
+    const infoTable = document.getElementById("infoTable");
+    const actionsBox = document.getElementById("actionsBox");
+    const acceptBtn = document.getElementById("acceptBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
+
+    let currentAppointment = null;
+
+    function setStatus(message, type = "loading") {
+      statusBox.className = "status-box";
+
+      if (type === "success") {
+        statusBox.classList.add("status-success");
+      } else if (type === "error") {
+        statusBox.classList.add("status-error");
+      } else if (type === "warning") {
+        statusBox.classList.add("status-warning");
+      } else {
+        statusBox.classList.add("status-loading");
+      }
+
+      statusBox.textContent = message;
+    }
+
+    function normalizePhoneForWhatsApp(phone) {
+      if (!phone) return "";
+
+      let clean = String(phone).replace(/\D/g, "");
+
+      if (clean.length === 10) {
+        clean = "1" + clean;
+      }
+
+      if (clean.length === 11 && clean.startsWith("1")) {
+        return clean;
+      }
+
+      if (clean.length > 11) {
+        const last11 = clean.slice(-11);
+        if (last11.startsWith("1")) {
+          return last11;
+        }
+      }
+
+      return clean;
+    }
+
+    function getStatusLabel(status) {
+      if (status === "approved") return "Aprobada";
+      if (status === "cancelled") return "Cancelada";
+      return "Pendiente";
+    }
+
+    function fillAppointmentData(data) {
+      const nombreReal = data.nombre || "-";
+      const nombreVisible = data.anonimo ? "Anónimo" : nombreReal;
+
+      document.getElementById("cliente_nombre").textContent = nombreReal;
+      document.getElementById("nombre_publico").textContent = nombreVisible;
+      document.getElementById("cliente_telefono").textContent = data.telefono || "-";
+      document.getElementById("servicio").textContent = data.servicio || "-";
+      document.getElementById("barbero").textContent = data.barbero || "-";
+      document.getElementById("fecha").textContent = data.fecha || "-";
+      document.getElementById("hora").textContent = data.hora || "-";
+      document.getElementById("duracion").textContent = data.duration ? `${data.duration} min` : "-";
+      document.getElementById("metodo_pago").textContent = data.metodoPago || "No especificado";
+      document.getElementById("estado_cita").textContent = getStatusLabel(data.status);
+    }
+
+    function buildWhatsAppApprovalMessage(data) {
+      const cliente = data.anonimo ? "cliente" : (data.nombre || "cliente");
+      const servicio = data.servicio || "servicio";
+      const barbero = data.barbero || "barbero";
+      const fecha = data.fecha || "fecha no definida";
+      const hora = data.hora || "hora no definida";
+
+      return `Hola ${cliente}, tu cita en La Pinta Barber fue aprobada ✅
+
+Servicio: ${servicio}
+Barbero: ${barbero}
+Fecha: ${fecha}
+Hora: ${hora}
+
+Por favor, llegue 10 minutos antes de su cita.
+
+Te esperamos. Gracias por elegir La Pinta Barber 💈`;
+    }
+
+    function buildWhatsAppCancelMessage(data) {
+      const cliente = data.anonimo ? "cliente" : (data.nombre || "cliente");
+      const servicio = data.servicio || "servicio";
+      const barbero = data.barbero || "barbero";
+      const fecha = data.fecha || "fecha no definida";
+      const hora = data.hora || "hora no definida";
+
+      return `Hola ${cliente}, tu cita en La Pinta Barber fue cancelada ❌
+
+Servicio: ${servicio}
+Barbero: ${barbero}
+Fecha: ${fecha}
+Hora: ${hora}
+
+Si deseas, puedes escribirnos para agendar una nueva cita.`;
+    }
+
+    function redirectToWhatsApp(data, type = "approved") {
+      const phone = normalizePhoneForWhatsApp(data.telefono);
+      if (!phone) return false;
+
+      const message = type === "cancelled"
+        ? buildWhatsAppCancelMessage(data)
+        : buildWhatsAppApprovalMessage(data);
+
+      const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.location.href = waUrl;
+      return true;
+    }
+
+    function disableActionButtons() {
+      acceptBtn.disabled = true;
+      cancelBtn.disabled = true;
+    }
+
+    function setPendingButtons() {
+      acceptBtn.disabled = false;
+      acceptBtn.textContent = "Aceptar cita";
+      cancelBtn.disabled = false;
+      cancelBtn.textContent = "Cancelar cita";
+    }
+
+    function setApprovedButtons() {
+      acceptBtn.disabled = true;
+      acceptBtn.textContent = "Cita ya aprobada";
+      cancelBtn.disabled = true;
+      cancelBtn.textContent = "No cancelar";
+    }
+
+    function setCancelledButtons() {
+      acceptBtn.disabled = true;
+      acceptBtn.textContent = "No aprobar";
+      cancelBtn.disabled = true;
+      cancelBtn.textContent = "Cita cancelada";
+    }
+
+    async function loadAppointment() {
+      if (!appointmentId || !token) {
+        setStatus("Enlace inválido. Faltan datos para localizar la cita.", "error");
+        return;
+      }
+
+      try {
+        const snapshot = await appointmentsRef.child(appointmentId).once("value");
+
+        if (!snapshot.exists()) {
+          setStatus("La cita no existe o fue eliminada.", "error");
+          return;
+        }
+
+        const appointment = snapshot.val();
+
+        if (!appointment.approveToken || appointment.approveToken !== token) {
+          setStatus("Token inválido. Este enlace no es válido para gestionar la cita.", "error");
+          return;
+        }
+
+        currentAppointment = {
+          id: appointmentId,
+          ...appointment
+        };
+
+        fillAppointmentData(currentAppointment);
+        infoTable.classList.remove("hidden");
+        actionsBox.classList.remove("hidden");
+
+        if (appointment.status === "approved") {
+          setApprovedButtons();
+          setStatus("Esta cita ya fue aprobada anteriormente.", "success");
+          return;
+        }
+
+        if (appointment.status === "cancelled") {
+          setCancelledButtons();
+          setStatus("Esta cita ya fue cancelada.", "warning");
+          return;
+        }
+
+        setPendingButtons();
+        setStatus("Cita encontrada. Puedes aprobarla o cancelarla.", "loading");
+      } catch (error) {
+        console.error("Error cargando cita:", error);
+        setStatus("Ocurrió un error al cargar la cita: " + error.message, "error");
+      }
+    }
+
+    async function approveAppointment() {
+      if (!appointmentId || !token || !currentAppointment) {
+        setStatus("No se pudo validar la cita.", "error");
+        return;
+      }
+
+      disableActionButtons();
+      acceptBtn.textContent = "Procesando...";
+
+      try {
+        const snapshot = await appointmentsRef.child(appointmentId).once("value");
+
+        if (!snapshot.exists()) {
+          setStatus("La cita ya no existe.", "error");
+          return;
+        }
+
+        const appointment = snapshot.val();
+
+        if (!appointment.approveToken || appointment.approveToken !== token) {
+          setStatus("Token inválido. No se puede aprobar esta cita.", "error");
+          return;
+        }
+
+        if (appointment.status === "approved") {
+          currentAppointment = { id: appointmentId, ...appointment };
+          fillAppointmentData(currentAppointment);
+          setApprovedButtons();
+          setStatus("Esta cita ya fue aprobada.", "success");
+          return;
+        }
+
+        if (appointment.status === "cancelled") {
+          currentAppointment = { id: appointmentId, ...appointment };
+          fillAppointmentData(currentAppointment);
+          setCancelledButtons();
+          setStatus("La cita está cancelada y no puede aprobarse.", "error");
+          return;
+        }
+
+        const approvedAt = new Date().toISOString();
+
+        await appointmentsRef.child(appointmentId).update({
+          status: "approved",
+          approvedAt: approvedAt
+        });
+
+        currentAppointment = {
+          id: appointmentId,
+          ...appointment,
+          status: "approved",
+          approvedAt: approvedAt
+        };
+
+        fillAppointmentData(currentAppointment);
+        setApprovedButtons();
+        setStatus("✅ Cita aprobada correctamente. Redirigiendo a WhatsApp...", "success");
+
+        const phone = normalizePhoneForWhatsApp(currentAppointment.telefono);
+        if (!phone) {
+          setStatus("✅ Cita aprobada correctamente, pero el número no es válido para WhatsApp.", "warning");
+          return;
+        }
+
+        setTimeout(() => {
+          redirectToWhatsApp(currentAppointment, "approved");
+        }, 500);
+      } catch (error) {
+        console.error("Error aprobando cita:", error);
+        setPendingButtons();
+        setStatus("Ocurrió un error al aprobar la cita: " + error.message, "error");
+      }
+    }
+
+    async function cancelAppointment() {
+      if (!appointmentId || !token || !currentAppointment) {
+        setStatus("No se pudo validar la cita.", "error");
+        return;
+      }
+
+      const confirmCancel = confirm("¿Seguro que quieres cancelar esta cita?");
+      if (!confirmCancel) return;
+
+      disableActionButtons();
+      cancelBtn.textContent = "Procesando...";
+
+      try {
+        const snapshot = await appointmentsRef.child(appointmentId).once("value");
+
+        if (!snapshot.exists()) {
+          setStatus("La cita ya no existe.", "error");
+          return;
+        }
+
+        const appointment = snapshot.val();
+
+        if (!appointment.approveToken || appointment.approveToken !== token) {
+          setStatus("Token inválido. No se puede cancelar esta cita.", "error");
+          return;
+        }
+
+        if (appointment.status === "cancelled") {
+          currentAppointment = { id: appointmentId, ...appointment };
+          fillAppointmentData(currentAppointment);
+          setCancelledButtons();
+          setStatus("Esta cita ya fue cancelada.", "warning");
+          return;
+        }
+
+        if (appointment.status === "approved") {
+          currentAppointment = { id: appointmentId, ...appointment };
+          fillAppointmentData(currentAppointment);
+          setApprovedButtons();
+          setStatus("La cita ya fue aprobada y no se cancelará desde este enlace.", "warning");
+          return;
+        }
+
+        const cancelledAt = new Date().toISOString();
+
+        await appointmentsRef.child(appointmentId).update({
+          status: "cancelled",
+          cancelledAt: cancelledAt
+        });
+
+        currentAppointment = {
+          id: appointmentId,
+          ...appointment,
+          status: "cancelled",
+          cancelledAt: cancelledAt
+        };
+
+        fillAppointmentData(currentAppointment);
+        setCancelledButtons();
+        setStatus("❌ Cita cancelada correctamente. Redirigiendo a WhatsApp...", "warning");
+
+        const phone = normalizePhoneForWhatsApp(currentAppointment.telefono);
+        if (!phone) {
+          setStatus("❌ Cita cancelada correctamente, pero el número no es válido para WhatsApp.", "warning");
+          return;
+        }
+
+        setTimeout(() => {
+          redirectToWhatsApp(currentAppointment, "cancelled");
+        }, 500);
+      } catch (error) {
+        console.error("Error cancelando cita:", error);
+        setPendingButtons();
+        setStatus("Ocurrió un error al cancelar la cita: " + error.message, "error");
+      }
+    }
+
+    acceptBtn.addEventListener("click", approveAppointment);
+    cancelBtn.addEventListener("click", cancelAppointment);
+
+    loadAppointment();
+  </script>
+</body>
+</html>
