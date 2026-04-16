@@ -121,7 +121,7 @@ function generateApproveToken() {
 }
 
 function getBaseUrl() {
-  return "https://lapintabarbershop1.netlify.app";
+  return "https://weblabandres-prog.github.io/lapintabarbershop";
 }
 
 function buildApproveLink(appointmentId, approveToken) {
