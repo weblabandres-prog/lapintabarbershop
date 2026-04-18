@@ -1643,7 +1643,6 @@
       emptyState.classList.add("hidden");
 
       appointmentsTableBody.innerHTML = data.map(appointment => {
-        // Lógica cruzada para mostrar el precio en la tabla
         const serviceObj = Object.values(servicesData || {}).find(s => s.nombre === appointment.servicio);
         const precioText = serviceObj && serviceObj.precio ? `RD$${serviceObj.precio}` : 'Precio no disp.';
 
@@ -1688,7 +1687,6 @@
       if (!mobileCards) return;
 
       mobileCards.innerHTML = data.map(appointment => {
-        // Lógica cruzada para mostrar el precio en la vista móvil
         const serviceObj = Object.values(servicesData || {}).find(s => s.nombre === appointment.servicio);
         const precioText = serviceObj && serviceObj.precio ? `RD$${serviceObj.precio}` : 'Precio no disp.';
 
@@ -1719,31 +1717,26 @@
       `}).join("");
     }
 
+    // AQUI ESTÁ EL CÓDIGO NUEVO DEL BOTÓN WHATSAPP
     function updateAppointmentStatus(id, status) {
       if (!requireAuthAction()) return;
 
-      // 1. Encontrar la cita en nuestra lista local usando el ID
       const cita = appointments.find(app => app.id === id);
 
-      // 2. Actualizar el estado en Firebase
       appointmentsRef.child(id).update({
         status: status,
         updatedAt: new Date().toISOString()
       }).then(() => {
         showToast(status === "approved" ? "Cita aprobada" : "Cita cancelada");
 
-        // 3. Crear el mensaje de WhatsApp si encontramos el teléfono
         if (cita && cita.telefono) {
-            // Limpiamos el teléfono por si tiene espacios o guiones
             let telefono = cita.telefono.replace(/[^\d+]/g, '');
-
-            // Si el número es local (Ej. 809, 829, 849 en RD) le ponemos el código de país. 
-            // AJUSTA EL +1 SI ESTÁS EN OTRO PAÍS (ej: +52 para España, +57 Colombia, etc.)
+            
+            // Revisa si es de 10 dígitos para ponerle el +1 de RD/USA
             if (telefono.length === 10) {
                 telefono = "+1" + telefono; 
             }
 
-            // Preparamos el mensaje
             let mensaje = "";
             const fechaFormateada = formatDate(cita.fecha);
 
@@ -1753,21 +1746,28 @@
                           `💈 *Barbero:* ${cita.barbero}\n` +
                           `📅 *Fecha:* ${fechaFormateada}\n` +
                           `⏰ *Hora:* ${cita.hora}\n\n` +
-                          `¡Te esperamos. Gracias por elegir La Pinta Barber, Por favor, llegue 10 minutos antes de su cita.!`;
+                          `¡Te esperamos!`;
             } else if (status === "cancelled") {
                 mensaje = `Hola ${cita.nombre}, te escribimos de *La Pinta Barber*.\n\n` +
                           `Lamentablemente hemos tenido que cancelar tu cita para el ${fechaFormateada} a las ${cita.hora}.\n\n` +
                           `Por favor, contáctanos para reprogramarla. ¡Disculpa los inconvenientes!`;
             }
 
-            // Codificamos el mensaje para que los espacios y saltos de línea funcionen en la URL
-            const mensajeCodificado = encodeURIComponent(mensaje);
+            const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
             
-            // Creamos el link de WhatsApp
-            const whatsappUrl = `https://wa.me/${telefono}?text=${mensajeCodificado}`;
+            // Truco para que funcione en celulares (Safari/Chrome móvil bloquean popups)
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             
-            // Abrimos WhatsApp en una nueva pestaña
-            window.open(whatsappUrl, '_blank');
+            if (isMobile) {
+                window.location.href = whatsappUrl; // En celular abre la App directo
+            } else {
+                const a = document.createElement('a'); // En PC abre una pestaña web
+                a.href = whatsappUrl;
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
         }
 
       }).catch(() => {
