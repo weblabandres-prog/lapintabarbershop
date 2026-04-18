@@ -1367,7 +1367,6 @@
       });
     }
 
-    // --- AQUÍ ESTÁ EL ARREGLO DEL PARPADEO (ANTI-FLICKER) ---
     let isFirstServicesLoad = true;
 
     function listenServices() {
@@ -1375,17 +1374,17 @@
         const data = snapshot.val();
         
         if (!data && isFirstServicesLoad) {
-          // Si parece estar vacío en la primera carga, espera casi un segundo
           setTimeout(() => {
             if (Object.keys(servicesData).length === 0) {
               servicesData = {};
               renderServicesEditor();
+              renderAll(); // <-- Añadido: actualiza la tabla al cargar los servicios
             }
           }, 800);
         } else {
-          // Si hay datos, dibuja directamente
           servicesData = data || {};
           renderServicesEditor();
+          renderAll(); // <-- Añadido: actualiza la tabla para cruzar los precios de las citas
         }
         
         isFirstServicesLoad = false;
@@ -1643,7 +1642,12 @@
 
       emptyState.classList.add("hidden");
 
-      appointmentsTableBody.innerHTML = data.map(appointment => `
+      appointmentsTableBody.innerHTML = data.map(appointment => {
+        // Lógica cruzada para mostrar el precio en la tabla
+        const serviceObj = Object.values(servicesData || {}).find(s => s.nombre === appointment.servicio);
+        const precioText = serviceObj && serviceObj.precio ? `RD$${serviceObj.precio}` : 'Precio no disp.';
+
+        return `
         <tr>
           <td>
             <div class="client-box">
@@ -1654,6 +1658,7 @@
           <td>
             <div class="service-box">
               <strong>${escapeHTML(appointment.servicio)}</strong>
+              <small style="color: var(--success); font-weight: 600;">${precioText}</small><br>
               <small>${appointment.anonimo ? "Público: Anónimo" : "Público: Nombre visible"}</small>
             </div>
           </td>
@@ -1676,13 +1681,18 @@
             </div>
           </td>
         </tr>
-      `).join("");
+      `}).join("");
     }
 
     function renderMobileCards(data) {
       if (!mobileCards) return;
 
-      mobileCards.innerHTML = data.map(appointment => `
+      mobileCards.innerHTML = data.map(appointment => {
+        // Lógica cruzada para mostrar el precio en la vista móvil
+        const serviceObj = Object.values(servicesData || {}).find(s => s.nombre === appointment.servicio);
+        const precioText = serviceObj && serviceObj.precio ? `RD$${serviceObj.precio}` : 'Precio no disp.';
+
+        return `
         <article class="mobile-card">
           <div class="mobile-card-top">
             <div>
@@ -1694,7 +1704,7 @@
             </span>
           </div>
 
-          <div class="meta-line"><strong>Servicio:</strong> ${escapeHTML(appointment.servicio)}</div>
+          <div class="meta-line"><strong>Servicio:</strong> ${escapeHTML(appointment.servicio)} <span style="color: var(--success); font-weight: 600;">(${precioText})</span></div>
           <div class="meta-line"><strong>Barbero:</strong> ${escapeHTML(appointment.barbero)}</div>
           <div class="meta-line"><strong>Fecha:</strong> ${escapeHTML(formatDate(appointment.fecha))}</div>
           <div class="meta-line"><strong>Hora:</strong> ${escapeHTML(appointment.hora || "Sin hora")}</div>
@@ -1706,7 +1716,7 @@
             <button onclick="deleteAppointment('${escapeHTMLAttr(appointment.id)}')">Eliminar</button>
           </div>
         </article>
-      `).join("");
+      `}).join("");
     }
 
     function updateAppointmentStatus(id, status) {
