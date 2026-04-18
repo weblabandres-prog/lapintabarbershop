@@ -17,6 +17,7 @@ const db = firebase.database();
 const appointmentsRef = db.ref("appointments");
 const shopStatusRef = db.ref("shopStatus");
 const customClosuresRef = db.ref("customClosures");
+const servicesRef = db.ref("services"); // <-- Conexión a tus servicios dinámicos
 
 const bookingForm = document.getElementById("bookingForm");
 const fechaInput = document.getElementById("fecha");
@@ -45,6 +46,7 @@ const btnAprobarHero = document.getElementById("btnAprobarHero");
 const logoSecret = document.getElementById("logoSecret");
 
 let appointments = [];
+let servicesData = {}; // <-- Guardará los servicios de Firebase
 let shopIsOpen = true;
 let tuesdayForcedOpen = false;
 let extendedHours = false;
@@ -59,21 +61,19 @@ if (typeof emailjs !== "undefined") {
   emailjs.init(EMAILJS_PUBLIC_KEY);
 }
 
-const serviceDurations = {
-  "Corte + Fade": 60,
-  "Cortes Niños": 30,
-  "Corte Clásico": 60,
-  "Cerquillo + Fade": 60,
-  "Corte + Fade + Facial + Lavado de cabello": 60
-};
+// --- FUNCIONES PARA OBTENER PRECIO Y DURACIÓN DINÁMICOS ---
+function getServiceDuration(serviceName) {
+  if (!serviceName) return 60;
+  const serviceObj = Object.values(servicesData).find(s => s.nombre === serviceName);
+  return serviceObj && serviceObj.duracion ? Number(serviceObj.duracion) : 60;
+}
 
-const servicePrices = {
-  "Corte + Fade": 550,
-  "Cortes Niños": 350,
-  "Corte Clásico": 500,
-  "Cerquillo + Fade": 400,
-  "Corte + Fade + Facial + Lavado de cabello": 700
-};
+function getServicePrice(serviceName) {
+  if (!serviceName) return 0;
+  const serviceObj = Object.values(servicesData).find(s => s.nombre === serviceName);
+  return serviceObj && serviceObj.precio ? Number(serviceObj.precio) : 0;
+}
+// -----------------------------------------------------------
 
 const normalWorkingDays = {
   0: null,
@@ -232,7 +232,8 @@ function normalizeAppointment(id, app) {
     agendaDesde: app?.agendaDesde || app?.fecha || "",
     mostrarEnAgendaDosDiasAntes: Boolean(app?.mostrarEnAgendaDosDiasAntes),
     hora: app?.hora || "",
-    duration: app?.duration || serviceDurations[app?.servicio] || 60,
+    duration: app?.duration || getServiceDuration(app?.servicio) || 60,
+    precio: app?.precio || 0, // <-- Nuevo para retrocompatibilidad
     slots: Array.isArray(app?.slots) ? app.slots : [],
     anonimo: Boolean(app?.anonimo),
     metodoPago: app?.metodoPago || "",
@@ -380,11 +381,12 @@ function getWorkingConfigByDate(dateString) {
 }
 
 function getServiceBlocks(serviceName) {
-  return Math.ceil((serviceDurations[serviceName] || 60) / 30);
+  return Math.ceil(getServiceDuration(serviceName) / 30);
 }
 
 function shouldShowSlot(slot, serviceName) {
-  if (serviceName === "Cortes Niños") return true;
+  // Ajuste para permitir que "Cortes Niños" se agende cada media hora
+  if (serviceName && serviceName.toLowerCase().includes("niño")) return true;
   return convertToMinutes(slot) % 60 === 0;
 }
 
@@ -568,7 +570,7 @@ function renderHours() {
   const allSlots = generateTimeSlots(config.start, config.end, 30);
   const visibleSlots = allSlots.filter(slot => shouldShowSlot(slot, selectedService));
 
-  if (selectedService === "Cortes Niños") {
+  if (selectedService.toLowerCase().includes("niño")) {
     const info = document.createElement("p");
     info.style.color = "#93a3bd";
     info.style.gridColumn = "1 / -1";
@@ -629,8 +631,10 @@ function updateSummary() {
   const barbero = barberoInput?.value || "-";
   const fecha = fechaInput?.value ? formatDateSafe(fechaInput.value) : "-";
   const hora = horaInput?.value || "-";
-  const duration = serviceDurations[servicio] || "-";
-  const precio = servicePrices[servicio] || "-";
+  
+  const duration = getServiceDuration(servicio);
+  const precio = getServicePrice(servicio);
+
   const anonimo = anonimoInput?.checked ? "Sí" : "No";
   const nombrePublico = anonimo === "Sí" ? "Anónimo" : nombre;
   const metodoPago = getMetodoPagoSeleccionado() || "-";
@@ -641,7 +645,7 @@ function updateSummary() {
     <p><strong>Nombre en público:</strong> ${nombrePublico}</p>
     <p><strong>Teléfono:</strong> ${telefono}</p>
     <p><strong>Servicio:</strong> ${servicio}</p>
-    <p><strong>Precio:</strong> ${precio === "-" ? "-" : `RD$${precio}`}</p>
+    <p><strong>Precio:</strong> ${precio ? `RD$${precio}` : "-"}</p>
     <p><strong>Barbero:</strong> ${barbero}</p>
     <p><strong>Fecha:</strong> ${fecha}</p>
     <p><strong>Hora:</strong> ${hora}</p>
@@ -701,7 +705,9 @@ function renderAppointments() {
         : '<span class="public-status pending">Pendiente</span>';
 
     const publicName = app.anonimo === true ? "Anónimo" : (app.nombre || "Cliente");
-    const price = servicePrices[app.servicio] || 0;
+    
+    // Mostramos el precio con el que se guardó, o buscamos el actual
+    const price = app.precio || getServicePrice(app.servicio);
 
     item.innerHTML = `
       <div class="appointment-top">
@@ -749,12 +755,13 @@ function renderAppointments() {
   });
 }
 
+// --- ESCUCHADORES DE FIREBASE ---
 function listenAppointments() {
   appointmentsRef.on("value", snapshot => {
     const data = snapshot.val() || {};
     appointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
 
-    renderAppointments();
+    if(appointmentsList) renderAppointments();
     renderHours();
     updateSummary();
   });
@@ -781,6 +788,16 @@ function listenCustomClosures() {
   });
 }
 
+function listenServices() {
+  servicesRef.on("value", snapshot => {
+    servicesData = snapshot.val() || {};
+    updateSummary();
+    renderHours();
+    if(appointmentsList) renderAppointments();
+  });
+}
+// --------------------------------
+
 async function sendAppointmentEmail(appointment, appointmentId) {
   if (typeof emailjs === "undefined") {
     throw new Error("EmailJS no está cargado.");
@@ -798,6 +815,7 @@ async function sendAppointmentEmail(appointment, appointmentId) {
     fecha_iso: formatDateISOForSubject(appointment.fecha) || "",
     hora: appointment.hora || "",
     duration: `${appointment.duration || 0} min`,
+    precio: `RD$${appointment.precio || getServicePrice(appointment.servicio)}`, // <-- AQUI SE MANDA EL PRECIO
     metodo_pago: appointment.metodoPago || "Efectivo",
     approval_link: approvalLink
   };
@@ -1057,7 +1075,8 @@ if (bookingForm) {
       agendaDesde: agendaDesde,
       mostrarEnAgendaDosDiasAntes: mostrarEnAgendaDosDiasAntes,
       hora: selectedHour,
-      duration: serviceDurations[selectedService] || 60,
+      duration: getServiceDuration(selectedService), // <-- Duración dinámica
+      precio: getServicePrice(selectedService), // <-- Guardamos el precio en Firebase
       slots: reservedSlots,
       anonimo: anonimoInput?.checked || false,
       metodoPago: getMetodoPagoSeleccionado(),
@@ -1222,6 +1241,7 @@ configurarInputTelefono();
 listenAppointments();
 listenShopStatus();
 listenCustomClosures();
+listenServices(); // <-- Nuevo: inicia la escucha de servicios
 updatePaymentMethodUI();
 renderHours();
 updateSummary();
