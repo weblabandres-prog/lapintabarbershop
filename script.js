@@ -990,7 +990,7 @@ function getShopStatus() {
   if (!shopIsOpen) {
     return {
       type: "closed",
-      text: "Barbería cerrada • Puedes agendar para otro día u hora disponible"
+      text: "Cerrado • Puedes agendar para otro día u hora disponible"
     };
   }
 
@@ -999,13 +999,9 @@ function getShopStatus() {
   const config = getWorkingConfigByDate(todayISO);
 
   if (!config) {
-    const nextOpen = getNextOpenInfoFromDate(now);
-
     return {
       type: "closed",
-      text: nextOpen
-        ? `Cerrado hoy • Puedes agendar para otro día • Abrimos ${nextOpen.dayName} a las ${nextOpen.open}`
-        : "Cerrado hoy • Puedes agendar para otro día disponible"
+      text: "Cerrado • Puedes agendar para otro día u hora disponible"
     };
   }
 
@@ -1014,13 +1010,9 @@ function getShopStatus() {
   const endMinutes = convertToMinutes(config.end);
 
   if (currentMinutes < startMinutes || currentMinutes >= endMinutes) {
-    const nextOpen = getNextOpenInfoFromDate(now);
-
     return {
       type: "closed",
-      text: nextOpen
-        ? `Cerrado • Puedes agendar para otro día • Abrimos ${nextOpen.dayName} a las ${nextOpen.open}`
-        : "Cerrado • Puedes agendar para otro horario disponible"
+      text: "Cerrado • Puedes agendar para otro día u hora disponible"
     };
   }
 
