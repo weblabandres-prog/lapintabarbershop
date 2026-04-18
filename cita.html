@@ -2,13 +2,15 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
   <title>Agendar cita | La Pinta Barber</title>
   <meta
     name="description"
     content="Reserva tu cita en La Pinta Barber de forma rápida, clara y profesional."
   />
-
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
 
@@ -1183,23 +1185,36 @@
           db.ref("services").on("value", (snapshot) => {
             const serviciosData = snapshot.val();
             
+            // Guardamos lo que el cliente ya había elegido para no borrárselo
+            const valorSeleccionado = servicioSelect.value;
+            
             // Vaciar el selector y poner la opción base
             servicioSelect.innerHTML = '<option value="">Selecciona un servicio</option>';
 
             if (serviciosData) {
               // Iterar sobre los servicios de la base de datos y agregarlos
               Object.values(serviciosData).forEach((servicio) => {
-                const option = document.createElement("option");
-                option.value = servicio.nombre; // Se guarda en la DB como el nombre del servicio
-                option.textContent = `${servicio.nombre} - RD$${servicio.precio}`;
-                
-                // Guardamos el tiempo por si el script.js lo utiliza para calcular la agenda
-                option.dataset.duracion = servicio.duracion; 
-                
-                servicioSelect.appendChild(option);
+                if (servicio && servicio.nombre) {
+                    const option = document.createElement("option");
+                    option.value = servicio.nombre; // Se guarda en la DB como el nombre del servicio
+                    option.textContent = `${servicio.nombre} - RD$${servicio.precio}`;
+                    
+                    // Guardamos el tiempo por si el script.js lo utiliza para calcular la agenda
+                    option.dataset.duracion = servicio.duracion; 
+                    
+                    servicioSelect.appendChild(option);
+                }
               });
+
+              // Si el cliente ya tenía algo seleccionado, se lo devolvemos
+              if (valorSeleccionado) {
+                  servicioSelect.value = valorSeleccionado;
+                  // Forzamos un evento 'change' para que el resumen lateral se actualice si cambió el precio
+                  servicioSelect.dispatchEvent(new Event('change'));
+              }
             } else {
               servicioSelect.innerHTML = '<option value="">No hay servicios disponibles</option>';
+              servicioSelect.dispatchEvent(new Event('change'));
             }
           });
         } catch(error) {
