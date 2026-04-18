@@ -411,7 +411,7 @@ function getTimeBlocksForDate(dateString) {
   return getCustomClosuresForDate(dateString).filter(block => block.type === "timeBlock");
 }
 
-function getEarlyClosingForDate(dateString) {
+function getEarlyClosingForDate() {
   return null;
 }
 
@@ -430,6 +430,10 @@ function isSlotBlockedByCustomClosure(date, startSlot, serviceName) {
   return blocks.some(block => {
     const blockStartMinutes = convertToMinutes(block.start);
     const blockEndMinutes = convertToMinutes(block.end);
+
+    if (slotStartMinutes >= blockStartMinutes && slotStartMinutes <= blockEndMinutes) {
+      return true;
+    }
 
     return rangesOverlapMinutes(
       slotStartMinutes,
@@ -451,7 +455,7 @@ function getActiveCustomClosureForNow(dateString) {
     const blockStartMinutes = convertToMinutes(block.start);
     const blockEndMinutes = convertToMinutes(block.end);
 
-    return currentMinutes >= blockStartMinutes && currentMinutes < blockEndMinutes;
+    return currentMinutes >= blockStartMinutes && currentMinutes <= blockEndMinutes;
   }) || null;
 }
 
