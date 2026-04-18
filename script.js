@@ -17,7 +17,7 @@ const db = firebase.database();
 const appointmentsRef = db.ref("appointments");
 const shopStatusRef = db.ref("shopStatus");
 const customClosuresRef = db.ref("customClosures");
-const servicesRef = db.ref("services"); // <-- Conexión a tus servicios dinámicos
+const servicesRef = db.ref("services");
 
 const bookingForm = document.getElementById("bookingForm");
 const fechaInput = document.getElementById("fecha");
@@ -46,7 +46,7 @@ const btnAprobarHero = document.getElementById("btnAprobarHero");
 const logoSecret = document.getElementById("logoSecret");
 
 let appointments = [];
-let servicesData = {}; // <-- Guardará los servicios de Firebase
+let servicesData = {};
 let shopIsOpen = true;
 let tuesdayForcedOpen = false;
 let extendedHours = false;
@@ -61,7 +61,6 @@ if (typeof emailjs !== "undefined") {
   emailjs.init(EMAILJS_PUBLIC_KEY);
 }
 
-// --- FUNCIONES PARA OBTENER PRECIO Y DURACIÓN DINÁMICOS ---
 function getServiceDuration(serviceName) {
   if (!serviceName) return 60;
   const serviceObj = Object.values(servicesData).find(s => s.nombre === serviceName);
@@ -73,7 +72,6 @@ function getServicePrice(serviceName) {
   const serviceObj = Object.values(servicesData).find(s => s.nombre === serviceName);
   return serviceObj && serviceObj.precio ? Number(serviceObj.precio) : 0;
 }
-// -----------------------------------------------------------
 
 const normalWorkingDays = {
   0: null,
@@ -205,11 +203,42 @@ function bindSecretShortcut() {
   logoSecret.addEventListener("click", registerTap);
 }
 
+function parseAnyTimeToMinutes(timeStr) {
+  if (!timeStr) return NaN;
+
+  const value = String(timeStr).trim().toUpperCase();
+
+  if (/^\d{1,2}:\d{2}$/.test(value)) {
+    const [h, m] = value.split(":").map(Number);
+    if (Number.isNaN(h) || Number.isNaN(m)) return NaN;
+    return (h * 60) + m;
+  }
+
+  const match = value.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/);
+  if (!match) return NaN;
+
+  let hour = Number(match[1]);
+  const minute = Number(match[2]);
+  const suffix = match[3];
+
+  if (suffix === "AM" && hour === 12) hour = 0;
+  if (suffix === "PM" && hour !== 12) hour += 12;
+
+  return (hour * 60) + minute;
+}
+
 function to24Hour(time12) {
   if (!time12) return "00:00";
 
-  const match = String(time12).match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
-  if (!match) return time12;
+  const value = String(time12).trim();
+
+  if (/^\d{1,2}:\d{2}$/.test(value)) {
+    const [h, m] = value.split(":");
+    return `${String(Number(h)).padStart(2, "0")}:${m}`;
+  }
+
+  const match = value.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+  if (!match) return value;
 
   let hour = parseInt(match[1], 10);
   const minutes = match[2];
@@ -233,7 +262,7 @@ function normalizeAppointment(id, app) {
     mostrarEnAgendaDosDiasAntes: Boolean(app?.mostrarEnAgendaDosDiasAntes),
     hora: app?.hora || "",
     duration: app?.duration || getServiceDuration(app?.servicio) || 60,
-    precio: app?.precio || 0, // <-- Nuevo para retrocompatibilidad
+    precio: app?.precio || 0,
     slots: Array.isArray(app?.slots) ? app.slots : [],
     anonimo: Boolean(app?.anonimo),
     metodoPago: app?.metodoPago || "",
@@ -303,18 +332,8 @@ function setMinDate() {
 }
 
 function convertToMinutes(timeStr) {
-  if (!timeStr) return 0;
-
-  const parts = String(timeStr).trim().split(" ");
-  const time = parts[0];
-  const modifier = (parts[1] || "").toUpperCase();
-  const [hours, minutes] = time.split(":").map(Number);
-
-  let h = hours;
-  if (modifier === "PM" && hours !== 12) h += 12;
-  if (modifier === "AM" && hours === 12) h = 0;
-
-  return h * 60 + minutes;
+  const minutes = parseAnyTimeToMinutes(timeStr);
+  return Number.isNaN(minutes) ? 0 : minutes;
 }
 
 function convertToTime(minutes) {
@@ -342,13 +361,143 @@ function getDayFromDate(dateString) {
   return new Date(dateString + "T00:00:00").getDay();
 }
 
+function normalizeCustomClosure(block, fallbackDate = "") {
+  if (!block || typeof block !== "object") return null;
+
+  const fecha = block.fecha || block.date || fallbackDate || "";
+  const start = block.start || block.inicio || block.startTime || "";
+  const end = block.end || block.fin || block.endTime || "";
+  const reason = block.reason || block.motivo || "";
+  const type = block.type || "timeBlock";
+
+  if (!fecha) return null;
+
+  if (start && end) {
+    const startMinutes = parseAnyTimeToMinutes(start);
+    const endMinutes = parseAnyTimeToMinutes(end);
+
+    if (Number.isNaN(startMinutes) || Number.isNaN(endMinutes)) return null;
+    if (startMinutes >= endMinutes) return null;
+
+    return {
+      fecha,
+      start,
+      end,
+      reason,
+      type: "timeBlock"
+    };
+  }
+
+  if (!start && end) {
+    const endMinutes = parseAnyTimeToMinutes(end);
+    if (Number.isNaN(endMinutes)) return null;
+
+    return {
+      fecha,
+      start: "",
+      end,
+      reason,
+      type: "earlyClose"
+    };
+  }
+
+  return null;
+}
+
+function getCustomClosuresForDate(dateString) {
+  if (!dateString || !customClosures) return [];
+
+  const closures = [];
+
+  Object.entries(customClosures).forEach(([key, value]) => {
+    if (!value) return;
+
+    if (typeof value === "object" && !Array.isArray(value)) {
+      const normalized = normalizeCustomClosure(value, "");
+      if (normalized && normalized.fecha === dateString) {
+        closures.push(normalized);
+        return;
+      }
+    }
+
+    if (key === dateString && typeof value === "object" && !Array.isArray(value)) {
+      const normalized = normalizeCustomClosure(value, dateString);
+      if (normalized) {
+        closures.push(normalized);
+      }
+    }
+  });
+
+  return closures.sort((a, b) => {
+    const aStart = a.start ? convertToMinutes(a.start) : -1;
+    const bStart = b.start ? convertToMinutes(b.start) : -1;
+    return aStart - bStart;
+  });
+}
+
+function getTimeBlocksForDate(dateString) {
+  return getCustomClosuresForDate(dateString).filter(block => {
+    return block.type === "timeBlock" && block.start && block.end;
+  });
+}
+
+function getEarlyClosingForDate(dateString) {
+  return getCustomClosuresForDate(dateString).find(block => {
+    return block.type === "earlyClose" && !block.start && block.end;
+  }) || null;
+}
+
+function rangesOverlapMinutes(startA, endA, startB, endB) {
+  return startA < endB && endA > startB;
+}
+
+function isSlotBlockedByCustomClosure(date, startSlot, serviceName) {
+  const blocks = getTimeBlocksForDate(date);
+  if (!blocks.length) return false;
+
+  const neededBlocks = getServiceBlocks(serviceName);
+  const slotStartMinutes = convertToMinutes(startSlot);
+  const slotEndMinutes = slotStartMinutes + (neededBlocks * 30);
+
+  return blocks.some(block => {
+    const blockStartMinutes = convertToMinutes(block.start);
+    const blockEndMinutes = convertToMinutes(block.end);
+
+    if (Number.isNaN(blockStartMinutes) || Number.isNaN(blockEndMinutes)) {
+      return false;
+    }
+
+    return rangesOverlapMinutes(
+      slotStartMinutes,
+      slotEndMinutes,
+      blockStartMinutes,
+      blockEndMinutes
+    );
+  });
+}
+
+function getActiveCustomClosureForNow(dateString) {
+  const blocks = getTimeBlocksForDate(dateString);
+  if (!blocks.length) return null;
+
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  return blocks.find(block => {
+    const blockStartMinutes = convertToMinutes(block.start);
+    const blockEndMinutes = convertToMinutes(block.end);
+
+    return currentMinutes >= blockStartMinutes && currentMinutes < blockEndMinutes;
+  }) || null;
+}
+
 function applySpecialClosingToConfig(dateString, config) {
   if (!dateString || !config) return config;
 
-  const customDay = customClosures[dateString];
-  if (!customDay || !customDay.end) return config;
+  const earlyClosing = getEarlyClosingForDate(dateString);
+  if (!earlyClosing || !earlyClosing.end) return config;
 
-  const specialEndMinutes = convertToMinutes(customDay.end);
+  const specialEndMinutes = convertToMinutes(earlyClosing.end);
   const normalEndMinutes = convertToMinutes(config.end);
 
   if (specialEndMinutes >= normalEndMinutes) {
@@ -357,7 +506,7 @@ function applySpecialClosingToConfig(dateString, config) {
 
   return {
     ...config,
-    end: customDay.end
+    end: earlyClosing.end
   };
 }
 
@@ -385,7 +534,6 @@ function getServiceBlocks(serviceName) {
 }
 
 function shouldShowSlot(slot, serviceName) {
-  // Ajuste para permitir que "Cortes Niños" se agende cada media hora
   if (serviceName && serviceName.toLowerCase().includes("niño")) return true;
   return convertToMinutes(slot) % 60 === 0;
 }
@@ -418,6 +566,7 @@ function isSlotAvailable(date, barber, startSlot, serviceName, list) {
 
   if (startIndex === -1) return false;
   if (isPastDateTime(date, startSlot)) return false;
+  if (isSlotBlockedByCustomClosure(date, startSlot, serviceName)) return false;
 
   for (let i = 0; i < neededBlocks; i++) {
     const currentSlot = slots[startIndex + i];
@@ -567,6 +716,23 @@ function renderHours() {
     return;
   }
 
+  const timeBlocks = getTimeBlocksForDate(selectedDate);
+
+  if (timeBlocks.length) {
+    const info = document.createElement("div");
+    info.style.color = "#93a3bd";
+    info.style.gridColumn = "1 / -1";
+    info.style.marginBottom = "10px";
+    info.style.lineHeight = "1.6";
+
+    const detail = timeBlocks
+      .map(block => `${block.start} - ${block.end}${block.reason ? ` (${block.reason})` : ""}`)
+      .join(" | ");
+
+    info.textContent = `Bloques cerrados para esta fecha: ${detail}`;
+    hoursGrid.appendChild(info);
+  }
+
   const allSlots = generateTimeSlots(config.start, config.end, 30);
   const visibleSlots = allSlots.filter(slot => shouldShowSlot(slot, selectedService));
 
@@ -631,7 +797,7 @@ function updateSummary() {
   const barbero = barberoInput?.value || "-";
   const fecha = fechaInput?.value ? formatDateSafe(fechaInput.value) : "-";
   const hora = horaInput?.value || "-";
-  
+
   const duration = getServiceDuration(servicio);
   const precio = getServicePrice(servicio);
 
@@ -705,8 +871,6 @@ function renderAppointments() {
         : '<span class="public-status pending">Pendiente</span>';
 
     const publicName = app.anonimo === true ? "Anónimo" : (app.nombre || "Cliente");
-    
-    // Mostramos el precio con el que se guardó, o buscamos el actual
     const price = app.precio || getServicePrice(app.servicio);
 
     item.innerHTML = `
@@ -755,13 +919,12 @@ function renderAppointments() {
   });
 }
 
-// --- ESCUCHADORES DE FIREBASE ---
 function listenAppointments() {
   appointmentsRef.on("value", snapshot => {
     const data = snapshot.val() || {};
     appointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
 
-    if(appointmentsList) renderAppointments();
+    if (appointmentsList) renderAppointments();
     renderHours();
     updateSummary();
   });
@@ -785,6 +948,7 @@ function listenCustomClosures() {
     customClosures = snapshot.val() || {};
     renderHours();
     updateShopStatusBadge();
+    updateSummary();
   });
 }
 
@@ -793,10 +957,9 @@ function listenServices() {
     servicesData = snapshot.val() || {};
     updateSummary();
     renderHours();
-    if(appointmentsList) renderAppointments();
+    if (appointmentsList) renderAppointments();
   });
 }
-// --------------------------------
 
 async function sendAppointmentEmail(appointment, appointmentId) {
   if (typeof emailjs === "undefined") {
@@ -815,7 +978,7 @@ async function sendAppointmentEmail(appointment, appointmentId) {
     fecha_iso: formatDateISOForSubject(appointment.fecha) || "",
     hora: appointment.hora || "",
     duration: `${appointment.duration || 0} min`,
-    precio: `RD$${appointment.precio || getServicePrice(appointment.servicio)}`, // <-- AQUI SE MANDA EL PRECIO
+    precio: `RD$${appointment.precio || getServicePrice(appointment.servicio)}`,
     metodo_pago: appointment.metodoPago || "Efectivo",
     approval_link: approvalLink
   };
@@ -908,6 +1071,15 @@ function getShopStatus() {
     };
   }
 
+  const activeBlock = getActiveCustomClosureForNow(todayISO);
+
+  if (activeBlock) {
+    return {
+      type: "closed",
+      text: `Cerrado por bloque de horas • Volvemos a las ${formatStatusTime(activeBlock.end)}`
+    };
+  }
+
   const breaks = Array.isArray(config.breaks) ? config.breaks : [];
   if (breaks.length) {
     const breakMinutes = breaks.map(convertToMinutes);
@@ -941,7 +1113,7 @@ function updateShopStatusBadge() {
   badge.textContent = status.text;
 
   if (closedBanner) {
-    closedBanner.classList.toggle("show", !shopIsOpen);
+    closedBanner.classList.toggle("show", !shopIsOpen || status.type === "closed");
   }
 }
 
@@ -1075,8 +1247,8 @@ if (bookingForm) {
       agendaDesde: agendaDesde,
       mostrarEnAgendaDosDiasAntes: mostrarEnAgendaDosDiasAntes,
       hora: selectedHour,
-      duration: getServiceDuration(selectedService), // <-- Duración dinámica
-      precio: getServicePrice(selectedService), // <-- Guardamos el precio en Firebase
+      duration: getServiceDuration(selectedService),
+      precio: getServicePrice(selectedService),
       slots: reservedSlots,
       anonimo: anonimoInput?.checked || false,
       metodoPago: getMetodoPagoSeleccionado(),
@@ -1241,7 +1413,7 @@ configurarInputTelefono();
 listenAppointments();
 listenShopStatus();
 listenCustomClosures();
-listenServices(); // <-- Nuevo: inicia la escucha de servicios
+listenServices();
 updatePaymentMethodUI();
 renderHours();
 updateSummary();
