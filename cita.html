@@ -1009,12 +1009,7 @@
               <div class="form-group">
                 <label for="servicio">Servicio</label>
                 <select id="servicio" required>
-                  <option value="">Selecciona un servicio</option>
-                  <option value="Corte + Fade">Corte + Fade - RD$550</option>
-                  <option value="Cortes Niños">Cortes Niños - RD$350</option>
-                  <option value="Corte Clásico">Corte Clásico - RD$500</option>
-                  <option value="Cerquillo + Fade">Cerquillo + Fade - RD$400</option>
-                  <option value="Corte + Fade + Facial + Lavado de cabello">Corte completo + Facial + Lavado - RD$700</option>
+                  <option value="">Cargando servicios...</option>
                 </select>
               </div>
 
@@ -1175,5 +1170,43 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="script.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Esperamos un momento para asegurar que Firebase cargó sus credenciales en script.js
+      setTimeout(() => {
+        try {
+          const db = firebase.database();
+          const servicioSelect = document.getElementById("servicio");
+
+          // Escuchar la carpeta de servicios
+          db.ref("services").on("value", (snapshot) => {
+            const serviciosData = snapshot.val();
+            
+            // Vaciar el selector y poner la opción base
+            servicioSelect.innerHTML = '<option value="">Selecciona un servicio</option>';
+
+            if (serviciosData) {
+              // Iterar sobre los servicios de la base de datos y agregarlos
+              Object.values(serviciosData).forEach((servicio) => {
+                const option = document.createElement("option");
+                option.value = servicio.nombre; // Se guarda en la DB como el nombre del servicio
+                option.textContent = `${servicio.nombre} - RD$${servicio.precio}`;
+                
+                // Guardamos el tiempo por si el script.js lo utiliza para calcular la agenda
+                option.dataset.duracion = servicio.duracion; 
+                
+                servicioSelect.appendChild(option);
+              });
+            } else {
+              servicioSelect.innerHTML = '<option value="">No hay servicios disponibles</option>';
+            }
+          });
+        } catch(error) {
+          console.error("No se pudo cargar los servicios de Firebase:", error);
+        }
+      }, 500); 
+    });
+  </script>
 </body>
 </html>
