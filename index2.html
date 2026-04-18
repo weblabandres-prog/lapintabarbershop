@@ -355,6 +355,12 @@
       transform: translateY(-1px);
     }
 
+    .primary-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     .danger-btn {
       background: var(--danger-soft);
       border-color: rgba(220, 38, 38, 0.25);
@@ -473,9 +479,10 @@
       gap: 14px;
     }
 
+    /* ESTILOS DEL EDITOR DE SERVICIOS ADAPTADOS A BOTONES AGREGAR/ELIMINAR */
     .service-editor {
       display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr auto;
+      grid-template-columns: 1.5fr 1fr 1fr auto auto;
       gap: 12px;
       align-items: end;
       padding: 16px;
@@ -793,10 +800,6 @@
       .tools-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
-
-      .service-editor {
-        grid-template-columns: 1fr 1fr;
-      }
     }
 
     @media (max-width: 920px) {
@@ -1003,19 +1006,18 @@
             <span class="eyebrow">Servicios</span>
             <h3>Cambiar precios y duración</h3>
             <p class="status-help">
-              Desde aquí puedes subir o bajar los precios sin tocar el código.
+              Agrega, edita o elimina servicios en tiempo real.
             </p>
           </div>
-
+          
           <div class="table-actions">
-            <button id="reloadServicesBtn" class="ghost-btn">Recargar</button>
-            <button id="saveAllServicesBtn" class="primary-btn">Guardar todos</button>
+            <button id="addNewServiceBtn" class="success-btn">+ Nuevo Servicio</button>
           </div>
         </div>
 
         <div id="servicesContainer" class="services-grid"></div>
       </section>
-
+      
       <section class="filters-card" id="appointmentsSection">
         <div class="filters-header">
           <div>
@@ -1198,8 +1200,7 @@
     const sidebar = document.getElementById("sidebar");
     const sidebarOverlay = document.getElementById("sidebarOverlay");
     const servicesContainer = document.getElementById("servicesContainer");
-    const reloadServicesBtn = document.getElementById("reloadServicesBtn");
-    const saveAllServicesBtn = document.getElementById("saveAllServicesBtn");
+    const addNewServiceBtn = document.getElementById("addNewServiceBtn");
 
     let appointments = [];
     let servicesData = {};
@@ -1237,9 +1238,6 @@
       toggleTuesdayBtn?.addEventListener("click", toggleTuesdayState);
       toggleExtendedHoursBtn?.addEventListener("click", toggleExtendedHoursState);
 
-      reloadServicesBtn?.addEventListener("click", renderServicesEditor);
-      saveAllServicesBtn?.addEventListener("click", saveAllServices);
-
       searchInput?.addEventListener("input", renderAll);
       statusFilter?.addEventListener("change", renderAll);
       dateFilter?.addEventListener("change", renderAll);
@@ -1249,6 +1247,18 @@
 
       mobileMenuBtn?.addEventListener("click", toggleSidebar);
       sidebarOverlay?.addEventListener("click", closeSidebar);
+      
+      addNewServiceBtn?.addEventListener("click", () => {
+        if (!requireAuthAction()) return;
+        const newKey = servicesRef.push().key; 
+        servicesRef.child(newKey).set({
+          nombre: "Nuevo Servicio",
+          precio: 0,
+          duracion: 30
+        }).then(() => {
+          showToast("Nuevo servicio creado. Edítalo ahora.");
+        });
+      });
 
       document.querySelectorAll(".sidebar-nav a").forEach(link => {
         link.addEventListener("click", closeSidebar);
@@ -1357,11 +1367,127 @@
       });
     }
 
+    // --- AQUÍ ESTÁ EL ARREGLO DEL PARPADEO (ANTI-FLICKER) ---
+    let isFirstServicesLoad = true;
+
     function listenServices() {
       servicesRef.on("value", snapshot => {
-        servicesData = snapshot.val() || {};
-        renderServicesEditor();
+        const data = snapshot.val();
+        
+        if (!data && isFirstServicesLoad) {
+          // Si parece estar vacío en la primera carga, espera casi un segundo
+          setTimeout(() => {
+            if (Object.keys(servicesData).length === 0) {
+              servicesData = {};
+              renderServicesEditor();
+            }
+          }, 800);
+        } else {
+          // Si hay datos, dibuja directamente
+          servicesData = data || {};
+          renderServicesEditor();
+        }
+        
+        isFirstServicesLoad = false;
       });
+    }
+
+    function renderServicesEditor() {
+      if (!servicesContainer) return;
+
+      const entries = Object.entries(servicesData || {});
+
+      if (!entries.length) {
+        servicesContainer.innerHTML = `
+          <div class="empty-state">
+            <h4>No hay servicios guardados</h4>
+            <p>Usa el botón "+ Nuevo Servicio" para empezar a agregar tus cortes.</p>
+          </div>
+        `;
+        return;
+      }
+
+      servicesContainer.innerHTML = entries.map(([key, service]) => `
+        <div class="service-editor" data-key="${escapeHTMLAttr(key)}">
+          <div class="field">
+            <label>Nombre del servicio</label>
+            <input type="text" class="service-name" value="${escapeHTML(service?.nombre || "")}" />
+          </div>
+
+          <div class="field">
+            <label>Precio (RD$)</label>
+            <input type="number" min="0" class="service-price" value="${Number(service?.precio || 0)}" />
+          </div>
+
+          <div class="field">
+            <label>Duración (min)</label>
+            <input type="number" min="0" class="service-duration" value="${Number(service?.duracion || 0)}" />
+          </div>
+
+          <button type="button" class="primary-btn save-one-service" style="height: 52px; padding: 0 16px;">Guardar</button>
+          <button type="button" class="danger-btn delete-one-service" style="height: 52px; padding: 0 16px;" title="Eliminar servicio">X</button>
+        </div>
+      `).join("");
+
+      // Lógica de guardar
+      document.querySelectorAll(".save-one-service").forEach(btn => {
+        btn.addEventListener("click", function () {
+          const row = this.closest(".service-editor");
+          if (!row) return;
+          const key = row.dataset.key;
+          saveOneService(key, row, this);
+        });
+      });
+
+      // Lógica de eliminar
+      document.querySelectorAll(".delete-one-service").forEach(btn => {
+        btn.addEventListener("click", function () {
+          const row = this.closest(".service-editor");
+          if (!row) return;
+          const key = row.dataset.key;
+          deleteOneService(key);
+        });
+      });
+    }
+
+    function saveOneService(key, row, buttonElement) {
+      if (!requireAuthAction()) return;
+      if (!key || !row) return;
+
+      const data = {
+        nombre: row.querySelector(".service-name")?.value.trim() || "",
+        precio: Number(row.querySelector(".service-price")?.value || 0),
+        duracion: Number(row.querySelector(".service-duration")?.value || 0)
+      };
+
+      if (!data.nombre) {
+        showToast("El nombre del servicio es obligatorio");
+        return;
+      }
+
+      buttonElement.disabled = true;
+      buttonElement.textContent = "...";
+
+      servicesRef.child(key).update(data)
+        .then(() => {
+            showToast("✅ Servicio guardado correctamente");
+            buttonElement.disabled = false;
+            buttonElement.textContent = "Guardar";
+        })
+        .catch(() => {
+            showToast("❌ No se pudo guardar el servicio");
+            buttonElement.disabled = false;
+            buttonElement.textContent = "Guardar";
+        });
+    }
+
+    function deleteOneService(key) {
+      if (!requireAuthAction()) return;
+      if (!confirm("¿Seguro que deseas eliminar este servicio? Desaparecerá de tu web.")) return;
+
+      servicesRef.child(key).remove()
+        .then(() => showToast("🗑️ Servicio eliminado"))
+        .catch(() => showToast("❌ No se pudo eliminar el servicio"));
     }
 
     function renderShopStatusUI() {
@@ -1419,111 +1545,6 @@
       }).catch(() => {
         showToast("No se pudo cambiar el horario");
       });
-    }
-
-    function renderServicesEditor() {
-      if (!servicesContainer) return;
-
-      const entries = Object.entries(servicesData || {});
-
-      if (!entries.length) {
-        servicesContainer.innerHTML = `
-          <div class="empty-state">
-            <h4>No hay servicios guardados</h4>
-            <p>Importa el JSON con el nodo services o agrégalo primero en Firebase.</p>
-          </div>
-        `;
-        return;
-      }
-
-      servicesContainer.innerHTML = entries.map(([key, service]) => `
-        <div class="service-editor" data-key="${escapeHTMLAttr(key)}">
-          <div class="field">
-            <label>Nombre del servicio</label>
-            <input type="text" class="service-name" value="${escapeHTML(service?.nombre || "")}" />
-          </div>
-
-          <div class="field">
-            <label>Precio (RD$)</label>
-            <input type="number" min="0" class="service-price" value="${Number(service?.precio || 0)}" />
-          </div>
-
-          <div class="field">
-            <label>Duración (min)</label>
-            <input type="number" min="0" class="service-duration" value="${Number(service?.duracion || 0)}" />
-          </div>
-
-          <button type="button" class="primary-btn save-one-service">Guardar</button>
-        </div>
-      `).join("");
-
-      document.querySelectorAll(".save-one-service").forEach(btn => {
-        btn.addEventListener("click", function () {
-          const row = this.closest(".service-editor");
-          if (!row) return;
-
-          const key = row.dataset.key;
-          saveOneService(key, row);
-        });
-      });
-    }
-
-    function getServiceRowData(row) {
-      return {
-        nombre: row.querySelector(".service-name")?.value.trim() || "",
-        precio: Number(row.querySelector(".service-price")?.value || 0),
-        duracion: Number(row.querySelector(".service-duration")?.value || 0)
-      };
-    }
-
-    function saveOneService(key, row) {
-      if (!requireAuthAction()) return;
-      if (!key || !row) return;
-
-      const data = getServiceRowData(row);
-
-      if (!data.nombre) {
-        showToast("El nombre del servicio es obligatorio");
-        return;
-      }
-
-      servicesRef.child(key).update(data)
-        .then(() => showToast("Servicio actualizado"))
-        .catch(() => showToast("No se pudo guardar el servicio"));
-    }
-
-    function saveAllServices() {
-      if (!requireAuthAction()) return;
-
-      const rows = document.querySelectorAll(".service-editor");
-      if (!rows.length) {
-        showToast("No hay servicios para guardar");
-        return;
-      }
-
-      const updates = {};
-      let hasError = false;
-
-      rows.forEach(row => {
-        const key = row.dataset.key;
-        const data = getServiceRowData(row);
-
-        if (!data.nombre) {
-          hasError = true;
-          return;
-        }
-
-        updates[key] = data;
-      });
-
-      if (hasError) {
-        showToast("Todos los servicios deben tener nombre");
-        return;
-      }
-
-      servicesRef.update(updates)
-        .then(() => showToast("Todos los servicios fueron guardados"))
-        .catch(() => showToast("No se pudieron guardar los servicios"));
     }
 
     function getFilteredAppointments() {
