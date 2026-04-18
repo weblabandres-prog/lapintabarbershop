@@ -1175,42 +1175,31 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Esperamos un momento para asegurar que Firebase cargó sus credenciales en script.js
       setTimeout(() => {
         try {
           const db = firebase.database();
           const servicioSelect = document.getElementById("servicio");
 
-          // Escuchar la carpeta de servicios
           db.ref("services").on("value", (snapshot) => {
             const serviciosData = snapshot.val();
-            
-            // Guardamos lo que el cliente ya había elegido para no borrárselo
             const valorSeleccionado = servicioSelect.value;
-            
-            // Vaciar el selector y poner la opción base
+
             servicioSelect.innerHTML = '<option value="">Selecciona un servicio</option>';
 
             if (serviciosData) {
-              // Iterar sobre los servicios de la base de datos y agregarlos
               Object.values(serviciosData).forEach((servicio) => {
                 if (servicio && servicio.nombre) {
-                    const option = document.createElement("option");
-                    option.value = servicio.nombre; // Se guarda en la DB como el nombre del servicio
-                    option.textContent = `${servicio.nombre} - RD$${servicio.precio}`;
-                    
-                    // Guardamos el tiempo por si el script.js lo utiliza para calcular la agenda
-                    option.dataset.duracion = servicio.duracion; 
-                    
-                    servicioSelect.appendChild(option);
+                  const option = document.createElement("option");
+                  option.value = servicio.nombre;
+                  option.textContent = `${servicio.nombre} - RD$${servicio.precio}`;
+                  option.dataset.duracion = servicio.duracion;
+                  servicioSelect.appendChild(option);
                 }
               });
 
-              // Si el cliente ya tenía algo seleccionado, se lo devolvemos
               if (valorSeleccionado) {
-                  servicioSelect.value = valorSeleccionado;
-                  // Forzamos un evento 'change' para que el resumen lateral se actualice si cambió el precio
-                  servicioSelect.dispatchEvent(new Event('change'));
+                servicioSelect.value = valorSeleccionado;
+                servicioSelect.dispatchEvent(new Event('change'));
               }
             } else {
               servicioSelect.innerHTML = '<option value="">No hay servicios disponibles</option>';
@@ -1220,7 +1209,7 @@
         } catch(error) {
           console.error("No se pudo cargar los servicios de Firebase:", error);
         }
-      }, 500); 
+      }, 500);
     });
   </script>
 </body>
