@@ -211,6 +211,7 @@ function parseAnyTimeToMinutes(timeStr) {
   if (/^\d{1,2}:\d{2}$/.test(value)) {
     const [h, m] = value.split(":").map(Number);
     if (Number.isNaN(h) || Number.isNaN(m)) return NaN;
+    if (h < 0 || h > 23 || m < 0 || m > 59) return NaN;
     return (h * 60) + m;
   }
 
@@ -220,6 +221,9 @@ function parseAnyTimeToMinutes(timeStr) {
   let hour = Number(match[1]);
   const minute = Number(match[2]);
   const suffix = match[3];
+
+  if (Number.isNaN(hour) || Number.isNaN(minute)) return NaN;
+  if (hour < 1 || hour > 12 || minute < 0 || minute > 59) return NaN;
 
   if (suffix === "AM" && hour === 12) hour = 0;
   if (suffix === "PM" && hour !== 12) hour += 12;
@@ -368,40 +372,22 @@ function normalizeCustomClosure(block, fallbackDate = "") {
   const start = block.start || block.inicio || block.startTime || "";
   const end = block.end || block.fin || block.endTime || "";
   const reason = block.reason || block.motivo || "";
-  const type = block.type || "timeBlock";
 
-  if (!fecha) return null;
+  if (!fecha || !start || !end) return null;
 
-  if (start && end) {
-    const startMinutes = parseAnyTimeToMinutes(start);
-    const endMinutes = parseAnyTimeToMinutes(end);
+  const startMinutes = parseAnyTimeToMinutes(start);
+  const endMinutes = parseAnyTimeToMinutes(end);
 
-    if (Number.isNaN(startMinutes) || Number.isNaN(endMinutes)) return null;
-    if (startMinutes >= endMinutes) return null;
+  if (Number.isNaN(startMinutes) || Number.isNaN(endMinutes)) return null;
+  if (startMinutes >= endMinutes) return null;
 
-    return {
-      fecha,
-      start,
-      end,
-      reason,
-      type: "timeBlock"
-    };
-  }
-
-  if (!start && end) {
-    const endMinutes = parseAnyTimeToMinutes(end);
-    if (Number.isNaN(endMinutes)) return null;
-
-    return {
-      fecha,
-      start: "",
-      end,
-      reason,
-      type: "earlyClose"
-    };
-  }
-
-  return null;
+  return {
+    fecha,
+    start,
+    end,
+    reason,
+    type: "timeBlock"
+  };
 }
 
 function getCustomClosuresForDate(dateString) {
@@ -410,41 +396,23 @@ function getCustomClosuresForDate(dateString) {
   const closures = [];
 
   Object.entries(customClosures).forEach(([key, value]) => {
-    if (!value) return;
+    if (!value || typeof value !== "object" || Array.isArray(value)) return;
 
-    if (typeof value === "object" && !Array.isArray(value)) {
-      const normalized = normalizeCustomClosure(value, "");
-      if (normalized && normalized.fecha === dateString) {
-        closures.push(normalized);
-        return;
-      }
-    }
-
-    if (key === dateString && typeof value === "object" && !Array.isArray(value)) {
-      const normalized = normalizeCustomClosure(value, dateString);
-      if (normalized) {
-        closures.push(normalized);
-      }
+    const normalized = normalizeCustomClosure(value, key === dateString ? dateString : "");
+    if (normalized && normalized.fecha === dateString) {
+      closures.push(normalized);
     }
   });
 
-  return closures.sort((a, b) => {
-    const aStart = a.start ? convertToMinutes(a.start) : -1;
-    const bStart = b.start ? convertToMinutes(b.start) : -1;
-    return aStart - bStart;
-  });
+  return closures.sort((a, b) => convertToMinutes(a.start) - convertToMinutes(b.start));
 }
 
 function getTimeBlocksForDate(dateString) {
-  return getCustomClosuresForDate(dateString).filter(block => {
-    return block.type === "timeBlock" && block.start && block.end;
-  });
+  return getCustomClosuresForDate(dateString).filter(block => block.type === "timeBlock");
 }
 
 function getEarlyClosingForDate(dateString) {
-  return getCustomClosuresForDate(dateString).find(block => {
-    return block.type === "earlyClose" && !block.start && block.end;
-  }) || null;
+  return null;
 }
 
 function rangesOverlapMinutes(startA, endA, startB, endB) {
@@ -463,10 +431,6 @@ function isSlotBlockedByCustomClosure(date, startSlot, serviceName) {
     const blockStartMinutes = convertToMinutes(block.start);
     const blockEndMinutes = convertToMinutes(block.end);
 
-    if (Number.isNaN(blockStartMinutes) || Number.isNaN(blockEndMinutes)) {
-      return false;
-    }
-
     return rangesOverlapMinutes(
       slotStartMinutes,
       slotEndMinutes,
@@ -481,7 +445,7 @@ function getActiveCustomClosureForNow(dateString) {
   if (!blocks.length) return null;
 
   const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentMinutes = (now.getHours() * 60) + now.getMinutes();
 
   return blocks.find(block => {
     const blockStartMinutes = convertToMinutes(block.start);
@@ -492,22 +456,7 @@ function getActiveCustomClosureForNow(dateString) {
 }
 
 function applySpecialClosingToConfig(dateString, config) {
-  if (!dateString || !config) return config;
-
-  const earlyClosing = getEarlyClosingForDate(dateString);
-  if (!earlyClosing || !earlyClosing.end) return config;
-
-  const specialEndMinutes = convertToMinutes(earlyClosing.end);
-  const normalEndMinutes = convertToMinutes(config.end);
-
-  if (specialEndMinutes >= normalEndMinutes) {
-    return config;
-  }
-
-  return {
-    ...config,
-    end: earlyClosing.end
-  };
+  return config;
 }
 
 function getWorkingConfigByDate(dateString) {
