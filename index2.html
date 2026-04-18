@@ -2,24 +2,15 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>La Pinta Barber | Admin Firebase</title>
-  <meta
-    name="description"
-    content="Panel de administración de La Pinta Barber para gestionar citas, horarios y precios."
-  />
+  <meta name="description" content="Panel de administracion de La Pinta Barber para gestionar citas, horarios, bloqueos y precios." />
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <style>
     :root {
@@ -46,14 +37,8 @@
       --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.38);
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       font-family: "Inter", sans-serif;
@@ -65,838 +50,196 @@
       overflow-x: hidden;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
 
-    button,
-    input,
-    select {
-      font: inherit;
-    }
+    .admin-shell { display: grid; grid-template-columns: 310px 1fr; min-height: 100vh; }
+    .sidebar { position: sticky; top: 0; height: 100vh; padding: 24px 20px; border-right: 1px solid var(--line); background: rgba(7, 10, 16, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: flex; flex-direction: column; gap: 18px; z-index: 30; }
 
-    button {
-      cursor: pointer;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .admin-shell {
-      display: grid;
-      grid-template-columns: 310px 1fr;
-      min-height: 100vh;
-    }
-
-    .sidebar {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      padding: 24px 20px;
-      border-right: 1px solid var(--line);
-      background: rgba(7, 10, 16, 0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      z-index: 30;
-    }
-
-    .brand-box,
-    .filters-card,
-    .table-card,
-    .tool-card,
-    .login-card,
-    .stat-card,
-    .mobile-card,
-    .status-card {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+    .brand-box, .filters-card, .table-card, .tool-card, .login-card, .stat-card, .mobile-card, .status-card, .service-item-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
     }
 
-    .brand-box {
-      padding: 22px;
-    }
-
-    .brand-mini,
-    .eyebrow {
-      display: inline-block;
-      font-size: 0.76rem;
-      letter-spacing: 0.26em;
-      text-transform: uppercase;
-      color: #8fc0ff;
-      margin-bottom: 10px;
-      font-weight: 800;
-    }
-
-    .brand-box h1,
-    .topbar h2,
-    .filters-header h3,
-    .table-header h3,
-    .tool-card h3,
-    .login-card h2,
-    .status-head h3 {
-      margin: 0;
-    }
-
-    .brand-box h1 span {
-      color: var(--accent-2);
-    }
-
-    .brand-box p,
-    .topbar p,
-    .filters-card p,
-    .tool-card p,
-    .login-card p,
-    .sidebar-footer p,
-    .empty-state p,
-    .login-hint,
-    .status-help,
-    .table-subtext {
-      color: var(--muted);
-    }
-
-    .admin-logo-wrap {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 92px;
-      height: 92px;
-      margin: 8px 0 16px;
-      border-radius: 24px;
-      background:
-        radial-gradient(circle at 30% 20%, rgba(255,255,255,0.14), transparent 42%),
-        linear-gradient(180deg, rgba(17, 24, 37, 0.98), rgba(8, 13, 22, 0.98));
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow:
-        0 16px 36px rgba(0,0,0,0.32),
-        inset 0 1px 0 rgba(255,255,255,0.06),
-        0 0 0 1px rgba(31,134,255,0.10);
-      overflow: hidden;
-    }
-
-    .admin-logo {
-      height: 66px;
-      width: auto;
-      display: block;
-      object-fit: contain;
-    }
-
-    .sidebar-nav {
-      display: grid;
-      gap: 10px;
-      margin: 4px 0 auto;
-    }
-
-    .sidebar-nav a {
-      padding: 14px 16px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      color: #d6e0ee;
-      transition: 0.25s ease;
-      font-weight: 700;
-      background: rgba(255,255,255,0.02);
-    }
-
-    .sidebar-nav a:hover,
-    .sidebar-nav a.active {
-      background: rgba(31,134,255,0.12);
-      border-color: rgba(31,134,255,0.24);
-      color: #fff;
-      transform: translateY(-1px);
-    }
-
-    .sidebar-footer {
-      border-top: 1px solid var(--line);
-      padding-top: 18px;
-    }
-
-    .sidebar-footer p {
-      margin: 0 0 10px;
-      line-height: 1.6;
-    }
-
-    .main-content {
-      padding: 28px;
-      min-width: 0;
-    }
-
-    .mobile-topbar {
-      display: none;
-      position: sticky;
-      top: 0;
-      z-index: 35;
-      padding: 14px 16px calc(14px + env(safe-area-inset-top, 0px));
-      background: rgba(7, 10, 16, 0.94);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--line);
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .mobile-topbar h2 {
-      font-size: 1rem;
-      margin: 0;
-    }
-
-    .mobile-menu-btn {
-      border: 1px solid var(--line-strong);
-      background: rgba(255,255,255,0.03);
-      color: #fff;
-      border-radius: 16px;
-      width: 52px;
-      height: 52px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 5px;
-      padding: 0;
-    }
-
-    .mobile-menu-btn span {
-      width: 22px;
-      height: 2px;
-      background: #fff;
-      border-radius: 999px;
-      transition: 0.25s ease;
-    }
-
-    .mobile-menu-btn.active span:nth-child(1) {
-      transform: translateY(7px) rotate(45deg);
-    }
-
-    .mobile-menu-btn.active span:nth-child(2) {
-      opacity: 0;
-    }
-
-    .mobile-menu-btn.active span:nth-child(3) {
-      transform: translateY(-7px) rotate(-45deg);
-    }
-
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 25;
-    }
-
-    .sidebar-overlay.show {
-      display: block;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: center;
-      margin-bottom: 24px;
-    }
-
-    .topbar h2 {
-      font-family: "Cormorant Garamond", serif;
-      font-size: 2.6rem;
-      line-height: 0.95;
-      letter-spacing: -0.03em;
-    }
-
-    .topbar p {
-      margin: 8px 0 0;
-      max-width: 760px;
-      line-height: 1.65;
-    }
-
-    .topbar-actions,
-    .table-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .ghost-link,
-    .primary-btn,
-    .ghost-btn,
-    .danger-btn,
-    .success-btn,
-    .warning-btn {
-      border-radius: 999px;
-      padding: 12px 16px;
-      border: 1px solid var(--line-strong);
-      transition: 0.25s ease;
-      min-height: 48px;
-      font-weight: 700;
-      color: #fff;
-      background: rgba(255,255,255,0.03);
-    }
-
-    .primary-btn {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: #07111f;
-      border: none;
-      box-shadow: 0 14px 28px rgba(31,134,255,0.18);
-    }
-
-    .primary-btn:hover,
-    .ghost-btn:hover,
-    .ghost-link:hover,
-    .danger-btn:hover,
-    .success-btn:hover,
-    .warning-btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .primary-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .danger-btn {
-      background: var(--danger-soft);
-      border-color: rgba(220, 38, 38, 0.25);
-    }
-
-    .success-btn {
-      background: var(--success-soft);
-      border-color: rgba(62, 207, 142, 0.25);
-    }
-
-    .warning-btn {
-      background: var(--warning-soft);
-      border-color: rgba(245, 158, 11, 0.25);
-    }
-
-    .full-width {
-      width: 100%;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 16px;
-      margin-bottom: 22px;
-    }
-
-    .stat-card {
-      padding: 22px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .stat-card span {
-      display: block;
-      font-size: 0.95rem;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-
-    .stat-card strong {
-      font-family: "Cormorant Garamond", serif;
-      font-size: 2.2rem;
-      color: #fff;
-      line-height: 1;
-    }
-
-    .status-card,
-    .filters-card,
-    .table-card {
-      padding: 22px;
-      margin-bottom: 22px;
-    }
-
-    .status-head,
-    .filters-header,
-    .table-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: center;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-    }
-
-    .status-head h3,
-    .filters-header h3,
-    .table-header h3 {
-      font-size: 1.15rem;
-    }
-
-    .badge-inline {
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: rgba(31,134,255,0.12);
-      color: #cfe5ff;
-      font-size: 0.88rem;
-      border: 1px solid rgba(31,134,255,0.2);
-      white-space: nowrap;
-      font-weight: 700;
-    }
-
-    .badge-inline.open {
-      background: rgba(62,207,142,0.12);
-      color: #8ff0bc;
-      border-color: rgba(62,207,142,0.22);
-    }
-
-    .badge-inline.closed {
-      background: rgba(217,83,79,0.12);
-      color: #ff9e9a;
-      border-color: rgba(217,83,79,0.22);
-    }
-
-    .two-line-status {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .status-help,
-    .shop-status-text {
-      margin: 0 0 18px;
-      font-size: 0.95rem;
-      line-height: 1.65;
-    }
-
-    .filters-grid,
-    .tools-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .services-grid {
-      display: grid;
-      gap: 14px;
-    }
-
-    /* ESTILOS DEL EDITOR DE SERVICIOS ADAPTADOS A BOTONES AGREGAR/ELIMINAR */
-    .service-editor {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr auto auto;
-      gap: 12px;
-      align-items: end;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255,255,255,0.02);
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .field label {
-      font-size: 0.92rem;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .field input,
-    .field select {
-      width: 100%;
-      background: #111821;
-      border: 1px solid var(--line-strong);
-      color: #fff;
-      border-radius: 16px;
-      padding: 13px 14px;
-      outline: none;
-      font-size: 16px;
-      min-height: 52px;
-    }
-
-    .field input:focus,
-    .field select:focus {
-      border-color: rgba(31,134,255,0.34);
-      box-shadow: 0 0 0 3px rgba(31,134,255,0.10);
-    }
-
-    .table-subtext {
-      margin: 4px 0 0;
-      font-size: 0.95rem;
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      background: rgba(255,255,255,0.015);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 1180px;
-      background: transparent;
-    }
-
-    thead th {
-      text-align: left;
-      font-size: 0.82rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    tbody td {
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--line);
-      vertical-align: top;
-    }
-
-    tbody tr:hover {
-      background: rgba(255,255,255,0.02);
-    }
-
-    .client-box strong,
-    .service-box strong {
-      display: block;
-      margin-bottom: 4px;
-      color: #fff;
-    }
-
-    .client-box small,
-    .service-box small,
-    .meta-text {
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 110px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-transform: capitalize;
-    }
-
-    .status-pill.pending {
-      background: rgba(245,158,11,0.12);
-      color: #ffc76b;
-      border: 1px solid rgba(245,158,11,0.22);
-    }
-
-    .status-pill.approved {
-      background: rgba(62,207,142,0.12);
-      color: #8ff0bc;
-      border: 1px solid rgba(62,207,142,0.22);
-    }
-
-    .status-pill.cancelled {
-      background: rgba(217,83,79,0.12);
-      color: #ff9e9a;
-      border: 1px solid rgba(217,83,79,0.22);
-    }
-
-    .row-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .row-actions button {
-      padding: 10px 12px;
-      border-radius: 12px;
-      color: #fff;
-      border: 1px solid var(--line-strong);
-      min-height: 42px;
-      font-weight: 600;
-      background: rgba(255,255,255,0.03);
-    }
-
-    .row-actions button:nth-child(1) {
-      background: rgba(62,207,142,0.12);
-      border-color: rgba(62,207,142,0.22);
-    }
-
-    .row-actions button:nth-child(2) {
-      background: rgba(245,158,11,0.12);
-      border-color: rgba(245,158,11,0.22);
-    }
-
-    .row-actions button:nth-child(3) {
-      background: rgba(220,38,38,0.12);
-      border-color: rgba(220,38,38,0.22);
-    }
-
-    .mobile-cards {
-      display: none;
-      gap: 14px;
-    }
-
-    .mobile-card {
-      padding: 18px;
-    }
-
-    .mobile-card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    .mobile-card h4 {
-      margin: 0;
-      font-size: 1rem;
-    }
-
-    .mobile-card .meta-line {
-      margin-bottom: 6px;
-      font-size: 0.95rem;
-      color: #e5e7eb;
-      line-height: 1.55;
-    }
-
-    .mobile-card .meta-line strong {
-      color: #fff;
-    }
-
-    .mobile-actions {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 14px;
-    }
-
-    .mobile-actions button {
-      min-height: 46px;
-      border-radius: 12px;
-      border: 1px solid var(--line-strong);
-      color: #fff;
-      padding: 10px 8px;
-      font-weight: 600;
-      background: rgba(255,255,255,0.03);
-    }
-
-    .mobile-actions button:nth-child(1) {
-      background: rgba(62,207,142,0.12);
-      border-color: rgba(62,207,142,0.22);
-    }
-
-    .mobile-actions button:nth-child(2) {
-      background: rgba(245,158,11,0.12);
-      border-color: rgba(245,158,11,0.22);
-    }
-
-    .mobile-actions button:nth-child(3) {
-      background: rgba(220,38,38,0.12);
-      border-color: rgba(220,38,38,0.22);
-    }
-
-    .empty-state {
-      padding: 30px;
-      text-align: center;
-      border: 1px dashed var(--line-strong);
-      border-radius: 18px;
-      margin-top: 10px;
-      background: rgba(255,255,255,0.02);
-    }
-
-    .empty-state h4 {
-      margin-bottom: 8px;
-    }
-
-    .tool-card {
-      padding: 22px;
-    }
-
-    .tool-card h3 {
-      margin-bottom: 8px;
-      font-size: 1.08rem;
-    }
-
-    .tool-card p {
-      margin-bottom: 16px;
-      line-height: 1.65;
-    }
-
-    .toast {
-      position: fixed;
-      right: 16px;
-      left: 16px;
-      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-      background: #131b25;
-      color: #fff;
-      padding: 14px 16px;
-      border-radius: 16px;
-      border: 1px solid var(--line-strong);
-      box-shadow: var(--shadow);
-      opacity: 0;
-      transform: translateY(12px);
-      pointer-events: none;
-      transition: 0.25s ease;
-      z-index: 60;
-      max-width: 420px;
-      margin-left: auto;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .login-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.78);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 80;
-    }
-
-    .login-card {
-      width: min(100%, 430px);
-      padding: 26px;
-    }
-
-    .login-card h2 {
-      font-family: "Cormorant Garamond", serif;
-      font-size: 2.2rem;
-      line-height: 1;
-      margin-bottom: 8px;
-    }
-
-    .login-card p {
-      margin-bottom: 18px;
-      line-height: 1.65;
-    }
-
-    .login-hint {
-      display: block;
-      margin-top: 12px;
-      line-height: 1.6;
-      font-size: 0.9rem;
-    }
+    .brand-box { padding: 22px; }
+    .brand-mini, .eyebrow { display: inline-block; font-size: 0.76rem; letter-spacing: 0.26em; text-transform: uppercase; color: #8fc0ff; margin-bottom: 10px; font-weight: 800; }
+    .brand-box h1, .topbar h2, .filters-header h3, .table-header h3, .tool-card h3, .login-card h2, .status-head h3 { margin: 0; }
+    .brand-box h1 span { color: var(--accent-2); }
+    .brand-box p, .topbar p, .filters-card p, .tool-card p, .login-card p, .sidebar-footer p, .empty-state p, .login-hint, .status-help, .table-subtext { color: var(--muted); }
+
+    .admin-logo-wrap { display: flex; align-items: center; justify-content: center; width: 92px; height: 92px; margin: 8px 0 16px; border-radius: 24px; background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.14), transparent 42%), linear-gradient(180deg, rgba(17, 24, 37, 0.98), rgba(8, 13, 22, 0.98)); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 16px 36px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px rgba(31,134,255,0.10); overflow: hidden; }
+    .admin-logo { height: 66px; width: auto; display: block; object-fit: contain; }
+
+    .sidebar-nav { display: grid; gap: 10px; margin: 4px 0 auto; }
+    .sidebar-nav a { padding: 14px 16px; border: 1px solid var(--line); border-radius: 16px; color: #d6e0ee; transition: 0.25s ease; font-weight: 700; background: rgba(255,255,255,0.02); }
+    .sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(31,134,255,0.12); border-color: rgba(31,134,255,0.24); color: #fff; transform: translateY(-1px); }
+    .sidebar-footer { border-top: 1px solid var(--line); padding-top: 18px; }
+    .sidebar-footer p { margin: 0 0 10px; line-height: 1.6; }
+
+    .main-content { padding: 28px; min-width: 0; }
+
+    .mobile-topbar { display: none; position: sticky; top: 0; z-index: 35; padding: 14px 16px calc(14px + env(safe-area-inset-top, 0px)); background: rgba(7, 10, 16, 0.94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); align-items: center; justify-content: space-between; gap: 12px; }
+    .mobile-topbar h2 { font-size: 1rem; margin: 0; }
+    .mobile-menu-btn { border: 1px solid var(--line-strong); background: rgba(255,255,255,0.03); color: #fff; border-radius: 16px; width: 52px; height: 52px; display: inline-flex; align-items: center; justify-content: center; flex-direction: column; gap: 5px; padding: 0; }
+    .mobile-menu-btn span { width: 22px; height: 2px; background: #fff; border-radius: 999px; transition: 0.25s ease; }
+    .mobile-menu-btn.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .mobile-menu-btn.active span:nth-child(2) { opacity: 0; }
+    .mobile-menu-btn.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 25; }
+    .sidebar-overlay.show { display: block; }
+
+    .topbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 24px; }
+    .topbar h2 { font-family: "Cormorant Garamond", serif; font-size: 2.6rem; line-height: 0.95; letter-spacing: -0.03em; }
+    .topbar p { margin: 8px 0 0; max-width: 760px; line-height: 1.65; }
+    .topbar-actions, .table-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+    .ghost-link, .primary-btn, .ghost-btn, .danger-btn, .success-btn, .warning-btn { border-radius: 999px; padding: 12px 16px; border: 1px solid var(--line-strong); transition: 0.25s ease; min-height: 48px; font-weight: 700; color: #fff; background: rgba(255,255,255,0.03); }
+    .primary-btn { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #07111f; border: none; box-shadow: 0 14px 28px rgba(31,134,255,0.18); }
+    .primary-btn:hover, .ghost-btn:hover, .ghost-link:hover, .danger-btn:hover, .success-btn:hover, .warning-btn:hover { transform: translateY(-1px); }
+    .primary-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .danger-btn { background: var(--danger-soft); border-color: rgba(220, 38, 38, 0.25); }
+    .success-btn { background: var(--success-soft); border-color: rgba(62, 207, 142, 0.25); }
+    .warning-btn { background: var(--warning-soft); border-color: rgba(245, 158, 11, 0.25); }
+    .full-width { width: 100%; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .stat-card { padding: 22px; position: relative; overflow: hidden; }
+    .stat-card span { display: block; font-size: 0.95rem; color: var(--muted); margin-bottom: 8px; }
+    .stat-card strong { font-family: "Cormorant Garamond", serif; font-size: 2.2rem; color: #fff; line-height: 1; }
+
+    .status-card, .filters-card, .table-card { padding: 22px; margin-bottom: 22px; }
+    .status-head, .filters-header, .table-header { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+    .status-head h3, .filters-header h3, .table-header h3 { font-size: 1.15rem; }
+
+    .badge-inline { padding: 10px 12px; border-radius: 999px; background: rgba(31,134,255,0.12); color: #cfe5ff; font-size: 0.88rem; border: 1px solid rgba(31,134,255,0.2); white-space: nowrap; font-weight: 700; }
+    .badge-inline.open { background: rgba(62,207,142,0.12); color: #8ff0bc; border-color: rgba(62,207,142,0.22); }
+    .badge-inline.closed { background: rgba(217,83,79,0.12); color: #ff9e9a; border-color: rgba(217,83,79,0.22); }
+    .two-line-status { display: flex; flex-direction: column; gap: 10px; }
+    .status-help, .shop-status-text { margin: 0 0 18px; font-size: 0.95rem; line-height: 1.65; }
+
+    .filters-grid, .tools-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+
+    .time-block-form { display: grid; grid-template-columns: 1.1fr 0.8fr 0.8fr 1.4fr auto; gap: 14px; align-items: end; }
+    .time-block-list { display: grid; gap: 12px; margin-top: 18px; }
+    .time-block-item { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,0.02); }
+    .time-block-item h4 { margin: 0 0 5px; color: #fff; font-size: 1rem; }
+    .time-block-item p { margin: 0; color: var(--muted); line-height: 1.5; }
+    .time-block-item strong { color: #fff; }
+    .time-block-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+    .mini-pill { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 10px; border: 1px solid rgba(31,134,255,0.2); border-radius: 999px; background: rgba(31,134,255,0.10); color: #cfe5ff; font-size: 0.82rem; font-weight: 700; }
+
+    .services-grid { display: grid; gap: 14px; }
+    .service-item-card { padding: 20px; transition: 0.3s ease; }
+
+    .service-view-mode { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+    .service-info h4 { margin: 0 0 5px 0; color: #fff; font-size: 1.1rem; }
+    .service-info p { margin: 0; font-size: 0.95rem; color: var(--muted); }
+    .service-info strong { color: var(--success); font-weight: 700; }
+
+    .service-editor-mode { display: none; grid-template-columns: 1.5fr 1fr 1fr auto auto; gap: 12px; align-items: end; }
+    .service-item-card.editing .service-view-mode { display: none; }
+    .service-item-card.editing .service-editor-mode { display: grid; }
+
+    .field { display: flex; flex-direction: column; gap: 8px; }
+    .field label { font-size: 0.92rem; color: var(--muted); font-weight: 700; }
+    .field input, .field select { width: 100%; background: #111821; border: 1px solid var(--line-strong); color: #fff; border-radius: 16px; padding: 13px 14px; outline: none; font-size: 16px; min-height: 52px; }
+    .field input:focus, .field select:focus { border-color: rgba(31,134,255,0.34); box-shadow: 0 0 0 3px rgba(31,134,255,0.10); }
+
+    .table-subtext { margin: 4px 0 0; font-size: 0.95rem; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 20px; background: rgba(255,255,255,0.015); }
+    table { width: 100%; border-collapse: collapse; min-width: 1180px; background: transparent; }
+    thead th { text-align: left; font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 16px 18px; border-bottom: 1px solid var(--line); }
+    tbody td { padding: 16px 18px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+    .client-box strong, .service-box strong { display: block; margin-bottom: 4px; color: #fff; }
+    .client-box small, .service-box small, .meta-text { color: var(--muted); line-height: 1.5; }
+
+    .status-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 110px; padding: 8px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 700; text-transform: capitalize; }
+    .status-pill.pending { background: rgba(245,158,11,0.12); color: #ffc76b; border: 1px solid rgba(245,158,11,0.22); }
+    .status-pill.approved { background: rgba(62,207,142,0.12); color: #8ff0bc; border: 1px solid rgba(62,207,142,0.22); }
+    .status-pill.cancelled { background: rgba(217,83,79,0.12); color: #ff9e9a; border: 1px solid rgba(217,83,79,0.22); }
+
+    .row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .row-actions button { padding: 10px 12px; border-radius: 12px; color: #fff; border: 1px solid var(--line-strong); min-height: 42px; font-weight: 600; background: rgba(255,255,255,0.03); }
+    .row-actions button:nth-child(1) { background: rgba(62,207,142,0.12); border-color: rgba(62,207,142,0.22); }
+    .row-actions button:nth-child(2) { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.22); }
+    .row-actions button:nth-child(3) { background: rgba(220,38,38,0.12); border-color: rgba(220,38,38,0.22); }
+
+    .mobile-cards { display: none; gap: 14px; }
+    .mobile-card { padding: 18px; }
+    .mobile-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+    .mobile-card h4 { margin: 0; font-size: 1rem; }
+    .mobile-card .meta-line { margin-bottom: 6px; font-size: 0.95rem; color: #e5e7eb; line-height: 1.55; }
+    .mobile-card .meta-line strong { color: #fff; }
+    .mobile-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+    .mobile-actions button { min-height: 46px; border-radius: 12px; border: 1px solid var(--line-strong); color: #fff; padding: 10px 8px; font-weight: 600; background: rgba(255,255,255,0.03); }
+    .mobile-actions button:nth-child(1) { background: rgba(62,207,142,0.12); border-color: rgba(62,207,142,0.22); }
+    .mobile-actions button:nth-child(2) { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.22); }
+    .mobile-actions button:nth-child(3) { background: rgba(220,38,38,0.12); border-color: rgba(220,38,38,0.22); }
+
+    .empty-state { padding: 30px; text-align: center; border: 1px dashed var(--line-strong); border-radius: 18px; margin-top: 10px; background: rgba(255,255,255,0.02); }
+    .empty-state h4 { margin-bottom: 8px; }
+
+    .tool-card { padding: 22px; }
+    .tool-card h3 { margin-bottom: 8px; font-size: 1.08rem; }
+    .tool-card p { margin-bottom: 16px; line-height: 1.65; }
+
+    .toast { position: fixed; right: 16px; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: #131b25; color: #fff; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--line-strong); box-shadow: var(--shadow); opacity: 0; transform: translateY(12px); pointer-events: none; transition: 0.25s ease; z-index: 9999; max-width: 420px; margin-left: auto; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.78); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 80; }
+
+    .login-card { width: min(100%, 430px); padding: 26px; }
+    .login-card h2 { font-family: "Cormorant Garamond", serif; font-size: 2.2rem; line-height: 1; margin-bottom: 8px; }
+    .login-card p { margin-bottom: 18px; line-height: 1.65; }
+    .login-hint { display: block; margin-top: 12px; line-height: 1.6; font-size: 0.9rem; }
+
+    .services-modal { width: min(100%, 750px); max-height: 90vh; display: flex; flex-direction: column; padding: 26px; }
+    .services-scroll { overflow-y: auto; padding-right: 8px; margin-top: 10px; flex-grow: 1; }
+    .services-scroll::-webkit-scrollbar { width: 6px; }
+    .services-scroll::-webkit-scrollbar-track { background: transparent; }
+    .services-scroll::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 10px; }
 
     @media (max-width: 1180px) {
-      .stats-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .filters-grid,
-      .tools-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+      .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .filters-grid, .tools-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .time-block-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .time-block-form .primary-btn { width: 100%; }
     }
 
     @media (max-width: 920px) {
-      .mobile-topbar {
-        display: flex;
-      }
-
-      .admin-shell {
-        grid-template-columns: 1fr;
-      }
-
-      .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        height: 100vh;
-        width: min(84vw, 320px);
-        transform: translateX(-100%);
-        transition: 0.28s ease;
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
-      .main-content {
-        padding: 18px 16px;
-      }
-
-      .topbar,
-      .status-head,
-      .filters-header,
-      .table-header {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .table-wrap {
-        display: none;
-      }
-
-      .mobile-cards {
-        display: grid;
-      }
+      .mobile-topbar { display: flex; }
+      .admin-shell { grid-template-columns: 1fr; }
+      .sidebar { position: fixed; left: 0; top: 0; bottom: 0; height: 100vh; width: min(84vw, 320px); transform: translateX(-100%); transition: 0.28s ease; }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { padding: 18px 16px; }
+      .topbar, .status-head, .filters-header, .table-header { flex-direction: column; align-items: stretch; }
+      .table-wrap { display: none; }
+      .mobile-cards { display: grid; }
     }
 
     @media (max-width: 640px) {
-      .main-content {
-        padding: 16px;
-      }
-
-      .stats-grid,
-      .filters-grid,
-      .tools-grid,
-      .service-editor {
-        grid-template-columns: 1fr;
-      }
-
-      .brand-box,
-      .filters-card,
-      .table-card,
-      .tool-card,
-      .stat-card,
-      .login-card,
-      .mobile-card,
-      .status-card {
-        border-radius: 20px;
-      }
-
-      .stat-card strong {
-        font-size: 1.9rem;
-      }
-
-      .mobile-actions {
-        grid-template-columns: 1fr;
-      }
-
-      .topbar h2 {
-        font-size: 2.2rem;
-      }
-
-      .topbar-actions,
-      .table-actions {
-        flex-direction: column;
-      }
-
-      .topbar-actions > *,
-      .table-actions > * {
-        width: 100%;
-      }
+      .main-content { padding: 16px; }
+      .stats-grid, .filters-grid, .tools-grid, .service-editor-mode, .time-block-form { grid-template-columns: 1fr; }
+      .brand-box, .filters-card, .table-card, .tool-card, .stat-card, .login-card, .mobile-card, .status-card, .services-modal { border-radius: 20px; }
+      .stat-card strong { font-size: 1.9rem; }
+      .mobile-actions { grid-template-columns: 1fr; }
+      .topbar h2 { font-size: 2.2rem; }
+      .topbar-actions, .table-actions { flex-direction: column; }
+      .topbar-actions > *, .table-actions > * { width: 100%; }
+      .service-view-mode, .time-block-item { flex-direction: column; align-items: flex-start; }
+      .time-block-item .danger-btn { width: 100%; }
     }
   </style>
 </head>
 <body>
   <div class="mobile-topbar">
-    <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menú admin">
+    <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menu admin">
       <span></span>
       <span></span>
       <span></span>
@@ -920,27 +263,24 @@
 
       <nav class="sidebar-nav">
         <a href="#dashboard" class="active">Dashboard</a>
+        <a href="#timeBlocksSection">Bloques de horas</a>
         <a href="#appointmentsSection">Citas</a>
-        <a href="#servicesSection">Servicios</a>
         <a href="#toolsSection">Herramientas</a>
       </nav>
 
       <div class="sidebar-footer">
         <p><strong>Usuario:</strong> <span id="currentUserLabel">invitado</span></p>
-        <button id="logoutBtn" class="ghost-btn">Cerrar sesión</button>
+        <button id="logoutBtn" class="ghost-btn">Cerrar sesion</button>
       </div>
     </aside>
 
     <main class="main-content">
       <section class="topbar" id="dashboard">
         <div>
-          <span class="eyebrow">Administración</span>
+          <span class="eyebrow">Administracion</span>
           <h2>Panel de control</h2>
-          <p>
-            Gestiona citas, horarios y precios de servicios desde un solo lugar.
-          </p>
+          <p>Gestiona citas, horarios, bloqueos y precios de servicios desde un solo lugar.</p>
         </div>
-
         <div class="topbar-actions">
           <a href="index.html" class="ghost-link">Volver a la web</a>
           <button id="refreshBtn" class="primary-btn">Actualizar</button>
@@ -948,76 +288,72 @@
       </section>
 
       <section class="stats-grid">
-        <article class="stat-card">
-          <span>Total</span>
-          <strong id="statTotal">0</strong>
-        </article>
-
-        <article class="stat-card">
-          <span>Pendientes</span>
-          <strong id="statPending">0</strong>
-        </article>
-
-        <article class="stat-card">
-          <span>Aprobadas</span>
-          <strong id="statApproved">0</strong>
-        </article>
-
-        <article class="stat-card">
-          <span>Canceladas</span>
-          <strong id="statCancelled">0</strong>
-        </article>
-
-        <article class="stat-card">
-          <span>Hoy</span>
-          <strong id="statToday">0</strong>
-        </article>
+        <article class="stat-card"><span>Total</span><strong id="statTotal">0</strong></article>
+        <article class="stat-card"><span>Pendientes</span><strong id="statPending">0</strong></article>
+        <article class="stat-card"><span>Aprobadas</span><strong id="statApproved">0</strong></article>
+        <article class="stat-card"><span>Canceladas</span><strong id="statCancelled">0</strong></article>
+        <article class="stat-card"><span>Hoy</span><strong id="statToday">0</strong></article>
       </section>
 
       <section class="status-card">
         <div class="status-head">
           <div>
             <span class="eyebrow">Estado general</span>
-            <h3>Barbería</h3>
+            <h3>Barberia</h3>
           </div>
-
           <div class="two-line-status">
             <div id="shopStatusBadge" class="badge-inline open">Abierta</div>
             <div id="tuesdayStatusBadge" class="badge-inline">Martes cerrado</div>
             <div id="extendedHoursBadge" class="badge-inline">Horario normal</div>
           </div>
         </div>
-
         <p class="shop-status-text" id="shopStatusText">
-          La barbería está abierta. Los clientes pueden ver y seleccionar horas disponibles.
+          La barberia esta abierta. Los clientes pueden ver y seleccionar horas disponibles.
         </p>
-
         <div class="table-actions">
-          <button id="openShopBtn" class="success-btn">Abrir barbería</button>
-          <button id="closeShopBtn" class="danger-btn">Cerrar barbería</button>
+          <button id="openShopBtn" class="success-btn">Abrir barberia</button>
+          <button id="closeShopBtn" class="danger-btn">Cerrar barberia</button>
           <button id="toggleTuesdayBtn" class="warning-btn">Abrir martes</button>
           <button id="toggleExtendedHoursBtn" class="warning-btn">Horario extendido</button>
+          <button id="openServicesModalBtn" class="primary-btn">Ver servicios</button>
         </div>
       </section>
 
-      <section class="filters-card" id="servicesSection">
-        <div class="filters-header">
+      <section class="status-card" id="timeBlocksSection">
+        <div class="status-head">
           <div>
-            <span class="eyebrow">Servicios</span>
-            <h3>Cambiar precios y duración</h3>
-            <p class="status-help">
-              Agrega, edita o elimina servicios en tiempo real.
-            </p>
+            <span class="eyebrow">Bloques de horas</span>
+            <h3>Cerrar por rango</h3>
           </div>
-          
-          <div class="table-actions">
-            <button id="addNewServiceBtn" class="success-btn">+ Nuevo Servicio</button>
+          <div id="timeBlockCountBadge" class="badge-inline">0 bloques activos</div>
+        </div>
+        <p class="status-help">
+          Elige una fecha y un rango de tiempo para bloquear citas solo durante esas horas. Ejemplo: hoy de 13:00 a 20:00.
+        </p>
+
+        <div class="time-block-form">
+          <div class="field">
+            <label for="blockDateInput">Fecha</label>
+            <input id="blockDateInput" type="date" />
           </div>
+          <div class="field">
+            <label for="blockStartInput">Desde</label>
+            <input id="blockStartInput" type="time" step="900" />
+          </div>
+          <div class="field">
+            <label for="blockEndInput">Hasta</label>
+            <input id="blockEndInput" type="time" step="900" />
+          </div>
+          <div class="field">
+            <label for="blockReasonInput">Motivo</label>
+            <input id="blockReasonInput" type="text" placeholder="Almuerzo, evento, diligencia..." maxlength="80" />
+          </div>
+          <button id="saveTimeBlockBtn" class="primary-btn" type="button">Bloquear</button>
         </div>
 
-        <div id="servicesContainer" class="services-grid"></div>
+        <div id="timeBlocksList" class="time-block-list"></div>
       </section>
-      
+
       <section class="filters-card" id="appointmentsSection">
         <div class="filters-header">
           <div>
@@ -1025,16 +361,13 @@
             <h3>Buscar y organizar</h3>
             <p class="status-help">Filtra por cliente, servicio, estado o fecha.</p>
           </div>
-
           <div class="badge-inline">Fuente: Firebase</div>
         </div>
-
         <div class="filters-grid">
           <div class="field">
             <label for="searchInput">Buscar</label>
-            <input id="searchInput" type="text" placeholder="Nombre, teléfono, servicio..." />
+            <input id="searchInput" type="text" placeholder="Nombre, telefono, servicio..." />
           </div>
-
           <div class="field">
             <label for="statusFilter">Estado</label>
             <select id="statusFilter">
@@ -1044,12 +377,10 @@
               <option value="cancelled">Canceladas</option>
             </select>
           </div>
-
           <div class="field">
             <label for="dateFilter">Fecha</label>
             <input id="dateFilter" type="date" />
           </div>
-
           <div class="field">
             <label>&nbsp;</label>
             <button id="clearFiltersBtn" class="ghost-btn full-width">Limpiar filtros</button>
@@ -1064,7 +395,6 @@
             <h3>Reservas guardadas</h3>
             <p class="table-subtext">Vista completa de las citas agendadas en el sistema.</p>
           </div>
-
           <div class="table-actions">
             <button id="exportBtn" class="ghost-btn">Exportar JSON</button>
           </div>
@@ -1072,7 +402,7 @@
 
         <div id="emptyState" class="empty-state hidden">
           <h4>No hay citas para mostrar</h4>
-          <p>Cuando entren reservas desde la web aparecerán aquí.</p>
+          <p>Cuando entren reservas desde la web apareceran aqui.</p>
         </div>
 
         <div class="table-wrap">
@@ -1099,10 +429,9 @@
         <article class="tool-card">
           <span class="eyebrow">Mantenimiento</span>
           <h3>Eliminar citas pasadas</h3>
-          <p>Borra citas con fecha anterior al día actual.</p>
+          <p>Borra citas con fecha anterior al dia actual.</p>
           <button id="deletePastBtn" class="danger-btn">Eliminar pasadas</button>
         </article>
-
         <article class="tool-card">
           <span class="eyebrow">Mantenimiento</span>
           <h3>Vaciar todo</h3>
@@ -1115,23 +444,38 @@
 
   <div class="toast" id="toast"></div>
 
-  <div class="login-overlay" id="loginOverlay">
+  <div class="modal-overlay" id="servicesModalOverlay" style="display: none;">
+    <div class="login-card services-modal">
+      <div class="filters-header" style="margin-bottom: 10px;">
+        <div>
+          <span class="eyebrow">Gestion</span>
+          <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; margin: 0; line-height: 1;">Servicios</h2>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button id="addNewServiceBtn" class="success-btn">+ Nuevo</button>
+          <button id="closeServicesModalBtn" class="danger-btn" style="padding: 0 16px;">X</button>
+        </div>
+      </div>
+      <p style="color: var(--muted); margin-top: 0; margin-bottom: 16px; font-size: 0.95rem;">Agrega, edita o elimina servicios en tiempo real.</p>
+
+      <div id="servicesContainer" class="services-grid services-scroll"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="loginOverlay" style="display: none;">
     <div class="login-card">
       <span class="eyebrow">Acceso admin</span>
-      <h2>Inicia sesión</h2>
+      <h2>Inicia sesion</h2>
       <p>Panel privado para administrar citas, horarios y precios.</p>
-
       <div class="field">
         <label for="usernameInput">Correo</label>
         <input id="usernameInput" type="email" placeholder="tuadmin@correo.com" />
       </div>
-
       <div class="field">
-        <label for="passwordInput">Contraseña</label>
-        <input id="passwordInput" type="password" placeholder="••••" />
+        <label for="passwordInput">Contrasena</label>
+        <input id="passwordInput" type="password" placeholder="****" />
       </div>
-
-      <button id="loginBtn" class="primary-btn full-width">Entrar</button>
+      <button id="loginBtn" class="primary-btn full-width" style="margin-top: 15px;">Entrar</button>
       <small class="login-hint">Usa el usuario creado en Firebase Authentication.</small>
     </div>
   </div>
@@ -1169,6 +513,11 @@
     const emptyState = document.getElementById("emptyState");
     const toast = document.getElementById("toast");
     const loginOverlay = document.getElementById("loginOverlay");
+
+    const servicesModalOverlay = document.getElementById("servicesModalOverlay");
+    const openServicesModalBtn = document.getElementById("openServicesModalBtn");
+    const closeServicesModalBtn = document.getElementById("closeServicesModalBtn");
+
     const usernameInput = document.getElementById("usernameInput");
     const passwordInput = document.getElementById("passwordInput");
     const loginBtn = document.getElementById("loginBtn");
@@ -1201,34 +550,39 @@
     const sidebarOverlay = document.getElementById("sidebarOverlay");
     const servicesContainer = document.getElementById("servicesContainer");
     const addNewServiceBtn = document.getElementById("addNewServiceBtn");
+    const blockDateInput = document.getElementById("blockDateInput");
+    const blockStartInput = document.getElementById("blockStartInput");
+    const blockEndInput = document.getElementById("blockEndInput");
+    const blockReasonInput = document.getElementById("blockReasonInput");
+    const saveTimeBlockBtn = document.getElementById("saveTimeBlockBtn");
+    const timeBlocksList = document.getElementById("timeBlocksList");
+    const timeBlockCountBadge = document.getElementById("timeBlockCountBadge");
 
     let appointments = [];
     let servicesData = {};
+    let customClosures = [];
     let shopIsOpen = true;
     let tuesdayOpen = false;
     let extendedHours = false;
+    let isFirstServicesLoad = true;
 
     boot();
 
     function boot() {
       bindEvents();
-
-      auth.onAuthStateChanged(() => {
-        setSessionUI();
-      });
-
+      auth.onAuthStateChanged(() => setSessionUI());
       listenAppointments();
       listenShopStatus();
       listenServices();
+      listenCustomClosures();
+      setDefaultTimeBlockValues();
     }
 
     function bindEvents() {
       loginBtn?.addEventListener("click", handleLogin);
       logoutBtn?.addEventListener("click", handleLogout);
-
       refreshBtn?.addEventListener("click", refreshEverything);
       mobileRefreshBtn?.addEventListener("click", refreshEverything);
-
       exportBtn?.addEventListener("click", exportAppointments);
       deletePastBtn?.addEventListener("click", deletePastAppointments);
       clearAllBtn?.addEventListener("click", clearAllAppointments);
@@ -1237,6 +591,17 @@
       closeShopBtn?.addEventListener("click", () => setShopOpenState(false));
       toggleTuesdayBtn?.addEventListener("click", toggleTuesdayState);
       toggleExtendedHoursBtn?.addEventListener("click", toggleExtendedHoursState);
+      saveTimeBlockBtn?.addEventListener("click", saveTimeBlock);
+
+      openServicesModalBtn?.addEventListener("click", () => {
+        servicesModalOverlay.style.display = "flex";
+      });
+      closeServicesModalBtn?.addEventListener("click", () => {
+        servicesModalOverlay.style.display = "none";
+      });
+      servicesModalOverlay?.addEventListener("click", (event) => {
+        if (event.target === servicesModalOverlay) servicesModalOverlay.style.display = "none";
+      });
 
       searchInput?.addEventListener("input", renderAll);
       statusFilter?.addEventListener("change", renderAll);
@@ -1247,16 +612,23 @@
 
       mobileMenuBtn?.addEventListener("click", toggleSidebar);
       sidebarOverlay?.addEventListener("click", closeSidebar);
-      
+
       addNewServiceBtn?.addEventListener("click", () => {
         if (!requireAuthAction()) return;
-        const newKey = servicesRef.push().key; 
+        const newKey = servicesRef.push().key;
         servicesRef.child(newKey).set({
           nombre: "Nuevo Servicio",
           precio: 0,
           duracion: 30
         }).then(() => {
-          showToast("Nuevo servicio creado. Edítalo ahora.");
+          showToast("Nuevo servicio creado. Editalo ahora.");
+          setTimeout(() => {
+             const card = document.getElementById(`card-${newKey}`);
+             if (card) {
+               card.classList.add("editing");
+               card.scrollIntoView({ behavior: "smooth", block: "end" });
+             }
+          }, 300);
         });
       });
 
@@ -1269,6 +641,7 @@
       renderAll();
       renderShopStatusUI();
       renderServicesEditor();
+      renderTimeBlocks();
       showToast("Panel actualizado");
     }
 
@@ -1293,7 +666,7 @@
       const password = passwordInput?.value.trim() || "";
 
       if (!email || !password) {
-        showToast("Completa correo y contraseña");
+        showToast("Completa correo y contrasena");
         return;
       }
 
@@ -1304,14 +677,14 @@
           passwordInput.value = "";
         })
         .catch(() => {
-          showToast("Correo o contraseña incorrectos");
+          showToast("Correo o contrasena incorrectos");
         });
     }
 
     function handleLogout() {
       auth.signOut()
-        .then(() => showToast("Sesión cerrada"))
-        .catch(() => showToast("No se pudo cerrar sesión"));
+        .then(() => showToast("Sesion cerrada"))
+        .catch(() => showToast("No se pudo cerrar sesion"));
     }
 
     function setSessionUI() {
@@ -1322,7 +695,7 @@
 
     function requireAuthAction() {
       if (!auth.currentUser) {
-        showToast("Debes iniciar sesión como admin");
+        showToast("Debes iniciar sesion como admin");
         return false;
       }
       return true;
@@ -1338,7 +711,7 @@
       return {
         id,
         nombre: appointment?.nombre || "Sin nombre",
-        telefono: appointment?.telefono || "Sin teléfono",
+        telefono: appointment?.telefono || "Sin telefono",
         servicio: appointment?.servicio || "Sin servicio",
         barbero: appointment?.barbero || "No definido",
         fecha: appointment?.fecha || "",
@@ -1346,6 +719,24 @@
         duration: Number(appointment?.duration || 30),
         anonimo: Boolean(appointment?.anonimo),
         status: normalizeStatus(appointment?.status)
+      };
+    }
+
+    function normalizeTimeBlock(id, block) {
+      const fecha = block?.fecha || block?.date || "";
+      const start = block?.start || block?.inicio || block?.startTime || "";
+      const end = block?.end || block?.fin || block?.endTime || "";
+
+      if (!fecha || !start || !end) return null;
+
+      return {
+        id,
+        fecha,
+        start,
+        end,
+        reason: block?.reason || block?.motivo || "",
+        type: block?.type || "timeBlock",
+        createdAt: block?.createdAt || ""
       };
     }
 
@@ -1367,28 +758,208 @@
       });
     }
 
-    let isFirstServicesLoad = true;
-
     function listenServices() {
       servicesRef.on("value", snapshot => {
         const data = snapshot.val();
-        
+
         if (!data && isFirstServicesLoad) {
           setTimeout(() => {
             if (Object.keys(servicesData).length === 0) {
               servicesData = {};
               renderServicesEditor();
-              renderAll(); 
+              renderAll();
             }
           }, 800);
         } else {
           servicesData = data || {};
           renderServicesEditor();
-          renderAll(); 
+          renderAll();
         }
-        
+
         isFirstServicesLoad = false;
       });
+    }
+
+    function listenCustomClosures() {
+      customClosuresRef.on("value", snapshot => {
+        const data = snapshot.val() || {};
+        customClosures = Object.entries(data)
+          .map(([id, block]) => normalizeTimeBlock(id, block))
+          .filter(Boolean)
+          .filter(block => block.type === "timeBlock");
+        renderTimeBlocks();
+      });
+    }
+
+    function setDefaultTimeBlockValues() {
+      const today = getTodayISO();
+
+      if (blockDateInput) {
+        blockDateInput.min = today;
+        if (!blockDateInput.value) blockDateInput.value = today;
+      }
+
+      if (blockStartInput && !blockStartInput.value) blockStartInput.value = "13:00";
+      if (blockEndInput && !blockEndInput.value) blockEndInput.value = "20:00";
+    }
+
+    function saveTimeBlock() {
+      if (!requireAuthAction()) return;
+
+      const fecha = blockDateInput?.value || "";
+      const start = blockStartInput?.value || "";
+      const end = blockEndInput?.value || "";
+      const reason = blockReasonInput?.value.trim() || "Cierre por bloque de horas";
+      const today = getTodayISO();
+
+      if (!fecha || !start || !end) {
+        showToast("Completa fecha, hora inicial y hora final");
+        return;
+      }
+
+      if (fecha < today) {
+        showToast("No puedes bloquear una fecha pasada");
+        return;
+      }
+
+      if (!isValid24HourTime(start) || !isValid24HourTime(end)) {
+        showToast("Formato de hora invalido");
+        return;
+      }
+
+      if (timeToMinutes(start) >= timeToMinutes(end)) {
+        showToast("La hora final debe ser mayor que la inicial");
+        return;
+      }
+
+      if (fecha === today && timeToMinutes(end) <= currentTimeMinutes()) {
+        showToast("Ese rango ya paso");
+        return;
+      }
+
+      const overlaps = customClosures.some(block => (
+        block.fecha === fecha &&
+        rangesOverlap(start, end, block.start, block.end)
+      ));
+
+      if (overlaps && !confirm("Ya existe un bloqueo que se cruza con ese rango. Quieres guardarlo de todos modos?")) {
+        return;
+      }
+
+      const newKey = customClosuresRef.push().key;
+      if (!newKey) {
+        showToast("No se pudo crear el bloqueo");
+        return;
+      }
+
+      saveTimeBlockBtn.disabled = true;
+      saveTimeBlockBtn.textContent = "Guardando...";
+
+      customClosuresRef.child(newKey).set({
+        type: "timeBlock",
+        fecha,
+        start,
+        end,
+        reason,
+        createdAt: new Date().toISOString()
+      }).then(() => {
+        blockReasonInput.value = "";
+        showToast("Bloque de horas guardado");
+      }).catch(() => {
+        showToast("No se pudo guardar el bloqueo");
+      }).finally(() => {
+        saveTimeBlockBtn.disabled = false;
+        saveTimeBlockBtn.textContent = "Bloquear";
+      });
+    }
+
+    function deleteTimeBlock(id) {
+      if (!requireAuthAction()) return;
+      if (!confirm("Seguro que quieres eliminar este bloqueo de horas?")) return;
+
+      customClosuresRef.child(id).remove()
+        .then(() => showToast("Bloque de horas eliminado"))
+        .catch(() => showToast("No se pudo eliminar el bloqueo"));
+    }
+
+    function renderTimeBlocks() {
+      if (!timeBlocksList) return;
+
+      const orderedBlocks = [...customClosures].sort(compareTimeBlocks);
+      const activeBlocks = orderedBlocks.filter(block => isTimeBlockCurrentOrFuture(block));
+
+      timeBlockCountBadge.textContent = `${activeBlocks.length} ${activeBlocks.length === 1 ? "bloque activo" : "bloques activos"}`;
+
+      if (!orderedBlocks.length) {
+        timeBlocksList.innerHTML = `
+          <div class="empty-state">
+            <h4>No hay bloques de horas</h4>
+            <p>Cuando cierres una fecha por rango, aparecera aqui.</p>
+          </div>
+        `;
+        return;
+      }
+
+      timeBlocksList.innerHTML = orderedBlocks.map(block => `
+        <article class="time-block-item">
+          <div>
+            <h4>${escapeHTML(formatDate(block.fecha))}</h4>
+            <p><strong>${escapeHTML(block.start)} - ${escapeHTML(block.end)}</strong> ${block.reason ? "• " + escapeHTML(block.reason) : ""}</p>
+            <div class="time-block-meta">
+              <span class="mini-pill">${isTimeBlockCurrentOrFuture(block) ? "Activo" : "Pasado"}</span>
+              <span class="mini-pill">${escapeHTML(String(timeBlockDuration(block.start, block.end)))} horas</span>
+            </div>
+          </div>
+          <button class="danger-btn" type="button" onclick="deleteTimeBlock('${escapeHTMLAttr(block.id)}')">Eliminar</button>
+        </article>
+      `).join("");
+    }
+
+    function compareTimeBlocks(a, b) {
+      const aKey = `${a.fecha} ${a.start}`;
+      const bKey = `${b.fecha} ${b.start}`;
+      return aKey.localeCompare(bKey);
+    }
+
+    function isValid24HourTime(time) {
+      return /^\d{2}:\d{2}$/.test(String(time)) && !Number.isNaN(timeToMinutes(time));
+    }
+
+    function timeToMinutes(time) {
+      const parts = String(time).split(":").map(Number);
+      if (parts.length !== 2) return NaN;
+
+      const [hours, minutes] = parts;
+      if (
+        Number.isNaN(hours) || Number.isNaN(minutes) ||
+        hours < 0 || hours > 23 ||
+        minutes < 0 || minutes > 59
+      ) {
+        return NaN;
+      }
+
+      return (hours * 60) + minutes;
+    }
+
+    function rangesOverlap(startA, endA, startB, endB) {
+      return timeToMinutes(startA) < timeToMinutes(endB) && timeToMinutes(endA) > timeToMinutes(startB);
+    }
+
+    function isTimeBlockCurrentOrFuture(block) {
+      const today = getTodayISO();
+      if (block.fecha > today) return true;
+      if (block.fecha < today) return false;
+      return timeToMinutes(block.end) >= currentTimeMinutes();
+    }
+
+    function currentTimeMinutes() {
+      const now = new Date();
+      return (now.getHours() * 60) + now.getMinutes();
+    }
+
+    function timeBlockDuration(start, end) {
+      const duration = (timeToMinutes(end) - timeToMinutes(start)) / 60;
+      return Number.isInteger(duration) ? duration : duration.toFixed(1);
     }
 
     function renderServicesEditor() {
@@ -1400,63 +971,86 @@
         servicesContainer.innerHTML = `
           <div class="empty-state">
             <h4>No hay servicios guardados</h4>
-            <p>Usa el botón "+ Nuevo Servicio" para empezar a agregar tus cortes.</p>
+            <p>Usa el boton "+ Nuevo" arriba para empezar.</p>
           </div>
         `;
         return;
       }
 
       servicesContainer.innerHTML = entries.map(([key, service]) => `
-        <div class="service-editor" data-key="${escapeHTMLAttr(key)}">
-          <div class="field">
-            <label>Nombre del servicio</label>
-            <input type="text" class="service-name" value="${escapeHTML(service?.nombre || "")}" />
+        <div class="service-item-card" id="card-${escapeHTMLAttr(key)}" data-key="${escapeHTMLAttr(key)}">
+          <div class="service-view-mode">
+            <div class="service-info">
+              <h4>${escapeHTML(service?.nombre || "Sin nombre")}</h4>
+              <p>
+                <strong>RD$${Number(service?.precio || 0)}</strong> &bull;
+                <span>${Number(service?.duracion || 0)} min</span>
+              </p>
+            </div>
+            <div class="row-actions">
+              <button type="button" class="ghost-btn edit-toggle-btn">Editar</button>
+              <button type="button" class="danger-btn delete-one-service">X</button>
+            </div>
           </div>
 
-          <div class="field">
-            <label>Precio (RD$)</label>
-            <input type="number" min="0" class="service-price" value="${Number(service?.precio || 0)}" />
+          <div class="service-editor-mode">
+            <div class="field">
+              <label>Nombre del servicio</label>
+              <input type="text" class="service-name" value="${escapeHTML(service?.nombre || "")}" />
+            </div>
+            <div class="field">
+              <label>Precio (RD$)</label>
+              <input type="number" min="0" class="service-price" value="${Number(service?.precio || 0)}" />
+            </div>
+            <div class="field">
+              <label>Duracion (min)</label>
+              <input type="number" min="0" class="service-duration" value="${Number(service?.duracion || 0)}" />
+            </div>
+            <div class="row-actions" style="margin-bottom: 2px;">
+              <button type="button" class="success-btn save-one-service">Guardar</button>
+              <button type="button" class="ghost-btn cancel-edit-btn">Volver</button>
+            </div>
           </div>
-
-          <div class="field">
-            <label>Duración (min)</label>
-            <input type="number" min="0" class="service-duration" value="${Number(service?.duracion || 0)}" />
-          </div>
-
-          <button type="button" class="primary-btn save-one-service" style="height: 52px; padding: 0 16px;">Guardar</button>
-          <button type="button" class="danger-btn delete-one-service" style="height: 52px; padding: 0 16px;" title="Eliminar servicio">X</button>
         </div>
       `).join("");
 
-      // Lógica de guardar
-      document.querySelectorAll(".save-one-service").forEach(btn => {
-        btn.addEventListener("click", function () {
-          const row = this.closest(".service-editor");
-          if (!row) return;
-          const key = row.dataset.key;
-          saveOneService(key, row, this);
+      document.querySelectorAll(".edit-toggle-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+          this.closest(".service-item-card").classList.add("editing");
         });
       });
 
-      // Lógica de eliminar
+      document.querySelectorAll(".cancel-edit-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+          this.closest(".service-item-card").classList.remove("editing");
+        });
+      });
+
+      document.querySelectorAll(".save-one-service").forEach(btn => {
+        btn.addEventListener("click", function () {
+          const card = this.closest(".service-item-card");
+          const key = card.dataset.key;
+          saveOneService(key, card, this);
+        });
+      });
+
       document.querySelectorAll(".delete-one-service").forEach(btn => {
         btn.addEventListener("click", function () {
-          const row = this.closest(".service-editor");
-          if (!row) return;
-          const key = row.dataset.key;
+          const card = this.closest(".service-item-card");
+          const key = card.dataset.key;
           deleteOneService(key);
         });
       });
     }
 
-    function saveOneService(key, row, buttonElement) {
+    function saveOneService(key, card, buttonElement) {
       if (!requireAuthAction()) return;
-      if (!key || !row) return;
+      if (!key || !card) return;
 
       const data = {
-        nombre: row.querySelector(".service-name")?.value.trim() || "",
-        precio: Number(row.querySelector(".service-price")?.value || 0),
-        duracion: Number(row.querySelector(".service-duration")?.value || 0)
+        nombre: card.querySelector(".service-name")?.value.trim() || "",
+        precio: Number(card.querySelector(".service-price")?.value || 0),
+        duracion: Number(card.querySelector(".service-duration")?.value || 0)
       };
 
       if (!data.nombre) {
@@ -1469,12 +1063,13 @@
 
       servicesRef.child(key).update(data)
         .then(() => {
-            showToast("✅ Servicio guardado correctamente");
+            showToast("Servicio guardado");
             buttonElement.disabled = false;
             buttonElement.textContent = "Guardar";
+            card.classList.remove("editing");
         })
         .catch(() => {
-            showToast("❌ No se pudo guardar el servicio");
+            showToast("No se pudo guardar el servicio");
             buttonElement.disabled = false;
             buttonElement.textContent = "Guardar";
         });
@@ -1482,11 +1077,11 @@
 
     function deleteOneService(key) {
       if (!requireAuthAction()) return;
-      if (!confirm("¿Seguro que deseas eliminar este servicio? Desaparecerá de tu web.")) return;
+      if (!confirm("Seguro que deseas eliminar este servicio? Desaparecera de tu web.")) return;
 
       servicesRef.child(key).remove()
-        .then(() => showToast("🗑️ Servicio eliminado"))
-        .catch(() => showToast("❌ No se pudo eliminar el servicio"));
+        .then(() => showToast("Servicio eliminado"))
+        .catch(() => showToast("No se pudo eliminar el servicio"));
     }
 
     function renderShopStatusUI() {
@@ -1502,9 +1097,9 @@
       extendedHoursBadge.textContent = extendedHours ? "Horario extendido" : "Horario normal";
 
       shopStatusText.textContent =
-        (shopIsOpen ? "La barbería está abierta." : "La barbería está cerrada.") +
-        (tuesdayOpen ? " El martes está habilitado." : " El martes está cerrado.") +
-        (extendedHours ? " El horario extendido está activo." : " El horario normal está activo.");
+        (shopIsOpen ? "La barberia esta abierta." : "La barberia esta cerrada.") +
+        (tuesdayOpen ? " El martes esta habilitado." : " El martes esta cerrado.") +
+        (extendedHours ? " El horario extendido esta activo." : " El horario normal esta activo.");
     }
 
     function setShopOpenState(isOpen) {
@@ -1514,7 +1109,7 @@
         isOpen,
         updatedAt: new Date().toISOString()
       }).then(() => {
-        showToast(isOpen ? "Barbería abierta" : "Barbería cerrada");
+        showToast(isOpen ? "Barberia abierta" : "Barberia cerrada");
       }).catch(() => {
         showToast("No se pudo cambiar el estado");
       });
@@ -1644,7 +1239,7 @@
 
       appointmentsTableBody.innerHTML = data.map(appointment => {
         const serviceObj = Object.values(servicesData || {}).find(s => s.nombre === appointment.servicio);
-        const precioText = serviceObj && serviceObj.precio ? `RD$${serviceObj.precio}` : 'Precio no disp.';
+        const precioText = serviceObj && serviceObj.precio ? `RD$${serviceObj.precio}` : "Precio no disp.";
 
         return `
         <tr>
@@ -1658,7 +1253,7 @@
             <div class="service-box">
               <strong>${escapeHTML(appointment.servicio)}</strong>
               <small style="color: var(--success); font-weight: 600;">${precioText}</small><br>
-              <small>${appointment.anonimo ? "Público: Anónimo" : "Público: Nombre visible"}</small>
+              <small>${appointment.anonimo ? "Publico: Anonimo" : "Publico: Nombre visible"}</small>
             </div>
           </td>
           <td>${escapeHTML(appointment.barbero)}</td>
@@ -1688,7 +1283,7 @@
 
       mobileCards.innerHTML = data.map(appointment => {
         const serviceObj = Object.values(servicesData || {}).find(s => s.nombre === appointment.servicio);
-        const precioText = serviceObj && serviceObj.precio ? `RD$${serviceObj.precio}` : 'Precio no disp.';
+        const precioText = serviceObj && serviceObj.precio ? `RD$${serviceObj.precio}` : "Precio no disp.";
 
         return `
         <article class="mobile-card">
@@ -1706,7 +1301,7 @@
           <div class="meta-line"><strong>Barbero:</strong> ${escapeHTML(appointment.barbero)}</div>
           <div class="meta-line"><strong>Fecha:</strong> ${escapeHTML(formatDate(appointment.fecha))}</div>
           <div class="meta-line"><strong>Hora:</strong> ${escapeHTML(appointment.hora || "Sin hora")}</div>
-          <div class="meta-line"><strong>Duración:</strong> ${escapeHTML(String(appointment.duration || 0))} min</div>
+          <div class="meta-line"><strong>Duracion:</strong> ${escapeHTML(String(appointment.duration || 0))} min</div>
 
           <div class="mobile-actions">
             <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}', 'approved')">Aprobar</button>
@@ -1717,7 +1312,6 @@
       `}).join("");
     }
 
-    // AQUI ESTÁ EL CÓDIGO NUEVO DEL BOTÓN WHATSAPP
     function updateAppointmentStatus(id, status) {
       if (!requireAuthAction()) return;
 
@@ -1730,40 +1324,37 @@
         showToast(status === "approved" ? "Cita aprobada" : "Cita cancelada");
 
         if (cita && cita.telefono) {
-            let telefono = cita.telefono.replace(/[^\d+]/g, '');
-            
-            // Revisa si es de 10 dígitos para ponerle el +1 de RD/USA
+            let telefono = cita.telefono.replace(/[^\d+]/g, "");
+
             if (telefono.length === 10) {
-                telefono = "+1" + telefono; 
+                telefono = "+1" + telefono;
             }
 
             let mensaje = "";
             const fechaFormateada = formatDate(cita.fecha);
 
             if (status === "approved") {
-                mensaje = `¡Hola ${cita.nombre}! 👋 Tu cita en *La Pinta Barber* ha sido confirmada.\n\n` +
-                          `✂️ *Servicio:* ${cita.servicio}\n` +
-                          `💈 *Barbero:* ${cita.barbero}\n` +
-                          `📅 *Fecha:* ${fechaFormateada}\n` +
-                          `⏰ *Hora:* ${cita.hora}\n\n` +
-                          `¡Te esperamos!`;
+                mensaje = `Hola ${cita.nombre}! Tu cita en *La Pinta Barber* ha sido confirmada.\n\n` +
+                          `*Servicio:* ${cita.servicio}\n` +
+                          `*Barbero:* ${cita.barbero}\n` +
+                          `*Fecha:* ${fechaFormateada}\n` +
+                          `*Hora:* ${cita.hora}\n\n` +
+                          `Te esperamos!`;
             } else if (status === "cancelled") {
                 mensaje = `Hola ${cita.nombre}, te escribimos de *La Pinta Barber*.\n\n` +
                           `Lamentablemente hemos tenido que cancelar tu cita para el ${fechaFormateada} a las ${cita.hora}.\n\n` +
-                          `Por favor, contáctanos para reprogramarla. ¡Disculpa los inconvenientes!`;
+                          `Por favor, contactanos para reprogramarla. Disculpa los inconvenientes!`;
             }
 
             const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-            
-            // Truco para que funcione en celulares (Safari/Chrome móvil bloquean popups)
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            
+
             if (isMobile) {
-                window.location.href = whatsappUrl; // En celular abre la App directo
+                window.location.href = whatsappUrl;
             } else {
-                const a = document.createElement('a'); // En PC abre una pestaña web
+                const a = document.createElement("a");
                 a.href = whatsappUrl;
-                a.target = '_blank';
+                a.target = "_blank";
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -1777,7 +1368,7 @@
 
     function deleteAppointment(id) {
       if (!requireAuthAction()) return;
-      if (!confirm("¿Seguro que quieres eliminar esta cita?")) return;
+      if (!confirm("Seguro que quieres eliminar esta cita?")) return;
 
       appointmentsRef.child(id).remove()
         .then(() => showToast("Cita eliminada"))
@@ -1807,7 +1398,7 @@
 
     function clearAllAppointments() {
       if (!requireAuthAction()) return;
-      if (!confirm("¿Seguro que quieres vaciar todas las citas?")) return;
+      if (!confirm("Seguro que quieres vaciar todas las citas?")) return;
 
       appointmentsRef.remove()
         .then(() => showToast("Todas las citas fueron eliminadas"))
@@ -1836,7 +1427,7 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast("Exportación lista");
+      showToast("Exportacion lista");
     }
 
     function escapeHTML(value) {
@@ -1865,6 +1456,7 @@
 
     window.updateAppointmentStatus = updateAppointmentStatus;
     window.deleteAppointment = deleteAppointment;
+    window.deleteTimeBlock = deleteTimeBlock;
   </script>
 </body>
 </html>
