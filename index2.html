@@ -474,6 +474,29 @@
     let isFirstServicesLoad = true;
     let deletingExpiredAppointments = false;
 
+    const normalWorkingDays = {
+      0: null,
+      1: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      2: null,
+      3: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      4: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      5: { start: "8:00 AM", end: "9:00 PM", breaks: [] },
+      6: { start: "8:00 AM", end: "9:00 PM", breaks: [] }
+    };
+
+    const extendedWorkingDays = {
+      0: null,
+      1: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      2: null,
+      3: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      4: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      5: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      6: { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+    };
+
+    const normalTuesdaySchedule = { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    const extendedTuesdaySchedule = { start: "8:00 AM", end: "10:00 PM", breaks: [] };
+
     function getTodayISO() {
       const today = new Date();
       return `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
@@ -580,6 +603,123 @@
 
     function getTodayOverride() {
       return dailyOverrides[getTodayISO()] || null;
+    }
+
+    function cloneSchedule(config) {
+      if (!config) return null;
+      return {
+        start: config.start,
+        end: config.end,
+        breaks: Array.isArray(config.breaks) ? [...config.breaks] : []
+      };
+    }
+
+    function getDefaultOpenSchedule() {
+      return extendedHours
+        ? { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+        : { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    }
+
+    function convertTimeStringToMinutes(timeString) {
+      if (!timeString) return NaN;
+      const value = String(timeString).trim();
+
+      if (/^\d{2}:\d{2}$/.test(value)) {
+        return timeToMinutes(value);
+      }
+
+      const match = value.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+      if (!match) return NaN;
+
+      let hour = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const suffix = match[3].toUpperCase();
+
+      if (suffix === "AM" && hour === 12) hour = 0;
+      if (suffix === "PM" && hour !== 12) hour += 12;
+
+      return (hour * 60) + minutes;
+    }
+
+    function formatStatusTime(timeString) {
+      if (!timeString) return "";
+      if (/AM|PM/i.test(timeString)) return timeString;
+
+      const [hourValue, minuteValue] = String(timeString).split(":");
+      let hour = parseInt(hourValue, 10);
+      const suffix = hour >= 12 ? "PM" : "AM";
+
+      if (hour === 0) hour = 12;
+      else if (hour > 12) hour -= 12;
+
+      return `${hour}:${minuteValue} ${suffix}`;
+    }
+
+    function getTimeBlocksForDate(dateString) {
+      return customClosures
+        .filter(block => block.fecha === dateString && block.type === "timeBlock")
+        .sort((a, b) => convertTimeStringToMinutes(a.start) - convertTimeStringToMinutes(b.start));
+    }
+
+    function getCurrentTimeBlock(dateString) {
+      const currentMinutes = currentTimeMinutes();
+      return getTimeBlocksForDate(dateString).find(block => {
+        const startMinutes = convertTimeStringToMinutes(block.start);
+        const endMinutes = convertTimeStringToMinutes(block.end);
+        return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+      }) || null;
+    }
+
+    function getWorkingConfigByDate(dateString) {
+      if (!dateString) return null;
+
+      const today = getTodayISO();
+      const override = dailyOverrides[dateString] || null;
+
+      if (dateString === today && !shopIsOpen && !override?.forceOpen) {
+        return null;
+      }
+
+      if (override?.forceClosed === true) {
+        return null;
+      }
+
+      const day = getDayFromDate(dateString);
+      let config = null;
+
+      if (day === 2) {
+        if (!tuesdayOpen && !override?.forceOpen) return null;
+        config = extendedHours ? extendedTuesdaySchedule : normalTuesdaySchedule;
+      } else {
+        const source = extendedHours ? extendedWorkingDays : normalWorkingDays;
+        config = source[day] || null;
+      }
+
+      if (!config && override?.forceOpen) {
+        config = getDefaultOpenSchedule();
+      }
+
+      return config ? cloneSchedule(config) : null;
+    }
+
+    function getCurrentBreak(config) {
+      if (!config?.breaks?.length) return null;
+      const currentMinutes = currentTimeMinutes();
+
+      for (let index = 0; index < config.breaks.length; index++) {
+        const start = config.breaks[index];
+        const end = config.breaks[index + 1];
+        if (!end) continue;
+
+        const startMinutes = convertTimeStringToMinutes(start);
+        const endMinutes = convertTimeStringToMinutes(end);
+
+        if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
+          return { start, end };
+        }
+      }
+
+      return null;
     }
 
     function autoDeleteExpiredAppointments() {
@@ -869,30 +1009,65 @@
     }
 
     function renderShopStatusUI() {
+      const today = getTodayISO();
       const todayOverride = getTodayOverride();
+      const todayConfig = getWorkingConfigByDate(today);
+      const currentBlock = getCurrentTimeBlock(today);
+      const currentBreak = todayConfig ? getCurrentBreak(todayConfig) : null;
+      const currentMinutes = currentTimeMinutes();
 
       if (todayOverride?.forceClosed === true) {
         shopStatusBadge.textContent = "Cerrada hoy";
         shopStatusBadge.className = "badge-inline closed";
-      } else if (shopIsOpen || todayOverride?.forceOpen === true) {
-        shopStatusBadge.textContent = todayOverride?.forceOpen ? "Abierta solo hoy" : "Abierta";
-        shopStatusBadge.className = "badge-inline open";
-      } else {
-        shopStatusBadge.textContent = "Cerrada";
+      } else if (!shopIsOpen && !todayOverride?.forceOpen) {
+        shopStatusBadge.textContent = "Cerrada por hoy";
         shopStatusBadge.className = "badge-inline closed";
+      } else if (!todayConfig) {
+        const todayDay = getDayFromDate(today);
+        shopStatusBadge.textContent = todayDay === 2 && !tuesdayOpen && !todayOverride?.forceOpen ? "Martes cerrado" : "Cerrada hoy";
+        shopStatusBadge.className = "badge-inline closed";
+      } else if (currentBlock) {
+        shopStatusBadge.textContent = `Bloque activo hasta ${formatStatusTime(currentBlock.end)}`;
+        shopStatusBadge.className = "badge-inline closed";
+      } else if (currentBreak) {
+        shopStatusBadge.textContent = `Receso hasta ${formatStatusTime(currentBreak.end)}`;
+        shopStatusBadge.className = "badge-inline closed";
+      } else {
+        const openMinutes = convertTimeStringToMinutes(todayConfig.start);
+        const closeMinutes = convertTimeStringToMinutes(todayConfig.end);
+
+        if (currentMinutes < openMinutes) {
+          shopStatusBadge.textContent = `Abre a las ${todayConfig.start}`;
+          shopStatusBadge.className = "badge-inline closed";
+        } else if (currentMinutes >= closeMinutes) {
+          shopStatusBadge.textContent = "Cerrada por hoy";
+          shopStatusBadge.className = "badge-inline closed";
+        } else {
+          shopStatusBadge.textContent = todayOverride?.forceOpen ? "Abierta solo hoy" : "Abierta ahora";
+          shopStatusBadge.className = "badge-inline open";
+        }
       }
 
       tuesdayStatusBadge.textContent = tuesdayOpen ? "Martes abierto" : "Martes cerrado";
       extendedHoursBadge.textContent = extendedHours ? "Horario extendido" : "Horario normal";
 
-      const overrideText = todayOverride?.forceOpen ? " Cambio temporal de apertura activo para hoy." :
-                           todayOverride?.forceClosed ? " Cambio temporal de cierre activo para hoy." : "";
+      const stateFragments = [];
+      if (!shopIsOpen && !todayOverride?.forceOpen) {
+        stateFragments.push("La barberia esta cerrada por hoy desde el panel general.");
+      } else if (todayConfig) {
+        stateFragments.push(`Horario de hoy: ${todayConfig.start} - ${todayConfig.end}.`);
+      } else {
+        stateFragments.push("Hoy no hay horario disponible.");
+      }
 
-      shopStatusText.textContent =
-        (shopIsOpen ? "La barberia esta abierta." : "La barberia esta cerrada.") +
-        (tuesdayOpen ? " El martes esta habilitado." : " El martes esta cerrado.") +
-        (extendedHours ? " El horario extendido esta activo." : " El horario normal esta activo.") +
-        overrideText;
+      if (todayOverride?.forceOpen) stateFragments.push("Cambio temporal de apertura activo para hoy.");
+      if (todayOverride?.forceClosed) stateFragments.push("Cambio temporal de cierre activo para hoy.");
+      if (currentBlock) stateFragments.push(`Hay un bloque de horas activo hasta las ${formatStatusTime(currentBlock.end)}.`);
+      if (currentBreak) stateFragments.push(`Hay un receso activo hasta las ${formatStatusTime(currentBreak.end)}.`);
+      stateFragments.push(tuesdayOpen ? "El martes esta habilitado." : "El martes esta cerrado.");
+      stateFragments.push(extendedHours ? "El horario extendido esta activo." : "El horario normal esta activo.");
+
+      shopStatusText.textContent = stateFragments.join(" ");
     }
 
     function setShopOpenState(isOpen) {
