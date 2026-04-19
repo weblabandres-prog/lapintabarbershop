@@ -2,13 +2,15 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>La Pinta Barber | Reserva tu cita</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+  <title>Agendar cita | La Pinta Barber</title>
   <meta
     name="description"
-    content="Barbería profesional con cortes modernos, experiencia premium y reservas online."
+    content="Reserva tu cita en La Pinta Barber de forma rápida, clara y profesional."
   />
-
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
 
@@ -19,399 +21,1152 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
+  <style>
+    :root {
+      --bg: #05070b;
+      --bg-soft: #0b1018;
+      --bg-deep: #03050a;
+      --panel: rgba(14, 20, 30, 0.92);
+      --panel-strong: #101722;
+      --panel-soft: #121b28;
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(255, 255, 255, 0.14);
+      --text: #f3f7ff;
+      --muted: #b8c6da;
+      --muted-2: #8ea2bf;
+      --primary: #1f86ff;
+      --primary-strong: #57a7ff;
+      --primary-dark: #0d6fe6;
+      --primary-soft: rgba(31, 134, 255, 0.12);
+      --success: #c7f1c2;
+      --success-bg: rgba(25, 62, 35, 0.88);
+      --warning: #ffe29c;
+      --warning-bg: rgba(92, 65, 11, 0.88);
+      --danger: #ffbcbc;
+      --danger-bg: rgba(77, 22, 22, 0.88);
+      --white: #ffffff;
+      --shadow-lg: 0 25px 70px rgba(0, 0, 0, 0.42);
+      --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.28);
+      --radius: 28px;
+      --radius-md: 20px;
+      --radius-sm: 16px;
+      --max: 1200px;
+    }
 
-  <header class="header">
-    <div class="container nav">
-      <a href="#inicio" class="brand" id="logoSecret" aria-label="La Pinta Barber">
-        <div class="brand-badge">
-          <div class="brand-ring"></div>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body.booking-page {
+      font-family: "Inter", sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(31, 134, 255, 0.08), transparent 24%),
+        linear-gradient(180deg, #05070b 0%, #0b1018 45%, #03050a 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(6, 10, 17, 0.82);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .topbar-inner {
+      width: min(var(--max), 92%);
+      margin: 0 auto;
+      min-height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      z-index: 5;
+      flex-shrink: 0;
+      min-width: 0;
+      max-width: calc(100% - 95px);
+    }
+
+    .brand-logo-wrap {
+      position: relative;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: none;
+      overflow: hidden;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      transition: none;
+      flex-shrink: 0;
+    }
+
+    .brand-logo-wrap::before {
+      display: none;
+    }
+
+    .brand:hover .brand-logo-wrap {
+      transform: none;
+    }
+
+    .brand-logo {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      display: block;
+      object-fit: contain;
+      image-rendering: auto;
+    }
+
+    .brand-copy {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+      min-width: 0;
+    }
+
+    .brand-copy small {
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+      font-weight: 700;
+      margin-bottom: 6px;
+      white-space: nowrap;
+    }
+
+    .brand-copy strong {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-size: 0.94rem;
+      font-weight: 700;
+      transition: 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .back-btn:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(31,134,255,0.22);
+      transform: translateY(-1px);
+    }
+
+    .view-cita-btn {
+      background: rgba(31, 134, 255, 0.12);
+      border-color: rgba(31, 134, 255, 0.22);
+      color: #d9ecff;
+    }
+
+    .view-cita-btn:hover {
+      background: rgba(31, 134, 255, 0.18);
+      border-color: rgba(31, 134, 255, 0.32);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 430px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.72)),
+        linear-gradient(90deg, rgba(0,0,0,0.76), rgba(0,0,0,0.28)),
+        url("interior.jpeg") center center / cover no-repeat;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 54%, var(--bg) 100%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      width: min(var(--max), 92%);
+      margin: 0 auto;
+      padding: 58px 0 98px;
+    }
+
+    .hero-content {
+      max-width: 720px;
+    }
+
+    .hero-kicker {
+      display: inline-block;
+      margin-bottom: 12px;
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 16px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      border: 1px solid transparent;
+    }
+
+    .status-badge.open {
+      background: var(--success-bg);
+      border-color: rgba(76, 175, 80, 0.45);
+      color: var(--success);
+    }
+
+    .status-badge.break {
+      background: var(--warning-bg);
+      border-color: rgba(255, 193, 7, 0.42);
+      color: var(--warning);
+    }
+
+    .status-badge.closed {
+      background: var(--danger-bg);
+      border-color: rgba(255, 82, 82, 0.36);
+      color: var(--danger);
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      max-width: 9ch;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 560px;
+      font-size: 1.02rem;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.84);
+    }
+
+    .hidden-admin-btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .admin-hidden-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .main-shell {
+      width: min(var(--max), 92%);
+      margin: -60px auto 60px;
+      position: relative;
+      z-index: 3;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.14fr) minmax(320px, 0.82fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background:
+        linear-gradient(180deg, rgba(16,23,34,0.94), rgba(12,18,27,0.96));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .form-panel {
+      padding: 28px;
+    }
+
+    .side-panel {
+      padding: 22px;
+      position: sticky;
+      top: 102px;
+    }
+
+    .panel-head {
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .panel-head h2,
+    .panel-head h3 {
+      margin: 0 0 8px;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .panel-head p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.96rem;
+    }
+
+    #bookingForm {
+      display: grid;
+      gap: 16px;
+    }
+
+    .section-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      transition: 0.22s ease;
+    }
+
+    .section-card:hover {
+      border-color: rgba(31,134,255,0.16);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-number {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #61a9ff);
+      color: #07111f;
+      font-weight: 900;
+      font-size: 0.96rem;
+      box-shadow: 0 10px 20px rgba(31,134,255,0.18);
+    }
+
+    .section-title h3 {
+      margin: 0 0 4px;
+      font-size: 1.05rem;
+      font-family: "Inter", sans-serif;
+    }
+
+    .section-title p {
+      margin: 0;
+      color: var(--muted-2);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .two-cols {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      min-height: 52px;
+      padding: 14px 15px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      outline: none;
+      font-size: 0.97rem;
+      transition: 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: rgba(31,134,255,0.38);
+      box-shadow: 0 0 0 3px rgba(31,134,255,0.10);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .form-group input::placeholder {
+      color: rgba(255,255,255,0.45);
+    }
+
+    .form-group select option {
+      color: #111;
+    }
+
+    .hours-wrap {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .hours-note {
+      margin: 0 0 12px;
+      color: var(--muted-2);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .hours-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+      gap: 10px;
+    }
+
+    .hour-btn {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 12px 10px;
+      font-size: 0.94rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .hour-btn:hover {
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-1px);
+      border-color: rgba(31,134,255,0.18);
+    }
+
+    .hour-btn.active {
+      background: linear-gradient(135deg, var(--primary), #61a9ff);
+      color: #08111f;
+      border-color: transparent;
+      box-shadow: 0 10px 22px rgba(31,134,255,0.18);
+    }
+
+    .hour-btn.disabled,
+    .hour-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .anonimo-box {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+    }
+
+    .anonimo-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.55;
+      cursor: pointer;
+    }
+
+    .anonimo-label input {
+      width: auto;
+      margin-top: 3px;
+      accent-color: var(--primary);
+    }
+
+    .anonimo-box small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted-2);
+      line-height: 1.45;
+      font-size: 0.88rem;
+    }
+
+    .payment-box {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(31,134,255,0.07);
+      border: 1px solid rgba(31,134,255,0.18);
+    }
+
+    .payment-method {
+      display: grid;
+      gap: 10px;
+    }
+
+    .payment-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .payment-option:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(31,134,255,0.20);
+    }
+
+    .payment-option input {
+      accent-color: var(--primary);
+    }
+
+    .payment-transfer-info {
+      margin-top: 16px;
+    }
+
+    .payment-transfer-info.hidden {
+      display: none;
+    }
+
+    .payment-title {
+      margin: 0 0 12px;
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #8fc0ff;
+    }
+
+    .transfer-accounts {
+      display: grid;
+      gap: 12px;
+    }
+
+    .transfer-card {
+      display: block;
+      cursor: pointer;
+    }
+
+    .transfer-card input {
+      display: none;
+    }
+
+    .transfer-card-content {
+      padding: 14px 15px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      transition: 0.2s ease;
+    }
+
+    .transfer-card-content strong {
+      display: block;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .transfer-card-content span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 6px;
+    }
+
+    .transfer-card-content small {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(31,134,255,0.12);
+      color: #8fc0ff;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .transfer-card input:checked + .transfer-card-content {
+      border-color: rgba(31,134,255,0.45);
+      background: rgba(31,134,255,0.10);
+      box-shadow: 0 10px 24px rgba(31,134,255,0.10);
+    }
+
+    .submit-btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 17px 18px;
+      background: linear-gradient(135deg, var(--primary), #61a9ff);
+      color: #07111f;
+      font-weight: 900;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s ease;
+      box-shadow: 0 14px 28px rgba(31,134,255,0.20);
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    .box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .box + .box {
+      margin-top: 14px;
+    }
+
+    .box h4 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .booking-summary p {
+      margin: 6px 0;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.55;
+      font-size: 0.95rem;
+      word-break: break-word;
+    }
+
+    .info-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .info-item {
+      padding: 12px 13px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: rgba(255,255,255,0.84);
+      font-size: 0.93rem;
+      line-height: 1.55;
+    }
+
+    .closed-banner {
+      display: none;
+      margin-bottom: 14px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      background: rgba(120, 23, 23, 0.28);
+      border: 1px solid rgba(255, 90, 90, 0.22);
+      color: #ffcbcb;
+      font-size: 0.93rem;
+      line-height: 1.55;
+    }
+
+    .closed-banner.show {
+      display: block;
+    }
+
+    .foot-note {
+      margin-top: 14px;
+      text-align: center;
+      color: var(--muted-2);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 930px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .brand-copy {
+        display: flex;
+      }
+
+      .brand-copy small {
+        font-size: 0.54rem;
+        letter-spacing: 0.14em;
+        margin-bottom: 3px;
+      }
+
+      .brand-copy strong {
+        font-size: 0.88rem;
+        letter-spacing: 0.02em;
+      }
+
+      .topbar-inner {
+        min-height: 76px;
+      }
+
+      .hero {
+        min-height: 380px;
+      }
+
+      .hero-inner {
+        padding: 46px 0 86px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .two-cols {
+        grid-template-columns: 1fr;
+      }
+
+      .hours-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .main-shell {
+        margin-top: -44px;
+      }
+
+      .form-panel,
+      .side-panel {
+        padding: 18px;
+      }
+
+      .hero p {
+        font-size: 0.96rem;
+        line-height: 1.7;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .topbar-inner {
+        width: 94%;
+        min-height: 72px;
+        gap: 10px;
+      }
+
+      .brand {
+        gap: 10px;
+        max-width: calc(100% - 88px);
+      }
+
+      .brand-logo-wrap {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        padding: 4px;
+      }
+
+      .brand-logo {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        object-fit: contain;
+      }
+
+      .brand-copy {
+        display: flex;
+      }
+
+      .brand-copy small {
+        font-size: 0.48rem;
+        letter-spacing: 0.12em;
+        margin-bottom: 3px;
+        white-space: nowrap;
+      }
+
+      .brand-copy strong {
+        font-size: 0.82rem;
+        white-space: nowrap;
+      }
+
+      .topbar-actions {
+        gap: 8px;
+      }
+
+      .back-btn {
+        padding: 10px 12px;
+        font-size: 0.84rem;
+      }
+
+      .hero {
+        min-height: 345px;
+      }
+
+      .hero-inner {
+        padding: 34px 0 72px;
+      }
+
+      .hero h1 {
+        font-size: 2.2rem;
+        line-height: 1.02;
+      }
+
+      .hours-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .section-card {
+        padding: 16px;
+      }
+
+      .section-head {
+        gap: 10px;
+      }
+
+      .section-number {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        font-size: 0.9rem;
+      }
+
+      .submit-btn,
+      .payment-option,
+      .hour-btn {
+        font-size: 0.92rem;
+      }
+    }
+  </style>
+</head>
+<body class="booking-page">
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="index.html" class="brand" id="logoSecret">
+        <div class="brand-logo-wrap">
           <img src="logo.jpeg" alt="La Pinta Barber" class="brand-logo" />
         </div>
-
-        <div class="brand-text">
-          <span class="brand-top">Barbería premium</span>
-          <span class="brand-bottom">La Pinta Barber</span>
+        <div class="brand-copy">
+          <small>Barbería premium</small>
+          <strong>La Pinta Barber</strong>
         </div>
       </a>
 
-      <nav class="nav-desktop">
-        <div class="nav-links">
-          <a href="#inicio">Inicio</a>
-          <a href="#nosotros">Nosotros</a>
-          <a href="#servicios">Servicios</a>
-          <a href="#citas">Citas</a>
-          <a href="#contacto">Contacto</a>
-          <a href="ver-citas.html">Ver citas</a>
-        </div>
-
-        <div class="nav-actions">
-          <a href="cita.html" class="btn btn-primary nav-btn-main">Agendar cita</a>
-
-          <a href="aprobar.html" class="btn btn-secondary btn-oculto" id="btnAprobarMenu">
-            Ir a aprobar
-          </a>
-        </div>
-      </nav>
-
-      <button
-        class="menu-toggle"
-        id="menuToggle"
-        aria-label="Abrir menú"
-        aria-expanded="false"
-        type="button"
-      >
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-
-      <nav class="nav-panel" id="navPanel">
-        <div class="nav-mobile-links">
-          <a href="#inicio">Inicio</a>
-          <a href="#nosotros">Nosotros</a>
-          <a href="#servicios">Servicios</a>
-          <a href="#citas">Citas</a>
-          <a href="#contacto">Contacto</a>
-          <a href="ver-citas.html">Ver citas</a>
-        </div>
-
-        <div class="nav-mobile-actions">
-          <a href="cita.html" class="btn btn-primary">Agendar cita</a>
-
-          <a href="aprobar.html" class="btn btn-secondary btn-oculto" id="btnAprobarMobile">
-            Ir a aprobar
-          </a>
-        </div>
-      </nav>
+      <div class="topbar-actions">
+        <a href="ver-citas.html" class="back-btn view-cita-btn">Ver mi cita</a>
+        <a href="index.html" class="back-btn">← Volver</a>
+      </div>
     </div>
   </header>
 
-  <section class="hero" id="inicio">
-    <div class="hero-overlay"></div>
-
-    <div class="container hero-content">
-      <div class="hero-copy">
-        <span class="hero-kicker">Imagen, precisión y estilo</span>
-
-        <div class="status-badge" id="shopStatusBadge">
-          Consultando horario...
-        </div>
-
-        <h1>Tu estilo merece una barbería con presencia</h1>
-
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <span class="hero-kicker">Reserva online</span>
+        <div class="status-badge" id="shopStatusBadge">Consultando horario...</div>
+        <h1>Agenda tu cita</h1>
         <p>
-          Cortes modernos, atención profesional y reservas rápidas desde la web.
-          Agenda tu cita en pocos pasos y vive una experiencia más limpia,
-          cómoda y premium.
+          Reserva tu turno de forma clara y rápida. Elige el servicio, selecciona
+          la fecha y marca una hora disponible sin perder tiempo.
         </p>
 
-        <div id="shopClosedBanner" class="shop-closed-banner">
-          La barbería está cerrada en este momento, pero puedes agendar tu cita
-          para otro día u otra hora disponible.
-        </div>
-
-        <div class="hero-buttons">
-          <a href="cita.html" class="btn btn-primary">Reservar ahora</a>
-         <a href="ver-citas.html" class="btn btn-primary">Ver citas agendadas </a>
-
-          <a href="aprobar.html" class="btn btn-secondary btn-oculto" id="btnAprobarHero">
-            Aprobar cita
-          </a>
-        </div>
-      </div>
-
-      <div class="hero-card">
-        <div class="hero-card-top">
-          <span class="hero-card-label">Experiencia La Pinta</span>
-          <span class="hero-card-chip">Premium</span>
-        </div>
-
-        <h3>Diseño, puntualidad y presencia</h3>
-
-        <div class="hero-card-list">
-          <div class="hero-card-item">
-            <strong>Reservas rápidas</strong>
-            <span>Agenda en línea sin perder tiempo</span>
-          </div>
-
-          <div class="hero-card-item">
-            <strong>Atención profesional</strong>
-            <span>Servicio limpio, moderno y bien cuidado</span>
-          </div>
-
-          <div class="hero-card-item">
-            <strong>Estilo con nivel</strong>
-            <span>Cortes pensados para que salgas duro</span>
-          </div>
+        <div class="hidden-admin-btns">
+          <a href="aprobar.html" class="admin-hidden-btn" id="btnAprobarHero">Aprobar citas</a>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section section-soft" id="nosotros">
-    <div class="container about-grid">
-      <div class="about-image">
-        <img src="interior.jpeg" alt="Interior de la barbería" />
-      </div>
-
-      <div class="about-text">
-        <span class="section-tag">Sobre nosotros</span>
-        <h2>Una barbería creada para elevar tu imagen</h2>
-        <p>
-          En La Pinta Barber trabajamos cada detalle para que no solo vengas a
-          recortarte, sino a vivir una atención más cómoda, más seria y mejor
-          presentada desde que reservas hasta que sales del local.
-        </p>
-
-        <div class="about-points">
-          <article class="point-card">
-            <strong>Cortes modernos y clásicos</strong>
-            <span>Trabajados con limpieza, forma y precisión.</span>
-          </article>
-
-          <article class="point-card">
-            <strong>Atención personalizada</strong>
-            <span>Nos enfocamos en tu estilo y en tu experiencia.</span>
-          </article>
-
-          <article class="point-card">
-            <strong>Reserva rápida desde la web</strong>
-            <span>Menos vueltas, más facilidad para agendar.</span>
-          </article>
+  <main class="main-shell">
+    <section class="layout">
+      <div class="panel form-panel">
+        <div class="panel-head">
+          <span class="eyebrow">Reserva online</span>
+          <h2>Completa tus datos</h2>
+          <p>
+            Todo está organizado por pasos para que la reserva se sienta limpia,
+            clara y profesional.
+          </p>
         </div>
 
-        <a href="#servicios" class="btn btn-primary">Explorar servicios</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="servicios">
-    <div class="container">
-      <div class="section-heading">
-        <span class="section-tag">Servicios</span>
-        <h2>Elige el servicio ideal para ti</h2>
-        <p>
-          Precios claros, tiempos definidos y una presentación visual más elegante
-          para que la experiencia se sienta seria desde el primer vistazo.
-        </p>
-      </div>
-
-      <div class="services-grid">
-        <article class="service-card">
-          <div class="service-top">
-            <span class="service-number">01</span>
-            <span class="service-time">1 hora</span>
-          </div>
-          <h3>Corte + Fade</h3>
-          <p>Degradados limpios con acabado profesional y moderno.</p>
-          <div class="service-meta">
-            <span>RD$550</span>
-          </div>
-          <a href="cita.html?servicio=Corte%20%2B%20Fade" class="btn btn-small">Reservar</a>
-        </article>
-
-        <article class="service-card">
-          <div class="service-top">
-            <span class="service-number">02</span>
-            <span class="service-time">30 min</span>
-          </div>
-          <h3>Cortes Niños</h3>
-          <p>Corte limpio, cómodo y bien cuidado para los más pequeños.</p>
-          <div class="service-meta">
-            <span>RD$350</span>
-          </div>
-          <a href="cita.html?servicio=Cortes%20Ni%C3%B1os" class="btn btn-small">Reservar</a>
-        </article>
-
-        <article class="service-card">
-          <div class="service-top">
-            <span class="service-number">03</span>
-            <span class="service-time">1 hora</span>
-          </div>
-          <h3>Corte Clásico</h3>
-          <p>Estilo elegante, preciso y cómodo para cualquier ocasión.</p>
-          <div class="service-meta">
-            <span>RD$500</span>
-          </div>
-          <a href="cita.html?servicio=Corte%20Cl%C3%A1sico" class="btn btn-small">Reservar</a>
-        </article>
-
-        <article class="service-card">
-          <div class="service-top">
-            <span class="service-number">04</span>
-            <span class="service-time">1 hora</span>
-          </div>
-          <h3>Cerquillo + Fade</h3>
-          <p>Perfilado limpio con fade bien definido para un look moderno y preciso.</p>
-          <div class="service-meta">
-            <span>RD$400</span>
-          </div>
-          <a href="cita.html?servicio=Cerquillo%20%2B%20Fade" class="btn btn-small">Reservar</a>
-        </article>
-
-        <article class="service-card">
-          <div class="service-top">
-            <span class="service-number">05</span>
-            <span class="service-time">1 hora</span>
-          </div>
-          <h3>Corte + Fade + Facial + Lavado</h3>
-          <p>Servicio completo para una imagen más fresca, limpia y cuidada.</p>
-          <div class="service-meta">
-            <span>RD$700</span>
-          </div>
-          <a href="cita.html?servicio=Corte%20%2B%20Fade%20%2B%20Facial%20%2B%20Lavado%20de%20cabello" class="btn btn-small">Reservar</a>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section-soft" id="citas">
-    <div class="container">
-      <div class="section-heading">
-        <span class="section-tag">Reservas</span>
-        <h2>Agenda pública con mejor presencia visual</h2>
-        <p>
-          Tus reservas siguen funcionando, pero ahora dentro de una sección más
-          elegante y más limpia para que el diseño completo se sienta premium.
-        </p>
-      </div>
-
-      <div class="appointments-dashboard">
-        <div class="appointments-stats">
-          <article class="appointment-stat-card">
-            <span>Total</span>
-            <strong id="publicStatTotal">0</strong>
-            <small>Citas registradas</small>
-          </article>
-
-          <article class="appointment-stat-card">
-            <span>Aprobadas</span>
-            <strong id="publicStatApproved">0</strong>
-            <small>Confirmadas</small>
-          </article>
-
-          <article class="appointment-stat-card">
-            <span>Pendientes</span>
-            <strong id="publicStatPending">0</strong>
-            <small>Esperando aprobación</small>
-          </article>
+        <div class="closed-banner" id="shopClosedBanner">
+          La barbería está cerrada en este momento. Puedes revisar disponibilidad para otro día.
         </div>
 
-        <div class="appointments-board premium-board">
-          <div class="appointments-board-header">
-            <div>
-              <h3>Vista de citas</h3>
-              <small>Actualización automática de reservas</small>
+        <form id="bookingForm">
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">1</div>
+              <div class="section-title">
+                <h3>Información personal</h3>
+                <p>Escribe tus datos para registrar correctamente tu cita.</p>
+              </div>
             </div>
 
-            <a href="ver-citas.html" class="btn btn-secondary appointments-link">
-              Ver página completa
-            </a>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" required placeholder="Tu nombre completo" />
+              </div>
+
+              <div class="form-group">
+                <label for="telefono">Teléfono</label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  required
+                  inputmode="numeric"
+                  maxlength="10"
+                  pattern="[0-9]{10}"
+                  placeholder="Número obligatorio"
+                />
+              </div>
+            </div>
           </div>
 
-          <div class="appointments-scroll">
-            <div id="appointmentsList" class="appointments-list premium-list"></div>
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">2</div>
+              <div class="section-title">
+                <h3>Servicio y fecha</h3>
+                <p>Selecciona el servicio, el barbero y el día en que quieres tu turno.</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="servicio">Servicio</label>
+                <select id="servicio" required>
+                  <option value="">Cargando servicios...</option>
+                </select>
+              </div>
+
+              <div class="form-grid two-cols">
+                <div class="form-group">
+                  <label for="barbero">Barbero</label>
+                  <select id="barbero" required>
+                    <option value="">Selecciona</option>
+                    <option value="Chocho la pinta">Chocho la pinta</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="fecha">Fecha</label>
+                  <input type="date" id="fecha" required />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">3</div>
+              <div class="section-title">
+                <h3>Hora disponible</h3>
+                <p>Las horas se cargan automáticamente según el día, el servicio y la disponibilidad.</p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Horas disponibles</label>
+              <div class="hours-wrap">
+                <p class="hours-note">
+                  Primero elige servicio, barbero y fecha para mostrar las horas libres.
+                </p>
+                <div class="hours-grid" id="hoursGrid"></div>
+              </div>
+              <input type="hidden" id="hora" required />
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">4</div>
+              <div class="section-title">
+                <h3>Detalles finales</h3>
+                <p>Puedes elegir si tu nombre se verá como anónimo en la parte pública.</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="anonimo-box">
+                <label class="anonimo-label">
+                  <input type="checkbox" id="anonimo" />
+                  <span>Mostrar mi nombre como <strong>Anónimo</strong> en la vista pública</span>
+                </label>
+                <small>El administrador sí podrá ver tu nombre real y tu teléfono.</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">5</div>
+              <div class="section-title">
+                <h3>Método de pago</h3>
+                <p>Selecciona cómo vas a pagar tu cita.</p>
+              </div>
+            </div>
+
+            <div class="payment-box">
+              <div class="payment-method">
+                <label class="payment-option">
+                  <input type="radio" name="metodo_pago" id="metodo_efectivo" value="Efectivo" checked />
+                  <span>Efectivo</span>
+                </label>
+
+                <label class="payment-option">
+                  <input type="radio" name="metodo_pago" id="metodo_transferencia" value="Transferencia" />
+                  <span>Transferencia bancaria</span>
+                </label>
+              </div>
+
+              <div class="payment-transfer-info hidden" id="paymentTransferInfo">
+                <p class="payment-title">Cuentas disponibles para transferencia</p>
+
+                <div class="transfer-accounts">
+                  <label class="transfer-card">
+                    <input
+                      type="radio"
+                      name="cuenta_transferencia"
+                      id="cuenta_banreservas"
+                      value="Banreservas - Ahorro - 960200381"
+                      checked
+                    />
+                    <div class="transfer-card-content">
+                      <strong>Banreservas</strong>
+                      <span>Cuenta de ahorro</span>
+                      <small>960200381</small>
+                    </div>
+                  </label>
+
+                  <label class="transfer-card">
+                    <input
+                      type="radio"
+                      name="cuenta_transferencia"
+                      id="cuenta_popular"
+                      value="Popular - Ahorro - 853557841"
+                    />
+                    <div class="transfer-card-content">
+                      <strong>Popular</strong>
+                      <span>Cuenta de ahorro</span>
+                      <small>853557841</small>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn">Confirmar cita</button>
+        </form>
+      </div>
+
+      <aside class="panel side-panel">
+        <div class="panel-head">
+          <span class="eyebrow">Resumen</span>
+          <h3>Revisa antes de confirmar</h3>
+          <p>Aquí ves el resumen de tu cita y la información rápida del horario.</p>
+        </div>
+
+        <div class="box">
+          <h4>Tu cita</h4>
+          <div class="booking-summary" id="bookingSummary">
+            <p>Completa el formulario para ver el detalle de tu cita.</p>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <section class="section" id="contacto">
-    <div class="container contact-grid">
-      <div class="contact-box">
-        <span class="section-tag">Contacto</span>
-        <h2>Estamos listos para atenderte</h2>
-        <p>
-          Agenda tu cita o contáctanos directamente para una atención más rápida
-          por WhatsApp.
+        <div class="box">
+          <h4>Horario</h4>
+          <div class="info-list">
+            <div class="info-item"><strong>Lunes, miércoles y jueves:</strong> 8:00 AM a 8:00 PM</div>
+            <div class="info-item"><strong>Viernes y sábado:</strong> 8:00 AM a 9:00 PM</div>
+            <div class="info-item"><strong>Cortes niños:</strong> 30 minutos</div>
+            <div class="info-item"><strong>Demás servicios:</strong> 1 hora</div>
+            <div class="info-item"><strong>Recomendación:</strong> llega 10 minutos antes</div>
+          </div>
+        </div>
+
+        <p class="foot-note">
+          Reserva con calma. El sistema te mostrará solo las horas disponibles.
         </p>
-
-        <div class="contact-info">
-          <div class="contact-item">
-            <small>Ubicación</small>
-            <p>La Pinta Barber, Los Llanos, San Pedro de Macorís, RD</p>
-          </div>
-
-          <div class="contact-item">
-            <small>Teléfono</small>
-            <p>
-              <a href="tel:+18493757710">+1 (849) 375-7710</a>
-            </p>
-          </div>
-
-          <div class="contact-item">
-            <small>Instagram</small>
-            <p>
-              <a href="https://www.instagram.com/lapinta_barber/" target="_blank" rel="noopener noreferrer">
-                @lapinta_barber
-              </a>
-            </p>
-          </div>
-        </div>
-
-        <div class="contact-actions">
-          <a
-            href="https://wa.me/18493757710"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-primary"
-          >
-            Escribir por WhatsApp
-          </a>
-
-          <a href="cita.html" class="btn btn-secondary">
-            Reservar cita
-          </a>
-        </div>
-      </div>
-
-      <div class="map-box">
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3781.0045146839834!2d-69.49556079999999!3d18.618866699999998!2m3!1f0!3f0!0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8eaf710073f004cf%3A0xba6e8449aff7acca!2sLa%20Pinta%20Barber!5e0!3m2!1ses-419!2sdo!4v1775521244096!5m2!1ses-419!2sdo"
-          allowfullscreen
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-          title="Mapa de La Pinta Barber"
-        ></iframe>
-      </div>
-    </div>
-  </section>
-
-  <section class="cta-section">
-    <div class="container cta-content">
-      <span class="section-tag">Reserva hoy</span>
-      <h2>Haz tu cita y lleva tu imagen a otro nivel</h2>
-
-      <div class="cta-buttons">
-        <a href="cita.html" class="btn btn-primary">Agendar ahora</a>
-        <a
-          href="https://wa.me/18493757710"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn btn-secondary"
-        >
-          WhatsApp
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <footer class="footer">
-    <div class="container footer-content">
-      <div>
-        <h3>LA PINTA <span>BARBER</span></h3>
-        <p>Diseño, estilo y reservas en línea.</p>
-      </div>
-
-      <div class="footer-copy">
-        <p>© 2026 Todos los derechos reservados</p>
-      </div>
-    </div>
-  </footer>
+      </aside>
+    </section>
+  </main>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -419,37 +1174,43 @@
   <script src="script.js"></script>
 
   <script>
-    const menuToggle = document.getElementById("menuToggle");
-    const navPanel = document.getElementById("navPanel");
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        try {
+          const db = firebase.database();
+          const servicioSelect = document.getElementById("servicio");
 
-    if (menuToggle && navPanel) {
-      menuToggle.addEventListener("click", () => {
-        navPanel.classList.toggle("open");
-        menuToggle.classList.toggle("active");
-        const expanded = menuToggle.getAttribute("aria-expanded") === "true";
-        menuToggle.setAttribute("aria-expanded", String(!expanded));
-      });
+          db.ref("services").on("value", (snapshot) => {
+            const serviciosData = snapshot.val();
+            const valorSeleccionado = servicioSelect.value;
 
-      document.querySelectorAll(".nav-mobile-links a, .nav-mobile-actions a").forEach((link) => {
-        link.addEventListener("click", () => {
-          navPanel.classList.remove("open");
-          menuToggle.classList.remove("active");
-          menuToggle.setAttribute("aria-expanded", "false");
-        });
-      });
+            servicioSelect.innerHTML = '<option value="">Selecciona un servicio</option>';
 
-      document.addEventListener("click", (e) => {
-        if (
-          window.innerWidth <= 1100 &&
-          !navPanel.contains(e.target) &&
-          !menuToggle.contains(e.target)
-        ) {
-          navPanel.classList.remove("open");
-          menuToggle.classList.remove("active");
-          menuToggle.setAttribute("aria-expanded", "false");
+            if (serviciosData) {
+              Object.values(serviciosData).forEach((servicio) => {
+                if (servicio && servicio.nombre) {
+                  const option = document.createElement("option");
+                  option.value = servicio.nombre;
+                  option.textContent = `${servicio.nombre} - RD$${servicio.precio}`;
+                  option.dataset.duracion = servicio.duracion;
+                  servicioSelect.appendChild(option);
+                }
+              });
+
+              if (valorSeleccionado) {
+                servicioSelect.value = valorSeleccionado;
+                servicioSelect.dispatchEvent(new Event('change'));
+              }
+            } else {
+              servicioSelect.innerHTML = '<option value="">No hay servicios disponibles</option>';
+              servicioSelect.dispatchEvent(new Event('change'));
+            }
+          });
+        } catch(error) {
+          console.error("No se pudo cargar los servicios de Firebase:", error);
         }
-      });
-    }
+      }, 500);
+    });
   </script>
 </body>
 </html>
