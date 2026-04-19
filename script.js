@@ -67,13 +67,13 @@ if (typeof emailjs !== "undefined") {
    HORARIO REAL
 ========================= */
 const normalWorkingDays = {
-  0: null, // domingo cerrado
-  1: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] }, // lunes
-  2: null, // martes cerrado
-  3: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] }, // miércoles
-  4: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] }, // jueves
-  5: { start: "8:00 AM", end: "9:00 PM", breaks: [] }, // viernes
-  6: { start: "8:00 AM", end: "9:00 PM", breaks: [] }  // sábado
+  0: null,
+  1: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+  2: null,
+  3: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+  4: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+  5: { start: "8:00 AM", end: "9:00 PM", breaks: [] },
+  6: { start: "8:00 AM", end: "9:00 PM", breaks: [] }
 };
 
 const extendedWorkingDays = {
@@ -97,6 +97,21 @@ const extendedTuesdaySchedule = {
   end: "10:00 PM",
   breaks: []
 };
+
+function cloneSchedule(config) {
+  if (!config) return null;
+  return {
+    start: config.start,
+    end: config.end,
+    breaks: Array.isArray(config.breaks) ? [...config.breaks] : []
+  };
+}
+
+function getDefaultOpenSchedule() {
+  return extendedHours
+    ? { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+    : { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+}
 
 /* =========================
    UTILIDADES
@@ -425,19 +440,26 @@ function getWorkingConfigByDate(dateString) {
 
   if (day === 2) {
     if (!tuesdayForcedOpen && !override?.forceOpen) return null;
-    config = extendedHours ? extendedTuesdaySchedule : normalTuesdaySchedule;
+    config = cloneSchedule(extendedHours ? extendedTuesdaySchedule : normalTuesdaySchedule);
   } else {
     const source = extendedHours ? extendedWorkingDays : normalWorkingDays;
-    config = source[day] || null;
+    config = cloneSchedule(source[day] || null);
   }
 
   if (!config && override?.forceOpen) {
-    config = extendedHours
-      ? { start: "8:00 AM", end: "10:00 PM", breaks: [] }
-      : { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    config = cloneSchedule(getDefaultOpenSchedule());
   }
 
   if (!config) return null;
+
+  if (override?.customStart && override?.customEnd) {
+    config.start = formatStatusTime(override.customStart);
+    config.end = formatStatusTime(override.customEnd);
+  }
+
+  if (Array.isArray(override?.breaks)) {
+    config.breaks = override.breaks.map(formatStatusTime);
+  }
 
   return applySpecialClosingToConfig(dateString, config);
 }
@@ -671,200 +693,180 @@ function renderHours() {
   if (!availableCount) {
     const empty = document.createElement("p");
     empty.style.color = "#93a3bd";
-    empty.style.gridColumn = "1 / -1";
-    empty.style.marginTop = "10px";
-    empty.textContent = "No quedan horarios disponibles para esta selección.";
+    empty.style.gridColumn = "1/-1";
+    empty.style.marginTop = "12px";
+    empty.textContent = "No hay horas disponibles para esa fecha.";
     hoursGrid.appendChild(empty);
   }
-}
-
-function updateSummary() {
-  if (!bookingSummary) return;
-
-  const nombre = nombreInput?.value.trim() || "-";
-  const telefono = telefonoInput?.value.trim() || "-";
-  const servicio = servicioInput?.value || "-";
-  const barbero = barberoInput?.value || "-";
-  const fecha = fechaInput?.value ? formatDateSafe(fechaInput.value) : "-";
-  const hora = horaInput?.value || "-";
-
-  const duration = getServiceDuration(servicio);
-  const precio = getServicePrice(servicio);
-
-  const anonimo = anonimoInput?.checked ? "Sí" : "No";
-  const nombrePublico = anonimo === "Sí" ? "Anónimo" : nombre;
-  const metodoPago = getMetodoPagoSeleccionado() || "-";
-  const estadoBarberia = getShopStatus().type === "open" ? "Abierta" : "Cerrada";
-
-  bookingSummary.innerHTML = `
-    <p><strong>Nombre real:</strong> ${nombre}</p>
-    <p><strong>Nombre en público:</strong> ${nombrePublico}</p>
-    <p><strong>Teléfono:</strong> ${telefono}</p>
-    <p><strong>Servicio:</strong> ${servicio}</p>
-    <p><strong>Precio:</strong> ${precio ? `RD$${precio}` : "-"}</p>
-    <p><strong>Barbero:</strong> ${barbero}</p>
-    <p><strong>Fecha:</strong> ${fecha}</p>
-    <p><strong>Hora:</strong> ${hora}</p>
-    <p><strong>Duración:</strong> ${duration} minutos</p>
-    <p><strong>Anónimo en público:</strong> ${anonimo}</p>
-    <p><strong>Método de pago:</strong> ${metodoPago}</p>
-    <p><strong>Estado barbería:</strong> ${estadoBarberia}</p>
-  `;
 }
 
 function renderAppointments() {
   if (!appointmentsList) return;
 
-  const publicStatTotal = document.getElementById("publicStatTotal");
-  const publicStatApproved = document.getElementById("publicStatApproved");
-  const publicStatPending = document.getElementById("publicStatPending");
   const todayISO = getTodayISO();
 
-  const publicAppointments = appointments.filter(app => {
-    if (app.status === "cancelled") return false;
-    const agendaVisibleDate = app.agendaDesde || app.fecha;
-    return agendaVisibleDate <= todayISO;
-  });
+  const sortedAppointments = [...appointments]
+    .filter(app => {
+      if (app.status === "cancelled") return false;
+      if (!app.fecha) return false;
+      if (app.agendaDesde && todayISO < app.agendaDesde) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const dateA = `${a.fecha} ${to24Hour(a.hora)}`;
+      const dateB = `${b.fecha} ${to24Hour(b.hora)}`;
+      return dateA.localeCompare(dateB);
+    });
 
-  const orderedAppointments = [...publicAppointments].sort((a, b) => {
-    const aValue = `${a.fecha} ${to24Hour(a.hora)}`;
-    const bValue = `${b.fecha} ${to24Hour(b.hora)}`;
-    return aValue.localeCompare(bValue);
-  });
-
-  const approvedCount = orderedAppointments.filter(app => app.status === "approved").length;
-  const pendingCount = orderedAppointments.filter(app => app.status === "pending").length;
-
-  if (publicStatTotal) publicStatTotal.textContent = orderedAppointments.length;
-  if (publicStatApproved) publicStatApproved.textContent = approvedCount;
-  if (publicStatPending) publicStatPending.textContent = pendingCount;
-
-  appointmentsList.innerHTML = "";
-
-  if (!orderedAppointments.length) {
+  if (!sortedAppointments.length) {
     appointmentsList.innerHTML = `
-      <div class="public-empty-state">
-        <h3>No hay citas agendadas</h3>
-        <p>Cuando entren nuevas reservas aparecerán aquí automáticamente.</p>
-      </div>
+      <article class="appointment-card empty">
+        <h3>No hay citas visibles</h3>
+        <p>Todavía no hay reservas disponibles para mostrar en esta sección.</p>
+      </article>
     `;
     return;
   }
 
-  orderedAppointments.forEach(app => {
-    const item = document.createElement("article");
-    item.classList.add("appointment-item");
-
-    const publicStatus =
-      app.status === "approved"
-        ? '<span class="public-status approved">Aprobada</span>'
-        : '<span class="public-status pending">Pendiente</span>';
-
-    const publicName = app.anonimo === true ? "Anónimo" : (app.nombre || "Cliente");
-    const price = app.precio || getServicePrice(app.servicio);
-
-    item.innerHTML = `
-      <div class="appointment-top">
-        <div class="appointment-title-box">
-          <h3>${escapeHTML(app.servicio)}</h3>
-          <div class="appointment-subtitle">Reserva pública visible para clientes</div>
-        </div>
-        ${publicStatus}
+  appointmentsList.innerHTML = sortedAppointments.map(app => `
+    <article class="appointment-card">
+      <div class="appointment-card-top">
+        <span class="appointment-status ${app.status}">${escapeHTML(app.status)}</span>
+        <span class="appointment-price">RD$${Number(app.precio || getServicePrice(app.servicio) || 0)}</span>
       </div>
+      <h3>${escapeHTML(app.servicio || "Servicio")}</h3>
+      <p><strong>Cliente:</strong> ${escapeHTML(app.anonimo ? "Reservado" : app.nombre || "Sin nombre")}</p>
+      <p><strong>Barbero:</strong> ${escapeHTML(app.barbero || "No definido")}</p>
+      <p><strong>Fecha:</strong> ${escapeHTML(formatDateSafe(app.fecha))}</p>
+      <p><strong>Hora:</strong> ${escapeHTML(app.hora || "Sin hora")}</p>
+    </article>
+  `).join("");
+}
 
-      <div class="appointment-meta-grid">
-        <div class="appointment-meta-card">
-          <span>Cliente</span>
-          <strong>${escapeHTML(publicName)}</strong>
-        </div>
+function updateSummary() {
+  if (!bookingSummary) return;
 
-        <div class="appointment-meta-card">
-          <span>Barbero</span>
-          <strong>${escapeHTML(app.barbero)}</strong>
-        </div>
+  const nombre = nombreInput?.value?.trim() || "Sin nombre";
+  const telefono = telefonoInput?.value?.trim() || "Sin teléfono";
+  const servicio = servicioInput?.value || "Sin servicio";
+  const barbero = barberoInput?.value || "Sin barbero";
+  const fecha = fechaInput?.value ? formatDateSafe(fechaInput.value) : "Sin fecha";
+  const hora = horaInput?.value || "Sin hora";
+  const metodo = getMetodoPagoSeleccionado();
+  const precio = servicioInput?.value ? `RD$${getServicePrice(servicio)}` : "RD$0";
 
-        <div class="appointment-meta-card">
-          <span>Fecha</span>
-          <strong>${escapeHTML(formatDateSafe(app.fecha))}</strong>
-        </div>
-
-        <div class="appointment-meta-card">
-          <span>Hora</span>
-          <strong>${escapeHTML(app.hora)}</strong>
-        </div>
-
-        <div class="appointment-meta-card">
-          <span>Duración</span>
-          <strong>${escapeHTML(String(app.duration))} min</strong>
-        </div>
-
-        <div class="appointment-meta-card">
-          <span>Precio</span>
-          <strong>RD$${escapeHTML(String(price))}</strong>
-        </div>
-      </div>
-    `;
-
-    appointmentsList.appendChild(item);
-  });
+  bookingSummary.innerHTML = `
+    <div class="summary-item"><strong>Nombre:</strong> <span>${escapeHTML(anonimoInput?.checked ? "Reservado" : nombre)}</span></div>
+    <div class="summary-item"><strong>Teléfono:</strong> <span>${escapeHTML(telefono)}</span></div>
+    <div class="summary-item"><strong>Servicio:</strong> <span>${escapeHTML(servicio)}</span></div>
+    <div class="summary-item"><strong>Barbero:</strong> <span>${escapeHTML(barbero)}</span></div>
+    <div class="summary-item"><strong>Fecha:</strong> <span>${escapeHTML(fecha)}</span></div>
+    <div class="summary-item"><strong>Hora:</strong> <span>${escapeHTML(hora)}</span></div>
+    <div class="summary-item"><strong>Pago:</strong> <span>${escapeHTML(metodo)}</span></div>
+    <div class="summary-item"><strong>Precio:</strong> <span>${escapeHTML(precio)}</span></div>
+  `;
 }
 
 /* =========================
-   ESTADO DE LA BARBERÍA
+   ESTADO REAL DE LA BARBERÍA
 ========================= */
-function getShopStatus() {
-  const todayISO = getTodayISO();
-  const todayDay = getDayFromDate(todayISO);
-  const override = getDailyOverride(todayISO);
+function getShopStatusForDate(dateString) {
+  if (!dateString) {
+    return {
+      type: "closed",
+      text: "Selecciona una fecha",
+      showBanner: false
+    };
+  }
+
+  const override = getDailyOverride(dateString);
+  const config = getWorkingConfigByDate(dateString);
+
+  if (!shopIsOpen && dateString === getTodayISO() && !override?.forceOpen) {
+    return {
+      type: "closed",
+      text: "Cerrada por hoy",
+      showBanner: true
+    };
+  }
+
+  if (!config) {
+    return {
+      type: "closed",
+      text: "Cerrada ese día",
+      showBanner: true
+    };
+  }
+
+  const isToday = dateString === getTodayISO();
+
+  if (!isToday) {
+    return {
+      type: "open",
+      text: `Disponible ${config.start} - ${config.end}`,
+      showBanner: false
+    };
+  }
+
+  const now = new Date();
+  const currentMinutes = (now.getHours() * 60) + now.getMinutes();
+  const startMinutes = convertToMinutes(config.start);
+  const endMinutes = convertToMinutes(config.end);
 
   if (!shopIsOpen && !override?.forceOpen) {
     return {
       type: "closed",
-      text: "Cerrado • Puedes agendar para otro día u hora disponible",
+      text: "Cerrada por hoy",
       showBanner: true
     };
   }
 
-  if (override?.forceClosed === true) {
-    return {
-      type: "closed",
-      text: "Cerrado hoy • Puedes agendar para otro día u hora disponible",
-      showBanner: true
-    };
-  }
-
-  if (todayDay === 2 && !tuesdayForcedOpen && !override?.forceOpen) {
-    return {
-      type: "closed",
-      text: "Martes cerrado • Puedes agendar para otro día u hora disponible",
-      showBanner: true
-    };
-  }
-
-  const activeBlock = getActiveCustomClosureForNow(todayISO);
+  const activeBlock = getActiveCustomClosureForNow(dateString);
   if (activeBlock) {
     return {
-      type: "closed",
-      text: `Cerrado por bloque de horas • Volvemos a las ${formatStatusTime(activeBlock.end)}`,
+      type: "break",
+      text: activeBlock.reason
+        ? `Cerrada ahora: ${activeBlock.reason}`
+        : `Cerrada hasta ${activeBlock.end}`,
       showBanner: true
     };
   }
 
-  const config = getWorkingConfigByDate(todayISO);
-
-  if (config) {
+  if (currentMinutes < startMinutes) {
     return {
-      type: "open",
-      text: `Abierto hoy • ${config.start} - ${config.end}`,
+      type: "closed",
+      text: `Abre hoy a las ${config.start}`,
+      showBanner: false
+    };
+  }
+
+  if (currentMinutes >= endMinutes) {
+    return {
+      type: "closed",
+      text: "Cerrada por hoy",
+      showBanner: true
+    };
+  }
+
+  const nowSlot = convertToTime(currentMinutes - (currentMinutes % 30));
+  if ((config.breaks || []).includes(nowSlot)) {
+    return {
+      type: "break",
+      text: "En receso",
       showBanner: false
     };
   }
 
   return {
-    type: "closed",
-    text: "Cerrado • Puedes agendar para otro día u hora disponible",
-    showBanner: true
+    type: "open",
+    text: `Abierta hasta las ${config.end}`,
+    showBanner: false
   };
+}
+
+function getShopStatus() {
+  const selectedDate = fechaInput?.value || getTodayISO();
+  return getShopStatusForDate(selectedDate);
 }
 
 function updateShopStatusBadge() {
