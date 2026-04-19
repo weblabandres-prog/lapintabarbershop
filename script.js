@@ -986,62 +986,58 @@ function getNextOpenInfoFromDate(baseDate = new Date()) {
   return null;
 }
 
+/*
+  CAMBIO IMPORTANTE:
+  La portada ahora sigue la lógica del admin para el estado general.
+  Solo mostrará "cerrado" si:
+  - el switch general está cerrado
+  - es martes y martes no está habilitado
+  - hay un bloque de horas activo en este momento
+*/
 function getShopStatus() {
+  const now = new Date();
+  const todayISO = getTodayISO();
+  const todayDay = getDayFromDate(todayISO);
+
   if (!shopIsOpen) {
     return {
       type: "closed",
-      text: "Cerrado • Puedes agendar para otro día u hora disponible"
+      text: "Cerrado • Puedes agendar para otro día u hora disponible",
+      showBanner: true
     };
   }
 
-  const now = new Date();
-  const todayISO = getTodayISO();
-  const config = getWorkingConfigByDate(todayISO);
-
-  if (!config) {
+  if (todayDay === 2 && !tuesdayForcedOpen) {
     return {
       type: "closed",
-      text: "Cerrado • Puedes agendar para otro día u hora disponible"
-    };
-  }
-
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const startMinutes = convertToMinutes(config.start);
-  const endMinutes = convertToMinutes(config.end);
-
-  if (currentMinutes < startMinutes || currentMinutes >= endMinutes) {
-    return {
-      type: "closed",
-      text: "Cerrado • Puedes agendar para otro día u hora disponible"
+      text: "Martes cerrado • Puedes agendar para otro día u hora disponible",
+      showBanner: true
     };
   }
 
   const activeBlock = getActiveCustomClosureForNow(todayISO);
-
   if (activeBlock) {
     return {
       type: "closed",
-      text: `Cerrado por bloque de horas • Volvemos a las ${formatStatusTime(activeBlock.end)}`
+      text: `Cerrado por bloque de horas • Volvemos a las ${formatStatusTime(activeBlock.end)}`,
+      showBanner: true
     };
   }
 
-  const breaks = Array.isArray(config.breaks) ? config.breaks : [];
-  if (breaks.length) {
-    const breakMinutes = breaks.map(convertToMinutes);
-    const minBreak = Math.min(...breakMinutes);
-    const maxBreak = Math.max(...breakMinutes) + 30;
+  const config = getWorkingConfigByDate(todayISO);
 
-    if (currentMinutes >= minBreak && currentMinutes < maxBreak) {
-      return {
-        type: "break",
-        text: `En descanso • Volvemos a la ${convertToTime(maxBreak)}`
-      };
-    }
+  if (config) {
+    return {
+      type: "open",
+      text: `Abierto hoy • ${config.start} - ${config.end}`,
+      showBanner: false
+    };
   }
 
   return {
     type: "open",
-    text: `Abierto hoy • ${config.start} - ${config.end}`
+    text: "Abierta • Puedes agendar tu cita",
+    showBanner: false
   };
 }
 
@@ -1058,7 +1054,7 @@ function updateShopStatusBadge() {
   badge.textContent = status.text;
 
   if (closedBanner) {
-    closedBanner.classList.toggle("show", !shopIsOpen || status.type === "closed");
+    closedBanner.classList.toggle("show", status.showBanner === true);
   }
 }
 
