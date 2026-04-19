@@ -7,11 +7,9 @@
   <meta name="description" content="Panel de administracion de La Pinta Barber para gestionar citas, horarios, bloqueos y precios." />
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-
   <style>
     :root {
       --bg: #05070b;
@@ -23,7 +21,6 @@
       --line-strong: rgba(255, 255, 255, 0.14);
       --text: #f3f7ff;
       --muted: #b8c6da;
-      --muted-2: #8ea2bf;
       --accent: #1f86ff;
       --accent-2: #61a9ff;
       --danger: #dc2626;
@@ -34,11 +31,8 @@
       --warning-soft: rgba(245, 158, 11, 0.12);
       --radius: 24px;
       --shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
-      --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.38);
     }
-
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       font-family: "Inter", sans-serif;
@@ -49,703 +43,158 @@
         linear-gradient(180deg, #05070b 0%, #0b1018 50%, #03050a 100%);
       overflow-x: hidden;
     }
-
     a { color: inherit; text-decoration: none; }
     button, input, select { font: inherit; }
     button { cursor: pointer; }
-    .hidden { display: none !important; }
-
-    .admin-shell { display: grid; grid-template-columns: 310px 1fr; min-height: 100vh; }
+    .hidden { display:none!important; }
+    .admin-shell { display:grid; grid-template-columns:310px 1fr; min-height:100vh; }
     .sidebar {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      padding: 24px 20px;
-      border-right: 1px solid var(--line);
-      background: rgba(7, 10, 16, 0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      z-index: 30;
-    }
-
-    .brand-box, .filters-card, .table-card, .tool-card, .login-card, .stat-card, .mobile-card, .status-card, .service-item-card {
-      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
-    .brand-box { padding: 22px; }
-    .brand-mini, .eyebrow {
-      display: inline-block;
-      font-size: 0.76rem;
-      letter-spacing: 0.26em;
-      text-transform: uppercase;
-      color: #8fc0ff;
-      margin-bottom: 10px;
-      font-weight: 800;
-    }
-
-    .brand-box h1, .topbar h2, .filters-header h3, .table-header h3, .tool-card h3, .login-card h2, .status-head h3 {
-      margin: 0;
-    }
-
-    .brand-box h1 span { color: var(--accent-2); }
-    .brand-box p, .topbar p, .filters-card p, .tool-card p, .login-card p, .sidebar-footer p, .empty-state p, .login-hint, .status-help, .table-subtext {
-      color: var(--muted);
-    }
-
-    .admin-logo-wrap {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 92px;
-      height: 92px;
-      margin: 8px 0 16px;
-      border-radius: 24px;
-      background:
-        radial-gradient(circle at 30% 20%, rgba(255,255,255,0.14), transparent 42%),
-        linear-gradient(180deg, rgba(17, 24, 37, 0.98), rgba(8, 13, 22, 0.98));
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow:
-        0 16px 36px rgba(0,0,0,0.32),
-        inset 0 1px 0 rgba(255,255,255,0.06),
-        0 0 0 1px rgba(31,134,255,0.10);
-      overflow: hidden;
-    }
-
-    .admin-logo {
-      height: 66px;
-      width: auto;
-      display: block;
-      object-fit: contain;
-    }
-
-    .sidebar-nav { display: grid; gap: 10px; margin: 4px 0 auto; }
-    .sidebar-nav a {
-      padding: 14px 16px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      color: #d6e0ee;
-      transition: 0.25s ease;
-      font-weight: 700;
-      background: rgba(255,255,255,0.02);
-    }
-
-    .sidebar-nav a:hover, .sidebar-nav a.active {
-      background: rgba(31,134,255,0.12);
-      border-color: rgba(31,134,255,0.24);
-      color: #fff;
-      transform: translateY(-1px);
-    }
-
-    .sidebar-footer { border-top: 1px solid var(--line); padding-top: 18px; }
-    .sidebar-footer p { margin: 0 0 10px; line-height: 1.6; }
-
-    .main-content { padding: 28px; min-width: 0; }
-
-    .mobile-topbar {
-      display: none;
-      position: sticky;
-      top: 0;
-      z-index: 35;
-      padding: 14px 16px calc(14px + env(safe-area-inset-top, 0px));
-      background: rgba(7, 10, 16, 0.94);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--line);
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .mobile-topbar h2 { font-size: 1rem; margin: 0; }
-
-    .mobile-menu-btn {
-      border: 1px solid var(--line-strong);
-      background: rgba(255,255,255,0.03);
-      color: #fff;
-      border-radius: 16px;
-      width: 52px;
-      height: 52px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 5px;
-      padding: 0;
-    }
-
-    .mobile-menu-btn span {
-      width: 22px;
-      height: 2px;
-      background: #fff;
-      border-radius: 999px;
-      transition: 0.25s ease;
-    }
-
-    .mobile-menu-btn.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-    .mobile-menu-btn.active span:nth-child(2) { opacity: 0; }
-    .mobile-menu-btn.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 25;
-    }
-
-    .sidebar-overlay.show { display: block; }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: center;
-      margin-bottom: 24px;
-    }
-
-    .topbar h2 {
-      font-family: "Cormorant Garamond", serif;
-      font-size: 2.6rem;
-      line-height: 0.95;
-      letter-spacing: -0.03em;
-    }
-
-    .topbar p {
-      margin: 8px 0 0;
-      max-width: 760px;
-      line-height: 1.65;
-    }
-
-    .topbar-actions, .table-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .ghost-link, .primary-btn, .ghost-btn, .danger-btn, .success-btn, .warning-btn {
-      border-radius: 999px;
-      padding: 12px 16px;
-      border: 1px solid var(--line-strong);
-      transition: 0.25s ease;
-      min-height: 48px;
-      font-weight: 700;
-      color: #fff;
-      background: rgba(255,255,255,0.03);
-    }
-
-    .primary-btn {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: #07111f;
-      border: none;
-      box-shadow: 0 14px 28px rgba(31,134,255,0.18);
-    }
-
-    .primary-btn:hover, .ghost-btn:hover, .ghost-link:hover, .danger-btn:hover, .success-btn:hover, .warning-btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .primary-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-    .danger-btn { background: var(--danger-soft); border-color: rgba(220, 38, 38, 0.25); }
-    .success-btn { background: var(--success-soft); border-color: rgba(62, 207, 142, 0.25); }
-    .warning-btn { background: var(--warning-soft); border-color: rgba(245, 158, 11, 0.25); }
-    .full-width { width: 100%; }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 16px;
-      margin-bottom: 22px;
-    }
-
-    .stat-card { padding: 22px; position: relative; overflow: hidden; }
-    .stat-card span { display: block; font-size: 0.95rem; color: var(--muted); margin-bottom: 8px; }
-    .stat-card strong { font-family: "Cormorant Garamond", serif; font-size: 2.2rem; color: #fff; line-height: 1; }
-
-    .status-card, .filters-card, .table-card {
-      padding: 22px;
-      margin-bottom: 22px;
-    }
-
-    .status-head, .filters-header, .table-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: center;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-    }
-
-    .status-head h3, .filters-header h3, .table-header h3 { font-size: 1.15rem; }
-
-    .badge-inline {
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: rgba(31,134,255,0.12);
-      color: #cfe5ff;
-      font-size: 0.88rem;
-      border: 1px solid rgba(31,134,255,0.2);
-      white-space: nowrap;
-      font-weight: 700;
-    }
-
-    .badge-inline.open {
-      background: rgba(62,207,142,0.12);
-      color: #8ff0bc;
-      border-color: rgba(62,207,142,0.22);
-    }
-
-    .badge-inline.closed {
-      background: rgba(217,83,79,0.12);
-      color: #ff9e9a;
-      border-color: rgba(217,83,79,0.22);
-    }
-
-    .two-line-status { display: flex; flex-direction: column; gap: 10px; }
-    .status-help, .shop-status-text { margin: 0 0 18px; font-size: 0.95rem; line-height: 1.65; }
-
-    .filters-grid, .tools-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .time-block-form {
-      display: grid;
-      grid-template-columns: 1.1fr 0.8fr 0.8fr 1.4fr auto;
-      gap: 14px;
-      align-items: end;
-    }
-
-    .time-block-list {
-      display: grid;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .time-block-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255,255,255,0.02);
-    }
-
-    .time-block-item h4 { margin: 0 0 5px; color: #fff; font-size: 1rem; }
-    .time-block-item p { margin: 0; color: var(--muted); line-height: 1.5; }
-    .time-block-item strong { color: #fff; }
-
-    .time-block-meta {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .mini-pill {
-      display: inline-flex;
-      align-items: center;
-      min-height: 32px;
-      padding: 6px 10px;
-      border: 1px solid rgba(31,134,255,0.2);
-      border-radius: 999px;
-      background: rgba(31,134,255,0.10);
-      color: #cfe5ff;
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
-
-    .services-grid { display: grid; gap: 14px; }
-    .service-item-card { padding: 20px; transition: 0.3s ease; }
-
-    .service-view-mode { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
-    .service-info h4 { margin: 0 0 5px 0; color: #fff; font-size: 1.1rem; }
-    .service-info p { margin: 0; font-size: 0.95rem; color: var(--muted); }
-    .service-info strong { color: var(--success); font-weight: 700; }
-
-    .service-editor-mode {
-      display: none;
-      grid-template-columns: 1.5fr 1fr 1fr auto auto;
-      gap: 12px;
-      align-items: end;
-    }
-
-    .service-item-card.editing .service-view-mode { display: none; }
-    .service-item-card.editing .service-editor-mode { display: grid; }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .field label { font-size: 0.92rem; color: var(--muted); font-weight: 700; }
-
-    .field input, .field select {
-      width: 100%;
-      background: #111821;
-      border: 1px solid var(--line-strong);
-      color: #fff;
-      border-radius: 16px;
-      padding: 13px 14px;
-      outline: none;
-      font-size: 16px;
-      min-height: 52px;
-    }
-
-    .field input:focus, .field select:focus {
-      border-color: rgba(31,134,255,0.34);
-      box-shadow: 0 0 0 3px rgba(31,134,255,0.10);
-    }
-
-    .table-subtext { margin: 4px 0 0; font-size: 0.95rem; }
-
-    .table-wrap {
-      overflow-x: auto;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      background: rgba(255,255,255,0.015);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 1180px;
-      background: transparent;
-    }
-
-    thead th {
-      text-align: left;
-      font-size: 0.82rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    tbody td {
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--line);
-      vertical-align: top;
-    }
-
-    tbody tr:hover { background: rgba(255,255,255,0.02); }
-
-    .client-box strong, .service-box strong {
-      display: block;
-      margin-bottom: 4px;
-      color: #fff;
-    }
-
-    .client-box small, .service-box small, .meta-text {
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 110px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-transform: capitalize;
-    }
-
-    .status-pill.pending {
-      background: rgba(245,158,11,0.12);
-      color: #ffc76b;
-      border: 1px solid rgba(245,158,11,0.22);
-    }
-
-    .status-pill.approved {
-      background: rgba(62,207,142,0.12);
-      color: #8ff0bc;
-      border: 1px solid rgba(62,207,142,0.22);
-    }
-
-    .status-pill.cancelled {
-      background: rgba(217,83,79,0.12);
-      color: #ff9e9a;
-      border: 1px solid rgba(217,83,79,0.22);
-    }
-
-    .row-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .row-actions button {
-      padding: 10px 12px;
-      border-radius: 12px;
-      color: #fff;
-      border: 1px solid var(--line-strong);
-      min-height: 42px;
-      font-weight: 600;
-      background: rgba(255,255,255,0.03);
-    }
-
-    .row-actions button:nth-child(1) { background: rgba(62,207,142,0.12); border-color: rgba(62,207,142,0.22); }
-    .row-actions button:nth-child(2) { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.22); }
-    .row-actions button:nth-child(3) { background: rgba(220,38,38,0.12); border-color: rgba(220,38,38,0.22); }
-
-    .mobile-cards {
-      display: none;
-      gap: 16px;
-    }
-
-    .mobile-card {
-      background: linear-gradient(180deg, #121c2b, #0f1724);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 20px;
-      box-shadow: 0 14px 35px rgba(0,0,0,0.22);
-    }
-
-    .mobile-card-top {
-      display: block;
-      margin-bottom: 0;
-    }
-
-    .mobile-service-title {
-      font-size: 1.35rem;
-      font-weight: 800;
-      color: #ffffff;
-      line-height: 1.2;
-      margin: 0 0 16px;
-    }
-
-    .mobile-status-pill {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 54px;
-      border-radius: 999px;
-      font-size: 0.95rem;
-      font-weight: 900;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 18px;
-      border: 1px solid transparent;
-    }
-
-    .mobile-status-approved {
-      background: rgba(62, 207, 142, 0.12);
-      color: #8ff0bc;
-      border-color: rgba(62, 207, 142, 0.25);
-    }
-
-    .mobile-status-pending {
-      background: rgba(245, 158, 11, 0.12);
-      color: #ffc76b;
-      border-color: rgba(245, 158, 11, 0.25);
-    }
-
-    .mobile-status-cancelled {
-      background: rgba(229, 57, 53, 0.12);
-      color: #ff9e99;
-      border-color: rgba(229, 57, 53, 0.25);
-    }
-
-    .mobile-fields {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-
-    .mobile-field-box {
-      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02));
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 16px 18px;
-    }
-
-    .mobile-field-label {
-      display: block;
-      color: #8fb2e7;
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .mobile-field-value {
-      display: block;
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: 800;
-      line-height: 1.35;
-      word-break: break-word;
-    }
-
-    .mobile-actions {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .mobile-actions button {
-      min-height: 46px;
-      border-radius: 14px;
-      border: 1px solid var(--line-strong);
-      color: #fff;
-      padding: 10px 12px;
-      font-weight: 700;
-      background: rgba(255,255,255,0.03);
-    }
-
-    .mobile-actions button:nth-child(1) { background: rgba(62,207,142,0.12); border-color: rgba(62,207,142,0.22); }
-    .mobile-actions button:nth-child(2) { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.22); }
-    .mobile-actions button:nth-child(3) { background: rgba(220,38,38,0.12); border-color: rgba(220,38,38,0.22); }
-
-    .empty-state {
-      padding: 30px;
-      text-align: center;
-      border: 1px dashed var(--line-strong);
-      border-radius: 18px;
-      margin-top: 10px;
-      background: rgba(255,255,255,0.02);
-    }
-
-    .empty-state h4 { margin-bottom: 8px; }
-
-    .tool-card { padding: 22px; }
-    .tool-card h3 { margin-bottom: 8px; font-size: 1.08rem; }
-    .tool-card p { margin-bottom: 16px; line-height: 1.65; }
-
-    .toast {
-      position: fixed;
-      right: 16px;
-      left: 16px;
-      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-      background: #131b25;
-      color: #fff;
-      padding: 14px 16px;
-      border-radius: 16px;
-      border: 1px solid var(--line-strong);
-      box-shadow: var(--shadow);
-      opacity: 0;
-      transform: translateY(12px);
-      pointer-events: none;
-      transition: 0.25s ease;
-      z-index: 9999;
-      max-width: 420px;
-      margin-left: auto;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.78);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 80;
-    }
-
-    .login-card { width: min(100%, 430px); padding: 26px; }
-    .login-card h2 {
-      font-family: "Cormorant Garamond", serif;
-      font-size: 2.2rem;
-      line-height: 1;
-      margin-bottom: 8px;
-    }
-
-    .login-card p { margin-bottom: 18px; line-height: 1.65; }
-    .login-hint { display: block; margin-top: 12px; line-height: 1.6; font-size: 0.9rem; }
-
-    .services-modal {
-      width: min(100%, 750px);
-      max-height: 90vh;
-      display: flex;
-      flex-direction: column;
-      padding: 26px;
-    }
-
-    .services-scroll {
-      overflow-y: auto;
-      padding-right: 8px;
-      margin-top: 10px;
-      flex-grow: 1;
-    }
-
-    .services-scroll::-webkit-scrollbar { width: 6px; }
-    .services-scroll::-webkit-scrollbar-track { background: transparent; }
-    .services-scroll::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 10px; }
-
-    @media (max-width: 1180px) {
-      .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .filters-grid, .tools-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .time-block-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .time-block-form .primary-btn { width: 100%; }
-    }
-
-    @media (max-width: 920px) {
-      .mobile-topbar { display: flex; }
-      .admin-shell { grid-template-columns: 1fr; }
-      .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        height: 100vh;
-        width: min(84vw, 320px);
-        transform: translateX(-100%);
-        transition: 0.28s ease;
-      }
-      .sidebar.open { transform: translateX(0); }
-      .main-content { padding: 18px 16px; }
-      .topbar, .status-head, .filters-header, .table-header { flex-direction: column; align-items: stretch; }
-      .table-wrap { display: none; }
-      .mobile-cards { display: grid; }
-    }
-
-    @media (max-width: 640px) {
-      .main-content { padding: 16px; }
-      .stats-grid, .filters-grid, .tools-grid, .service-editor-mode, .time-block-form { grid-template-columns: 1fr; }
-      .brand-box, .filters-card, .table-card, .tool-card, .stat-card, .login-card, .mobile-card, .status-card, .services-modal { border-radius: 20px; }
-      .stat-card strong { font-size: 1.9rem; }
-      .mobile-actions { grid-template-columns: 1fr; }
-      .topbar h2 { font-size: 2.2rem; }
-      .topbar-actions, .table-actions { flex-direction: column; }
-      .topbar-actions > *, .table-actions > * { width: 100%; }
-      .service-view-mode, .time-block-item { flex-direction: column; align-items: flex-start; }
-      .time-block-item .danger-btn { width: 100%; }
-      .mobile-service-title { font-size: 1rem; }
+      position:sticky; top:0; height:100vh; padding:24px 20px;
+      border-right:1px solid var(--line); background:rgba(7,10,16,.92);
+      backdrop-filter:blur(16px); display:flex; flex-direction:column; gap:18px; z-index:30;
+    }
+    .brand-box,.filters-card,.table-card,.tool-card,.login-card,.stat-card,.mobile-card,.status-card,.service-item-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+    }
+    .brand-box{padding:22px;}
+    .brand-mini,.eyebrow{display:inline-block;font-size:.76rem;letter-spacing:.26em;text-transform:uppercase;color:#8fc0ff;margin-bottom:10px;font-weight:800;}
+    .brand-box h1,.topbar h2,.filters-header h3,.table-header h3,.tool-card h3,.login-card h2,.status-head h3{margin:0;}
+    .brand-box h1 span{color:var(--accent-2);}
+    .brand-box p,.topbar p,.filters-card p,.tool-card p,.login-card p,.sidebar-footer p,.empty-state p,.login-hint,.status-help,.table-subtext{color:var(--muted);}
+    .admin-logo-wrap{display:flex;align-items:center;justify-content:center;width:92px;height:92px;margin:8px 0 16px;border-radius:24px;background:linear-gradient(180deg, rgba(17,24,37,.98), rgba(8,13,22,.98));border:1px solid rgba(255,255,255,.12);overflow:hidden;}
+    .admin-logo{height:66px;width:auto;display:block;object-fit:contain;}
+    .sidebar-nav{display:grid;gap:10px;margin:4px 0 auto;}
+    .sidebar-nav a{padding:14px 16px;border:1px solid var(--line);border-radius:16px;color:#d6e0ee;transition:.25s ease;font-weight:700;background:rgba(255,255,255,.02);}
+    .sidebar-nav a:hover,.sidebar-nav a.active{background:rgba(31,134,255,.12);border-color:rgba(31,134,255,.24);color:#fff;transform:translateY(-1px);}
+    .sidebar-footer{border-top:1px solid var(--line);padding-top:18px;}
+    .main-content{padding:28px;min-width:0;}
+    .mobile-topbar{display:none;position:sticky;top:0;z-index:35;padding:14px 16px;background:rgba(7,10,16,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);align-items:center;justify-content:space-between;gap:12px;}
+    .mobile-topbar h2{font-size:1rem;margin:0;}
+    .mobile-menu-btn{border:1px solid var(--line-strong);background:rgba(255,255,255,.03);color:#fff;border-radius:16px;width:52px;height:52px;display:inline-flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;padding:0;}
+    .mobile-menu-btn span{width:22px;height:2px;background:#fff;border-radius:999px;transition:.25s ease;}
+    .mobile-menu-btn.active span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+    .mobile-menu-btn.active span:nth-child(2){opacity:0;}
+    .mobile-menu-btn.active span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:25;}
+    .sidebar-overlay.show{display:block;}
+    .topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:24px;}
+    .topbar h2{font-family:"Cormorant Garamond",serif;font-size:2.6rem;line-height:.95;letter-spacing:-.03em;}
+    .topbar p{margin:8px 0 0;max-width:760px;line-height:1.65;}
+    .topbar-actions,.table-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .ghost-link,.primary-btn,.ghost-btn,.danger-btn,.success-btn,.warning-btn{
+      border-radius:999px;padding:12px 16px;border:1px solid var(--line-strong);
+      transition:.25s ease;min-height:48px;font-weight:700;color:#fff;background:rgba(255,255,255,.03);
+    }
+    .primary-btn{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#07111f;border:none;}
+    .primary-btn:hover,.ghost-btn:hover,.ghost-link:hover,.danger-btn:hover,.success-btn:hover,.warning-btn:hover{transform:translateY(-1px);}
+    .primary-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+    .danger-btn{background:var(--danger-soft);border-color:rgba(220,38,38,.25);}
+    .success-btn{background:var(--success-soft);border-color:rgba(62,207,142,.25);}
+    .warning-btn{background:var(--warning-soft);border-color:rgba(245,158,11,.25);}
+    .full-width{width:100%;}
+    .stats-grid{display:grid;grid-template-columns:repeat(5, minmax(0,1fr));gap:16px;margin-bottom:22px;}
+    .stat-card{padding:22px;}
+    .stat-card span{display:block;font-size:.95rem;color:var(--muted);margin-bottom:8px;}
+    .stat-card strong{font-family:"Cormorant Garamond",serif;font-size:2.2rem;color:#fff;line-height:1;}
+    .status-card,.filters-card,.table-card{padding:22px;margin-bottom:22px;}
+    .status-head,.filters-header,.table-header{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+    .status-head h3,.filters-header h3,.table-header h3{font-size:1.15rem;}
+    .badge-inline{padding:10px 12px;border-radius:999px;background:rgba(31,134,255,.12);color:#cfe5ff;font-size:.88rem;border:1px solid rgba(31,134,255,.2);white-space:nowrap;font-weight:700;}
+    .badge-inline.open{background:rgba(62,207,142,.12);color:#8ff0bc;border-color:rgba(62,207,142,.22);}
+    .badge-inline.closed{background:rgba(217,83,79,.12);color:#ff9e9a;border-color:rgba(217,83,79,.22);}
+    .two-line-status{display:flex;flex-direction:column;gap:10px;}
+    .status-help,.shop-status-text{margin:0 0 18px;font-size:.95rem;line-height:1.65;}
+    .filters-grid,.tools-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}
+    .time-block-form{display:grid;grid-template-columns:1.1fr .8fr .8fr 1.4fr auto;gap:14px;align-items:end;}
+    .time-block-list{display:grid;gap:12px;margin-top:18px;}
+    .time-block-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.02);}
+    .time-block-item h4{margin:0 0 5px;color:#fff;font-size:1rem;}
+    .time-block-item p{margin:0;color:var(--muted);line-height:1.5;}
+    .time-block-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;}
+    .mini-pill{display:inline-flex;align-items:center;min-height:32px;padding:6px 10px;border:1px solid rgba(31,134,255,.2);border-radius:999px;background:rgba(31,134,255,.1);color:#cfe5ff;font-size:.82rem;font-weight:700;}
+    .services-grid{display:grid;gap:14px;}
+    .service-item-card{padding:20px;transition:.3s ease;}
+    .service-view-mode{display:flex;justify-content:space-between;align-items:center;gap:15px;}
+    .service-info h4{margin:0 0 5px;color:#fff;font-size:1.1rem;}
+    .service-info p{margin:0;font-size:.95rem;color:var(--muted);}
+    .service-info strong{color:var(--success);font-weight:700;}
+    .service-editor-mode{display:none;grid-template-columns:1.5fr 1fr 1fr auto auto;gap:12px;align-items:end;}
+    .service-item-card.editing .service-view-mode{display:none;}
+    .service-item-card.editing .service-editor-mode{display:grid;}
+    .field{display:flex;flex-direction:column;gap:8px;}
+    .field label{font-size:.92rem;color:var(--muted);font-weight:700;}
+    .field input,.field select{width:100%;background:#111821;border:1px solid var(--line-strong);color:#fff;border-radius:16px;padding:13px 14px;outline:none;font-size:16px;min-height:52px;}
+    .table-subtext{margin:4px 0 0;font-size:.95rem;}
+    .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.015);}
+    table{width:100%;border-collapse:collapse;min-width:1180px;background:transparent;}
+    thead th{text-align:left;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:16px 18px;border-bottom:1px solid var(--line);}
+    tbody td{padding:16px 18px;border-bottom:1px solid var(--line);vertical-align:top;}
+    tbody tr:hover{background:rgba(255,255,255,.02);}
+    .client-box strong,.service-box strong{display:block;margin-bottom:4px;color:#fff;}
+    .client-box small,.service-box small,.meta-text{color:var(--muted);line-height:1.5;}
+    .status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:110px;padding:8px 12px;border-radius:999px;font-size:.85rem;font-weight:700;text-transform:capitalize;}
+    .status-pill.pending{background:rgba(245,158,11,.12);color:#ffc76b;border:1px solid rgba(245,158,11,.22);}
+    .status-pill.approved{background:rgba(62,207,142,.12);color:#8ff0bc;border:1px solid rgba(62,207,142,.22);}
+    .status-pill.cancelled{background:rgba(217,83,79,.12);color:#ff9e9a;border:1px solid rgba(217,83,79,.22);}
+    .row-actions{display:flex;flex-wrap:wrap;gap:8px;}
+    .row-actions button{padding:10px 12px;border-radius:12px;color:#fff;border:1px solid var(--line-strong);min-height:42px;font-weight:600;background:rgba(255,255,255,.03);}
+    .row-actions button:nth-child(1){background:rgba(62,207,142,.12);border-color:rgba(62,207,142,.22);}
+    .row-actions button:nth-child(2){background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.22);}
+    .row-actions button:nth-child(3){background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.22);}
+    .mobile-cards{display:none;gap:16px;}
+    .mobile-card{background:linear-gradient(180deg,#121c2b,#0f1724);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:20px;box-shadow:0 14px 35px rgba(0,0,0,.22);}
+    .mobile-service-title{font-size:1.35rem;font-weight:800;color:#fff;line-height:1.2;margin:0 0 16px;}
+    .mobile-status-pill{display:flex;align-items:center;justify-content:center;width:100%;min-height:54px;border-radius:999px;font-size:.95rem;font-weight:900;letter-spacing:.05em;text-transform:uppercase;margin-bottom:18px;border:1px solid transparent;}
+    .mobile-status-approved{background:rgba(62,207,142,.12);color:#8ff0bc;border-color:rgba(62,207,142,.25);}
+    .mobile-status-pending{background:rgba(245,158,11,.12);color:#ffc76b;border-color:rgba(245,158,11,.25);}
+    .mobile-status-cancelled{background:rgba(229,57,53,.12);color:#ff9e99;border-color:rgba(229,57,53,.25);}
+    .mobile-fields{display:grid;grid-template-columns:1fr;gap:14px;}
+    .mobile-field-box{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:16px 18px;}
+    .mobile-field-label{display:block;color:#8fb2e7;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;}
+    .mobile-field-value{display:block;color:#fff;font-size:1rem;font-weight:800;line-height:1.35;word-break:break-word;}
+    .mobile-actions{display:grid;grid-template-columns:1fr;gap:10px;margin-top:16px;}
+    .mobile-actions button{min-height:46px;border-radius:14px;border:1px solid var(--line-strong);color:#fff;padding:10px 12px;font-weight:700;background:rgba(255,255,255,.03);}
+    .mobile-actions button:nth-child(1){background:rgba(62,207,142,.12);border-color:rgba(62,207,142,.22);}
+    .mobile-actions button:nth-child(2){background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.22);}
+    .mobile-actions button:nth-child(3){background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.22);}
+    .empty-state{padding:30px;text-align:center;border:1px dashed var(--line-strong);border-radius:18px;margin-top:10px;background:rgba(255,255,255,.02);}
+    .tool-card{padding:22px;}
+    .tool-card h3{margin-bottom:8px;font-size:1.08rem;}
+    .tool-card p{margin-bottom:16px;line-height:1.65;}
+    .toast{position:fixed;right:16px;left:16px;bottom:16px;background:#131b25;color:#fff;padding:14px 16px;border-radius:16px;border:1px solid var(--line-strong);box-shadow:var(--shadow);opacity:0;transform:translateY(12px);pointer-events:none;transition:.25s ease;z-index:9999;max-width:420px;margin-left:auto;}
+    .toast.show{opacity:1;transform:translateY(0);}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:80;}
+    .login-card{width:min(100%,430px);padding:26px;}
+    .login-card h2{font-family:"Cormorant Garamond",serif;font-size:2.2rem;line-height:1;margin-bottom:8px;}
+    .services-modal{width:min(100%,750px);max-height:90vh;display:flex;flex-direction:column;padding:26px;}
+    .services-scroll{overflow-y:auto;padding-right:8px;margin-top:10px;flex-grow:1;}
+    @media (max-width:1180px){.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.filters-grid,.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    @media (max-width:920px){
+      .mobile-topbar{display:flex;}
+      .admin-shell{grid-template-columns:1fr;}
+      .sidebar{position:fixed;left:0;top:0;bottom:0;height:100vh;width:min(84vw,320px);transform:translateX(-100%);transition:.28s ease;}
+      .sidebar.open{transform:translateX(0);}
+      .main-content{padding:18px 16px;}
+      .topbar,.status-head,.filters-header,.table-header{flex-direction:column;align-items:stretch;}
+      .table-wrap{display:none;}
+      .mobile-cards{display:grid;}
+    }
+    @media (max-width:640px){
+      .main-content{padding:16px;}
+      .stats-grid,.filters-grid,.tools-grid,.service-editor-mode,.time-block-form{grid-template-columns:1fr;}
+      .topbar h2{font-size:2.2rem;}
+      .topbar-actions,.table-actions{flex-direction:column;}
+      .topbar-actions>*,.table-actions>*{width:100%;}
+      .service-view-mode,.time-block-item{flex-direction:column;align-items:flex-start;}
+      .mobile-service-title{font-size:1rem;}
     }
   </style>
 </head>
 <body>
   <div class="mobile-topbar">
     <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menu admin">
-      <span></span>
-      <span></span>
-      <span></span>
+      <span></span><span></span><span></span>
     </button>
     <h2>La Pinta Admin</h2>
     <button id="mobileRefreshBtn" class="ghost-btn" type="button">Actualizar</button>
@@ -757,9 +206,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="brand-box">
         <span class="brand-mini">Panel privado</span>
-        <div class="admin-logo-wrap">
-          <img src="logo.jpeg" alt="La Pinta Barber" class="admin-logo" />
-        </div>
+        <div class="admin-logo-wrap"><img src="logo.jpeg" alt="La Pinta Barber" class="admin-logo" /></div>
         <h1>La Pinta <span>Admin</span></h1>
         <p>Control de citas, reservas, horarios y precios.</p>
       </div>
@@ -810,12 +257,13 @@
             <div id="extendedHoursBadge" class="badge-inline">Horario normal</div>
           </div>
         </div>
-        <p class="shop-status-text" id="shopStatusText">
-          La barberia esta abierta. Los clientes pueden ver y seleccionar horas disponibles.
-        </p>
+        <p class="shop-status-text" id="shopStatusText">La barberia esta abierta. Los clientes pueden ver y seleccionar horas disponibles.</p>
         <div class="table-actions">
           <button id="openShopBtn" class="success-btn">Abrir barberia</button>
           <button id="closeShopBtn" class="danger-btn">Cerrar barberia</button>
+          <button id="openOnlyTodayBtn" class="success-btn">Abrir solo hoy</button>
+          <button id="closeOnlyTodayBtn" class="danger-btn">Cerrar solo hoy</button>
+          <button id="clearTodayOverrideBtn" class="ghost-btn">Quitar cambio de hoy</button>
           <button id="toggleTuesdayBtn" class="warning-btn">Abrir martes</button>
           <button id="toggleExtendedHoursBtn" class="warning-btn">Horario extendido</button>
           <button id="openServicesModalBtn" class="primary-btn">Ver servicios</button>
@@ -830,30 +278,14 @@
           </div>
           <div id="timeBlockCountBadge" class="badge-inline">0 bloques activos</div>
         </div>
-        <p class="status-help">
-          Elige una fecha y un rango de tiempo para bloquear citas solo durante esas horas. Ejemplo: hoy de 13:00 a 20:00.
-        </p>
-
+        <p class="status-help">Elige una fecha y un rango de tiempo para bloquear citas solo durante esas horas. Ejemplo: hoy de 13:00 a 20:00.</p>
         <div class="time-block-form">
-          <div class="field">
-            <label for="blockDateInput">Fecha</label>
-            <input id="blockDateInput" type="date" />
-          </div>
-          <div class="field">
-            <label for="blockStartInput">Desde</label>
-            <input id="blockStartInput" type="time" step="900" />
-          </div>
-          <div class="field">
-            <label for="blockEndInput">Hasta</label>
-            <input id="blockEndInput" type="time" step="900" />
-          </div>
-          <div class="field">
-            <label for="blockReasonInput">Motivo</label>
-            <input id="blockReasonInput" type="text" placeholder="Almuerzo, evento, diligencia..." maxlength="80" />
-          </div>
+          <div class="field"><label for="blockDateInput">Fecha</label><input id="blockDateInput" type="date" /></div>
+          <div class="field"><label for="blockStartInput">Desde</label><input id="blockStartInput" type="time" step="900" /></div>
+          <div class="field"><label for="blockEndInput">Hasta</label><input id="blockEndInput" type="time" step="900" /></div>
+          <div class="field"><label for="blockReasonInput">Motivo</label><input id="blockReasonInput" type="text" placeholder="Almuerzo, evento, diligencia..." maxlength="80" /></div>
           <button id="saveTimeBlockBtn" class="primary-btn" type="button">Bloquear</button>
         </div>
-
         <div id="timeBlocksList" class="time-block-list"></div>
       </section>
 
@@ -867,12 +299,8 @@
           <div class="badge-inline">Fuente: Firebase</div>
         </div>
         <div class="filters-grid">
-          <div class="field">
-            <label for="searchInput">Buscar</label>
-            <input id="searchInput" type="text" placeholder="Nombre, telefono, servicio..." />
-          </div>
-          <div class="field">
-            <label for="statusFilter">Estado</label>
+          <div class="field"><label for="searchInput">Buscar</label><input id="searchInput" type="text" placeholder="Nombre, telefono, servicio..." /></div>
+          <div class="field"><label for="statusFilter">Estado</label>
             <select id="statusFilter">
               <option value="all">Todos</option>
               <option value="pending">Pendientes</option>
@@ -880,14 +308,8 @@
               <option value="cancelled">Canceladas</option>
             </select>
           </div>
-          <div class="field">
-            <label for="dateFilter">Fecha</label>
-            <input id="dateFilter" type="date" />
-          </div>
-          <div class="field">
-            <label>&nbsp;</label>
-            <button id="clearFiltersBtn" class="ghost-btn full-width">Limpiar filtros</button>
-          </div>
+          <div class="field"><label for="dateFilter">Fecha</label><input id="dateFilter" type="date" /></div>
+          <div class="field"><label>&nbsp;</label><button id="clearFiltersBtn" class="ghost-btn full-width">Limpiar filtros</button></div>
         </div>
       </section>
 
@@ -898,9 +320,7 @@
             <h3>Reservas guardadas</h3>
             <p class="table-subtext">Vista completa de las citas agendadas en el sistema.</p>
           </div>
-          <div class="table-actions">
-            <button id="exportBtn" class="ghost-btn">Exportar JSON</button>
-          </div>
+          <div class="table-actions"><button id="exportBtn" class="ghost-btn">Exportar JSON</button></div>
         </div>
 
         <div id="emptyState" class="empty-state hidden">
@@ -912,13 +332,7 @@
           <table>
             <thead>
               <tr>
-                <th>Cliente</th>
-                <th>Servicio</th>
-                <th>Barbero</th>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Estado</th>
-                <th>Acciones</th>
+                <th>Cliente</th><th>Servicio</th><th>Barbero</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Acciones</th>
               </tr>
             </thead>
             <tbody id="appointmentsTableBody"></tbody>
@@ -947,38 +361,28 @@
 
   <div class="toast" id="toast"></div>
 
-  <div class="modal-overlay" id="servicesModalOverlay" style="display: none;">
+  <div class="modal-overlay" id="servicesModalOverlay" style="display:none;">
     <div class="login-card services-modal">
-      <div class="filters-header" style="margin-bottom: 10px;">
-        <div>
-          <span class="eyebrow">Gestion</span>
-          <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; margin: 0; line-height: 1;">Servicios</h2>
-        </div>
-        <div style="display: flex; gap: 10px;">
+      <div class="filters-header" style="margin-bottom:10px;">
+        <div><span class="eyebrow">Gestion</span><h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;margin:0;line-height:1;">Servicios</h2></div>
+        <div style="display:flex;gap:10px;">
           <button id="addNewServiceBtn" class="success-btn">+ Nuevo</button>
-          <button id="closeServicesModalBtn" class="danger-btn" style="padding: 0 16px;">X</button>
+          <button id="closeServicesModalBtn" class="danger-btn" style="padding:0 16px;">X</button>
         </div>
       </div>
-      <p style="color: var(--muted); margin-top: 0; margin-bottom: 16px; font-size: 0.95rem;">Agrega, edita o elimina servicios en tiempo real.</p>
-
+      <p style="color:var(--muted);margin-top:0;margin-bottom:16px;font-size:.95rem;">Agrega, edita o elimina servicios en tiempo real.</p>
       <div id="servicesContainer" class="services-grid services-scroll"></div>
     </div>
   </div>
 
-  <div class="modal-overlay" id="loginOverlay" style="display: none;">
+  <div class="modal-overlay" id="loginOverlay" style="display:none;">
     <div class="login-card">
       <span class="eyebrow">Acceso admin</span>
       <h2>Inicia sesion</h2>
       <p>Panel privado para administrar citas, horarios y precios.</p>
-      <div class="field">
-        <label for="usernameInput">Correo</label>
-        <input id="usernameInput" type="email" placeholder="tuadmin@correo.com" />
-      </div>
-      <div class="field">
-        <label for="passwordInput">Contrasena</label>
-        <input id="passwordInput" type="password" placeholder="****" />
-      </div>
-      <button id="loginBtn" class="primary-btn full-width" style="margin-top: 15px;">Entrar</button>
+      <div class="field"><label for="usernameInput">Correo</label><input id="usernameInput" type="email" placeholder="tuadmin@correo.com" /></div>
+      <div class="field"><label for="passwordInput">Contrasena</label><input id="passwordInput" type="password" placeholder="****" /></div>
+      <button id="loginBtn" class="primary-btn full-width" style="margin-top:15px;">Entrar</button>
       <small class="login-hint">Usa el usuario creado en Firebase Authentication.</small>
     </div>
   </div>
@@ -986,7 +390,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyD4WCEUcsgfjK_LgNkY5rexqvPMxQ-RdEE",
@@ -999,9 +402,7 @@
       measurementId: "G-QHN4PX48D4"
     };
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
     const db = firebase.database();
     const auth = firebase.auth();
@@ -1010,17 +411,16 @@
     const shopStatusRef = db.ref("shopStatus");
     const customClosuresRef = db.ref("customClosures");
     const servicesRef = db.ref("services");
+    const dailyOverridesRef = db.ref("dailyOverrides");
 
     const appointmentsTableBody = document.getElementById("appointmentsTableBody");
     const mobileCards = document.getElementById("mobileCards");
     const emptyState = document.getElementById("emptyState");
     const toast = document.getElementById("toast");
     const loginOverlay = document.getElementById("loginOverlay");
-
     const servicesModalOverlay = document.getElementById("servicesModalOverlay");
     const openServicesModalBtn = document.getElementById("openServicesModalBtn");
     const closeServicesModalBtn = document.getElementById("closeServicesModalBtn");
-
     const usernameInput = document.getElementById("usernameInput");
     const passwordInput = document.getElementById("passwordInput");
     const loginBtn = document.getElementById("loginBtn");
@@ -1033,6 +433,9 @@
     const clearFiltersBtn = document.getElementById("clearFiltersBtn");
     const openShopBtn = document.getElementById("openShopBtn");
     const closeShopBtn = document.getElementById("closeShopBtn");
+    const openOnlyTodayBtn = document.getElementById("openOnlyTodayBtn");
+    const closeOnlyTodayBtn = document.getElementById("closeOnlyTodayBtn");
+    const clearTodayOverrideBtn = document.getElementById("clearTodayOverrideBtn");
     const toggleTuesdayBtn = document.getElementById("toggleTuesdayBtn");
     const toggleExtendedHoursBtn = document.getElementById("toggleExtendedHoursBtn");
     const shopStatusBadge = document.getElementById("shopStatusBadge");
@@ -1067,157 +470,89 @@
     let shopIsOpen = true;
     let tuesdayOpen = false;
     let extendedHours = false;
+    let dailyOverrides = {};
     let isFirstServicesLoad = true;
     let deletingExpiredAppointments = false;
 
-    boot();
-
-    function boot() {
-      bindEvents();
-      auth.onAuthStateChanged(() => {
-        setSessionUI();
-        if (auth.currentUser) {
-          autoDeleteExpiredAppointments();
-        }
-      });
-      listenAppointments();
-      listenShopStatus();
-      listenServices();
-      listenCustomClosures();
-      setDefaultTimeBlockValues();
-      setInterval(autoDeleteExpiredAppointments, 60000);
+    function getTodayISO() {
+      const today = new Date();
+      return `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
     }
 
-    function bindEvents() {
-      loginBtn?.addEventListener("click", handleLogin);
-      logoutBtn?.addEventListener("click", handleLogout);
-      refreshBtn?.addEventListener("click", refreshEverything);
-      mobileRefreshBtn?.addEventListener("click", refreshEverything);
-      exportBtn?.addEventListener("click", exportAppointments);
-      deletePastBtn?.addEventListener("click", deletePastAppointments);
-      clearAllBtn?.addEventListener("click", clearAllAppointments);
-      clearFiltersBtn?.addEventListener("click", clearFilters);
-      openShopBtn?.addEventListener("click", () => setShopOpenState(true));
-      closeShopBtn?.addEventListener("click", () => setShopOpenState(false));
-      toggleTuesdayBtn?.addEventListener("click", toggleTuesdayState);
-      toggleExtendedHoursBtn?.addEventListener("click", toggleExtendedHoursState);
-      saveTimeBlockBtn?.addEventListener("click", saveTimeBlock);
-
-      openServicesModalBtn?.addEventListener("click", () => {
-        servicesModalOverlay.style.display = "flex";
-      });
-
-      closeServicesModalBtn?.addEventListener("click", () => {
-        servicesModalOverlay.style.display = "none";
-      });
-
-      servicesModalOverlay?.addEventListener("click", (event) => {
-        if (event.target === servicesModalOverlay) servicesModalOverlay.style.display = "none";
-      });
-
-      searchInput?.addEventListener("input", renderAll);
-      statusFilter?.addEventListener("change", renderAll);
-      dateFilter?.addEventListener("change", renderAll);
-
-      usernameInput?.addEventListener("keydown", handleLoginEnterKey);
-      passwordInput?.addEventListener("keydown", handleLoginEnterKey);
-
-      mobileMenuBtn?.addEventListener("click", toggleSidebar);
-      sidebarOverlay?.addEventListener("click", closeSidebar);
-
-      addNewServiceBtn?.addEventListener("click", () => {
-        if (!requireAuthAction()) return;
-        const newKey = servicesRef.push().key;
-        servicesRef.child(newKey).set({
-          nombre: "Nuevo Servicio",
-          precio: 0,
-          duracion: 30
-        }).then(() => {
-          showToast("Nuevo servicio creado. Editalo ahora.");
-          setTimeout(() => {
-            const card = document.getElementById(`card-${newKey}`);
-            if (card) {
-              card.classList.add("editing");
-              card.scrollIntoView({ behavior: "smooth", block: "end" });
-            }
-          }, 300);
-        });
-      });
-
-      document.querySelectorAll(".sidebar-nav a").forEach(link => {
-        link.addEventListener("click", closeSidebar);
-      });
-    }
-
-    function refreshEverything() {
-      autoDeleteExpiredAppointments();
-      renderAll();
-      renderShopStatusUI();
-      renderServicesEditor();
-      renderTimeBlocks();
-      showToast("Panel actualizado");
-    }
-
-    function toggleSidebar() {
-      sidebar.classList.toggle("open");
-      sidebarOverlay.classList.toggle("show");
-      mobileMenuBtn.classList.toggle("active");
-    }
-
-    function closeSidebar() {
-      sidebar.classList.remove("open");
-      sidebarOverlay.classList.remove("show");
-      mobileMenuBtn.classList.remove("active");
-    }
-
-    function handleLoginEnterKey(event) {
-      if (event.key === "Enter") handleLogin();
-    }
-
-    function handleLogin() {
-      const email = usernameInput?.value.trim() || "";
-      const password = passwordInput?.value.trim() || "";
-
-      if (!email || !password) {
-        showToast("Completa correo y contrasena");
-        return;
-      }
-
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          showToast("Bienvenido al panel admin");
-          usernameInput.value = "";
-          passwordInput.value = "";
-        })
-        .catch(() => {
-          showToast("Correo o contrasena incorrectos");
-        });
-    }
-
-    function handleLogout() {
-      auth.signOut()
-        .then(() => showToast("Sesion cerrada"))
-        .catch(() => showToast("No se pudo cerrar sesion"));
-    }
-
-    function setSessionUI() {
-      const user = auth.currentUser;
-      loginOverlay.style.display = user ? "none" : "flex";
-      currentUserLabel.textContent = user ? user.email : "invitado";
-    }
-
-    function requireAuthAction() {
-      if (!auth.currentUser) {
-        showToast("Debes iniciar sesion como admin");
-        return false;
-      }
-      return true;
+    function getDayFromDate(dateString) {
+      return new Date(dateString + "T00:00:00").getDay();
     }
 
     function normalizeStatus(status) {
       if (status === "approved") return "approved";
       if (status === "cancelled") return "cancelled";
       return "pending";
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function escapeHTMLAttr(value) { return escapeHTML(value); }
+
+    function formatDate(dateString) {
+      if (!dateString) return "Sin fecha";
+      const [year, month, day] = String(dateString).split("-");
+      return `${day}/${month}/${year}`;
+    }
+
+    function to24Hour(time12) {
+      if (!time12) return "00:00";
+      const match = String(time12).match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+      if (!match) return time12;
+      let hour = parseInt(match[1], 10);
+      const minutes = match[2];
+      const suffix = match[3].toUpperCase();
+      if (suffix === "AM" && hour === 12) hour = 0;
+      if (suffix === "PM" && hour !== 12) hour += 12;
+      return String(hour).padStart(2, "0") + ":" + minutes;
+    }
+
+    function parseAppointmentDateTime(fecha, hora) {
+      if (!fecha) return null;
+      const safeDate = String(fecha).trim();
+      const safeTime = String(hora || "").trim().toUpperCase();
+      if (!safeDate) return null;
+
+      if (!safeTime) {
+        const dt = new Date(`${safeDate}T23:59:59`);
+        return isNaN(dt.getTime()) ? null : dt;
+      }
+
+      if (/^([01]?\d|2[0-3]):([0-5]\d)$/.test(safeTime)) {
+        const dt = new Date(`${safeDate}T${safeTime}:00`);
+        return isNaN(dt.getTime()) ? null : dt;
+      }
+
+      const match = safeTime.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+      if (match) {
+        let hour = parseInt(match[1], 10);
+        const minutes = match[2];
+        const suffix = match[3].toUpperCase();
+        if (suffix === "AM" && hour === 12) hour = 0;
+        if (suffix === "PM" && hour !== 12) hour += 12;
+        const hh = String(hour).padStart(2, "0");
+        const dt = new Date(`${safeDate}T${hh}:${minutes}:00`);
+        return isNaN(dt.getTime()) ? null : dt;
+      }
+
+      return null;
+    }
+
+    function isAppointmentExpired(appointment) {
+      const dt = parseAppointmentDateTime(appointment.fecha, appointment.hora);
+      if (!dt) return false;
+      return dt.getTime() < Date.now();
     }
 
     function normalizeAppointment(id, appointment) {
@@ -1239,82 +574,126 @@
       const fecha = block?.fecha || block?.date || "";
       const start = block?.start || block?.inicio || block?.startTime || "";
       const end = block?.end || block?.fin || block?.endTime || "";
-
       if (!fecha || !start || !end) return null;
-
-      return {
-        id,
-        fecha,
-        start,
-        end,
-        reason: block?.reason || block?.motivo || "",
-        type: block?.type || "timeBlock",
-        createdAt: block?.createdAt || ""
-      };
+      return { id, fecha, start, end, reason: block?.reason || block?.motivo || "", type: block?.type || "timeBlock", createdAt: block?.createdAt || "" };
     }
 
-    function listenAppointments() {
-      appointmentsRef.on("value", snapshot => {
-        const data = snapshot.val() || {};
-        appointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
-        autoDeleteExpiredAppointments();
-        renderAll();
-      });
+    function getTodayOverride() {
+      return dailyOverrides[getTodayISO()] || null;
     }
 
-    function listenShopStatus() {
-      shopStatusRef.on("value", snapshot => {
-        const data = snapshot.val() || {};
-        shopIsOpen = data.isOpen !== false;
-        tuesdayOpen = data.tuesdayOpen === true;
-        extendedHours = data.extendedHours === true;
-        renderShopStatusUI();
-      });
+    function autoDeleteExpiredAppointments() {
+      if (!auth.currentUser || deletingExpiredAppointments) return;
+
+      const expiredItems = appointments.filter(item => isAppointmentExpired(item));
+      if (!expiredItems.length) return;
+
+      deletingExpiredAppointments = true;
+      const updates = {};
+      expiredItems.forEach(item => { updates[item.id] = null; });
+
+      appointmentsRef.update(updates)
+        .then(() => showToast("Citas vencidas eliminadas automáticamente"))
+        .catch(error => {
+          console.error("Error eliminando citas vencidas:", error);
+          showToast("No se pudieron borrar las citas vencidas");
+        })
+        .finally(() => { deletingExpiredAppointments = false; });
     }
 
-    function listenServices() {
-      servicesRef.on("value", snapshot => {
-        const data = snapshot.val();
-
-        if (!data && isFirstServicesLoad) {
-          setTimeout(() => {
-            if (Object.keys(servicesData).length === 0) {
-              servicesData = {};
-              renderServicesEditor();
-              renderAll();
-            }
-          }, 800);
-        } else {
-          servicesData = data || {};
-          renderServicesEditor();
-          renderAll();
-        }
-
-        isFirstServicesLoad = false;
-      });
+    function showToast(message) {
+      if (!toast) return;
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => toast.classList.remove("show"), 2400);
     }
 
-    function listenCustomClosures() {
-      customClosuresRef.on("value", snapshot => {
-        const data = snapshot.val() || {};
-        customClosures = Object.entries(data)
-          .map(([id, block]) => normalizeTimeBlock(id, block))
-          .filter(Boolean)
-          .filter(block => block.type === "timeBlock");
-        renderTimeBlocks();
-      });
+    function requireAuthAction() {
+      if (!auth.currentUser) {
+        showToast("Debes iniciar sesion como admin");
+        return false;
+      }
+      return true;
+    }
+
+    function handleLoginEnterKey(event) {
+      if (event.key === "Enter") handleLogin();
+    }
+
+    function handleLogin() {
+      const email = usernameInput?.value.trim() || "";
+      const password = passwordInput?.value.trim() || "";
+      if (!email || !password) return showToast("Completa correo y contrasena");
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          showToast("Bienvenido al panel admin");
+          usernameInput.value = "";
+          passwordInput.value = "";
+        })
+        .catch(() => showToast("Correo o contrasena incorrectos"));
+    }
+
+    function handleLogout() {
+      auth.signOut()
+        .then(() => showToast("Sesion cerrada"))
+        .catch(() => showToast("No se pudo cerrar sesion"));
+    }
+
+    function setSessionUI() {
+      const user = auth.currentUser;
+      loginOverlay.style.display = user ? "none" : "flex";
+      currentUserLabel.textContent = user ? user.email : "invitado";
     }
 
     function setDefaultTimeBlockValues() {
       const today = getTodayISO();
-
       if (blockDateInput) {
         blockDateInput.min = today;
         if (!blockDateInput.value) blockDateInput.value = today;
       }
-
       if (blockStartInput && !blockStartInput.value) blockStartInput.value = "13:00";
       if (blockEndInput && !blockEndInput.value) blockEndInput.value = "20:00";
+    }
+
+    function isValid24HourTime(time) {
+      return /^\d{2}:\d{2}$/.test(String(time)) && !Number.isNaN(timeToMinutes(time));
+    }
+
+    function timeToMinutes(time) {
+      const parts = String(time).split(":").map(Number);
+      if (parts.length !== 2) return NaN;
+      const [hours, minutes] = parts;
+      if (Number.isNaN(hours) || Number.isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return NaN;
+      return (hours * 60) + minutes;
+    }
+
+    function rangesOverlap(startA, endA, startB, endB) {
+      return timeToMinutes(startA) < timeToMinutes(endB) && timeToMinutes(endA) > timeToMinutes(startB);
+    }
+
+    function currentTimeMinutes() {
+      const now = new Date();
+      return (now.getHours() * 60) + now.getMinutes();
+    }
+
+    function timeBlockDuration(start, end) {
+      const duration = (timeToMinutes(end) - timeToMinutes(start)) / 60;
+      return Number.isInteger(duration) ? duration : duration.toFixed(1);
+    }
+
+    function compareTimeBlocks(a, b) {
+      const aKey = `${a.fecha} ${a.start}`;
+      const bKey = `${b.fecha} ${b.start}`;
+      return aKey.localeCompare(bKey);
+    }
+
+    function isTimeBlockCurrentOrFuture(block) {
+      const today = getTodayISO();
+      if (block.fecha > today) return true;
+      if (block.fecha < today) return false;
+      return timeToMinutes(block.end) >= currentTimeMinutes();
     }
 
     function saveTimeBlock() {
@@ -1326,45 +705,17 @@
       const reason = blockReasonInput?.value.trim() || "Cierre por bloque de horas";
       const today = getTodayISO();
 
-      if (!fecha || !start || !end) {
-        showToast("Completa fecha, hora inicial y hora final");
-        return;
-      }
+      if (!fecha || !start || !end) return showToast("Completa fecha, hora inicial y hora final");
+      if (fecha < today) return showToast("No puedes bloquear una fecha pasada");
+      if (!isValid24HourTime(start) || !isValid24HourTime(end)) return showToast("Formato de hora invalido");
+      if (timeToMinutes(start) >= timeToMinutes(end)) return showToast("La hora final debe ser mayor que la inicial");
+      if (fecha === today && timeToMinutes(end) <= currentTimeMinutes()) return showToast("Ese rango ya paso");
 
-      if (fecha < today) {
-        showToast("No puedes bloquear una fecha pasada");
-        return;
-      }
-
-      if (!isValid24HourTime(start) || !isValid24HourTime(end)) {
-        showToast("Formato de hora invalido");
-        return;
-      }
-
-      if (timeToMinutes(start) >= timeToMinutes(end)) {
-        showToast("La hora final debe ser mayor que la inicial");
-        return;
-      }
-
-      if (fecha === today && timeToMinutes(end) <= currentTimeMinutes()) {
-        showToast("Ese rango ya paso");
-        return;
-      }
-
-      const overlaps = customClosures.some(block => (
-        block.fecha === fecha &&
-        rangesOverlap(start, end, block.start, block.end)
-      ));
-
-      if (overlaps && !confirm("Ya existe un bloqueo que se cruza con ese rango. Quieres guardarlo de todos modos?")) {
-        return;
-      }
+      const overlaps = customClosures.some(block => block.fecha === fecha && rangesOverlap(start, end, block.start, block.end));
+      if (overlaps && !confirm("Ya existe un bloqueo que se cruza con ese rango. Quieres guardarlo de todos modos?")) return;
 
       const newKey = customClosuresRef.push().key;
-      if (!newKey) {
-        showToast("No se pudo crear el bloqueo");
-        return;
-      }
+      if (!newKey) return showToast("No se pudo crear el bloqueo");
 
       saveTimeBlockBtn.disabled = true;
       saveTimeBlockBtn.textContent = "Guardando...";
@@ -1390,7 +741,6 @@
     function deleteTimeBlock(id) {
       if (!requireAuthAction()) return;
       if (!confirm("Seguro que quieres eliminar este bloqueo de horas?")) return;
-
       customClosuresRef.child(id).remove()
         .then(() => showToast("Bloque de horas eliminado"))
         .catch(() => showToast("No se pudo eliminar el bloqueo"));
@@ -1398,19 +748,12 @@
 
     function renderTimeBlocks() {
       if (!timeBlocksList) return;
-
       const orderedBlocks = [...customClosures].sort(compareTimeBlocks);
       const activeBlocks = orderedBlocks.filter(block => isTimeBlockCurrentOrFuture(block));
-
       timeBlockCountBadge.textContent = `${activeBlocks.length} ${activeBlocks.length === 1 ? "bloque activo" : "bloques activos"}`;
 
       if (!orderedBlocks.length) {
-        timeBlocksList.innerHTML = `
-          <div class="empty-state">
-            <h4>No hay bloques de horas</h4>
-            <p>Cuando cierres una fecha por rango, aparecera aqui.</p>
-          </div>
-        `;
+        timeBlocksList.innerHTML = '<div class="empty-state"><h4>No hay bloques de horas</h4><p>Cuando cierres una fecha por rango, aparecera aqui.</p></div>';
         return;
       }
 
@@ -1429,65 +772,11 @@
       `).join("");
     }
 
-    function compareTimeBlocks(a, b) {
-      const aKey = `${a.fecha} ${a.start}`;
-      const bKey = `${b.fecha} ${b.start}`;
-      return aKey.localeCompare(bKey);
-    }
-
-    function isValid24HourTime(time) {
-      return /^\d{2}:\d{2}$/.test(String(time)) && !Number.isNaN(timeToMinutes(time));
-    }
-
-    function timeToMinutes(time) {
-      const parts = String(time).split(":").map(Number);
-      if (parts.length !== 2) return NaN;
-
-      const [hours, minutes] = parts;
-      if (
-        Number.isNaN(hours) || Number.isNaN(minutes) ||
-        hours < 0 || hours > 23 ||
-        minutes < 0 || minutes > 59
-      ) {
-        return NaN;
-      }
-
-      return (hours * 60) + minutes;
-    }
-
-    function rangesOverlap(startA, endA, startB, endB) {
-      return timeToMinutes(startA) < timeToMinutes(endB) && timeToMinutes(endA) > timeToMinutes(startB);
-    }
-
-    function isTimeBlockCurrentOrFuture(block) {
-      const today = getTodayISO();
-      if (block.fecha > today) return true;
-      if (block.fecha < today) return false;
-      return timeToMinutes(block.end) >= currentTimeMinutes();
-    }
-
-    function currentTimeMinutes() {
-      const now = new Date();
-      return (now.getHours() * 60) + now.getMinutes();
-    }
-
-    function timeBlockDuration(start, end) {
-      const duration = (timeToMinutes(end) - timeToMinutes(start)) / 60;
-      return Number.isInteger(duration) ? duration : duration.toFixed(1);
-    }
-
     function renderServicesEditor() {
       if (!servicesContainer) return;
-
       const entries = Object.entries(servicesData || {});
-
       if (!entries.length) {
-        servicesContainer.innerHTML = `
-          <div class="empty-state">
-            <h4>No hay servicios guardados</h4>
-            <p>Usa el boton "+ Nuevo" arriba para empezar.</p>
-          </div>
-        `;
+        servicesContainer.innerHTML = '<div class="empty-state"><h4>No hay servicios guardados</h4><p>Usa el boton "+ Nuevo" arriba para empezar.</p></div>';
         return;
       }
 
@@ -1496,10 +785,7 @@
           <div class="service-view-mode">
             <div class="service-info">
               <h4>${escapeHTML(service?.nombre || "Sin nombre")}</h4>
-              <p>
-                <strong>RD$${Number(service?.precio || 0)}</strong> &bull;
-                <span>${Number(service?.duracion || 0)} min</span>
-              </p>
+              <p><strong>RD$${Number(service?.precio || 0)}</strong> &bull; <span>${Number(service?.duracion || 0)} min</span></p>
             </div>
             <div class="row-actions">
               <button type="button" class="ghost-btn edit-toggle-btn">Editar</button>
@@ -1508,19 +794,10 @@
           </div>
 
           <div class="service-editor-mode">
-            <div class="field">
-              <label>Nombre del servicio</label>
-              <input type="text" class="service-name" value="${escapeHTML(service?.nombre || "")}" />
-            </div>
-            <div class="field">
-              <label>Precio (RD$)</label>
-              <input type="number" min="0" class="service-price" value="${Number(service?.precio || 0)}" />
-            </div>
-            <div class="field">
-              <label>Duracion (min)</label>
-              <input type="number" min="0" class="service-duration" value="${Number(service?.duracion || 0)}" />
-            </div>
-            <div class="row-actions" style="margin-bottom: 2px;">
+            <div class="field"><label>Nombre del servicio</label><input type="text" class="service-name" value="${escapeHTML(service?.nombre || "")}" /></div>
+            <div class="field"><label>Precio (RD$)</label><input type="number" min="0" class="service-price" value="${Number(service?.precio || 0)}" /></div>
+            <div class="field"><label>Duracion (min)</label><input type="number" min="0" class="service-duration" value="${Number(service?.duracion || 0)}" /></div>
+            <div class="row-actions" style="margin-bottom:2px;">
               <button type="button" class="success-btn save-one-service">Guardar</button>
               <button type="button" class="ghost-btn cancel-edit-btn">Volver</button>
             </div>
@@ -1529,13 +806,13 @@
       `).join("");
 
       document.querySelectorAll(".edit-toggle-btn").forEach(btn => {
-        btn.addEventListener("click", function() {
+        btn.addEventListener("click", function () {
           this.closest(".service-item-card").classList.add("editing");
         });
       });
 
       document.querySelectorAll(".cancel-edit-btn").forEach(btn => {
-        btn.addEventListener("click", function() {
+        btn.addEventListener("click", function () {
           this.closest(".service-item-card").classList.remove("editing");
         });
       });
@@ -1551,26 +828,19 @@
       document.querySelectorAll(".delete-one-service").forEach(btn => {
         btn.addEventListener("click", function () {
           const card = this.closest(".service-item-card");
-          const key = card.dataset.key;
-          deleteOneService(key);
+          deleteOneService(card.dataset.key);
         });
       });
     }
 
     function saveOneService(key, card, buttonElement) {
       if (!requireAuthAction()) return;
-      if (!key || !card) return;
-
       const data = {
         nombre: card.querySelector(".service-name")?.value.trim() || "",
         precio: Number(card.querySelector(".service-price")?.value || 0),
         duracion: Number(card.querySelector(".service-duration")?.value || 0)
       };
-
-      if (!data.nombre) {
-        showToast("El nombre del servicio es obligatorio");
-        return;
-      }
+      if (!data.nombre) return showToast("El nombre del servicio es obligatorio");
 
       buttonElement.disabled = true;
       buttonElement.textContent = "...";
@@ -1591,7 +861,7 @@
 
     function deleteOneService(key) {
       if (!requireAuthAction()) return;
-      if (!confirm("Seguro que deseas eliminar este servicio? Desaparecera de tu web.")) return;
+      if (!confirm("Seguro que deseas eliminar este servicio?")) return;
 
       servicesRef.child(key).remove()
         .then(() => showToast("Servicio eliminado"))
@@ -1599,8 +869,13 @@
     }
 
     function renderShopStatusUI() {
-      if (shopIsOpen) {
-        shopStatusBadge.textContent = "Abierta";
+      const todayOverride = getTodayOverride();
+
+      if (todayOverride?.forceClosed === true) {
+        shopStatusBadge.textContent = "Cerrada hoy";
+        shopStatusBadge.className = "badge-inline closed";
+      } else if (shopIsOpen || todayOverride?.forceOpen === true) {
+        shopStatusBadge.textContent = todayOverride?.forceOpen ? "Abierta solo hoy" : "Abierta";
         shopStatusBadge.className = "badge-inline open";
       } else {
         shopStatusBadge.textContent = "Cerrada";
@@ -1610,49 +885,64 @@
       tuesdayStatusBadge.textContent = tuesdayOpen ? "Martes abierto" : "Martes cerrado";
       extendedHoursBadge.textContent = extendedHours ? "Horario extendido" : "Horario normal";
 
+      const overrideText = todayOverride?.forceOpen ? " Cambio temporal de apertura activo para hoy." :
+                           todayOverride?.forceClosed ? " Cambio temporal de cierre activo para hoy." : "";
+
       shopStatusText.textContent =
         (shopIsOpen ? "La barberia esta abierta." : "La barberia esta cerrada.") +
         (tuesdayOpen ? " El martes esta habilitado." : " El martes esta cerrado.") +
-        (extendedHours ? " El horario extendido esta activo." : " El horario normal esta activo.");
+        (extendedHours ? " El horario extendido esta activo." : " El horario normal esta activo.") +
+        overrideText;
     }
 
     function setShopOpenState(isOpen) {
       if (!requireAuthAction()) return;
-
-      shopStatusRef.update({
-        isOpen,
-        updatedAt: new Date().toISOString()
-      }).then(() => {
-        showToast(isOpen ? "Barberia abierta" : "Barberia cerrada");
-      }).catch(() => {
-        showToast("No se pudo cambiar el estado");
-      });
+      shopStatusRef.update({ isOpen, updatedAt: new Date().toISOString() })
+        .then(() => showToast(isOpen ? "Barberia abierta" : "Barberia cerrada"))
+        .catch(() => showToast("No se pudo cambiar el estado"));
     }
 
     function toggleTuesdayState() {
       if (!requireAuthAction()) return;
-
-      shopStatusRef.update({
-        tuesdayOpen: !tuesdayOpen,
-        updatedAt: new Date().toISOString()
-      }).then(() => {
-        showToast(!tuesdayOpen ? "Martes abierto" : "Martes cerrado");
-      }).catch(() => {
-        showToast("No se pudo cambiar el martes");
-      });
+      shopStatusRef.update({ tuesdayOpen: !tuesdayOpen, updatedAt: new Date().toISOString() })
+        .then(() => showToast(!tuesdayOpen ? "Martes abierto" : "Martes cerrado"))
+        .catch(() => showToast("No se pudo cambiar el martes"));
     }
 
     function toggleExtendedHoursState() {
       if (!requireAuthAction()) return;
+      shopStatusRef.update({ extendedHours: !extendedHours, updatedAt: new Date().toISOString() })
+        .then(() => showToast(!extendedHours ? "Horario extendido activado" : "Horario normal restaurado"))
+        .catch(() => showToast("No se pudo cambiar el horario"));
+    }
 
-      shopStatusRef.update({
-        extendedHours: !extendedHours,
+    function openOnlyToday() {
+      if (!requireAuthAction()) return;
+      const today = getTodayISO();
+      dailyOverridesRef.child(today).set({
+        forceOpen: true,
+        forceClosed: false,
         updatedAt: new Date().toISOString()
-      }).then(() => {
-        showToast(!extendedHours ? "Horario extendido activado" : "Horario normal restaurado");
-      }).catch(() => {
-        showToast("No se pudo cambiar el horario");
-      });
+      }).then(() => showToast("La barbería se abrió solo por hoy"))
+        .catch(() => showToast("No se pudo abrir solo por hoy"));
+    }
+
+    function closeOnlyToday() {
+      if (!requireAuthAction()) return;
+      const today = getTodayISO();
+      dailyOverridesRef.child(today).set({
+        forceOpen: false,
+        forceClosed: true,
+        updatedAt: new Date().toISOString()
+      }).then(() => showToast("La barbería se cerró solo por hoy"))
+        .catch(() => showToast("No se pudo cerrar solo por hoy"));
+    }
+
+    function clearTodayOverride() {
+      if (!requireAuthAction()) return;
+      dailyOverridesRef.child(getTodayISO()).remove()
+        .then(() => showToast("Se restauró el horario normal de hoy"))
+        .catch(() => showToast("No se pudo restaurar el horario"));
     }
 
     function getFilteredAppointments() {
@@ -1660,151 +950,31 @@
       const status = statusFilter?.value || "all";
       const date = dateFilter?.value || "";
 
-      return appointments
-        .filter(appointment => {
-          const matchesSearch =
-            !search ||
-            [
-              appointment.nombre,
-              appointment.telefono,
-              appointment.servicio,
-              appointment.barbero,
-              appointment.fecha,
-              appointment.hora
-            ].some(field => String(field).toLowerCase().includes(search));
+      return appointments.filter(appointment => {
+        const matchesSearch = !search || [
+          appointment.nombre, appointment.telefono, appointment.servicio,
+          appointment.barbero, appointment.fecha, appointment.hora
+        ].some(field => String(field).toLowerCase().includes(search));
 
-          const matchesStatus = status === "all" || appointment.status === status;
-          const matchesDate = !date || appointment.fecha === date;
-
-          return matchesSearch && matchesStatus && matchesDate;
-        })
-        .sort(compareAppointments);
-    }
-
-    function compareAppointments(a, b) {
-      const aKey = `${a.fecha} ${to24Hour(a.hora)}`;
-      const bKey = `${b.fecha} ${to24Hour(b.hora)}`;
-      return aKey.localeCompare(bKey);
-    }
-
-    function to24Hour(time12) {
-      if (!time12) return "00:00";
-
-      const match = String(time12).match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
-      if (!match) return time12;
-
-      let hour = parseInt(match[1], 10);
-      const minutes = match[2];
-      const suffix = match[3].toUpperCase();
-
-      if (suffix === "AM" && hour === 12) hour = 0;
-      if (suffix === "PM" && hour !== 12) hour += 12;
-
-      return String(hour).padStart(2, "0") + ":" + minutes;
-    }
-
-    function parseAppointmentDateTime(fecha, hora) {
-      if (!fecha) return null;
-
-      const safeDate = String(fecha).trim();
-      const safeTime = String(hora || "").trim().toUpperCase();
-
-      if (!safeDate) return null;
-
-      if (!safeTime) {
-        const dt = new Date(`${safeDate}T23:59:59`);
-        return isNaN(dt.getTime()) ? null : dt;
-      }
-
-      if (/^([01]?\d|2[0-3]):([0-5]\d)$/.test(safeTime)) {
-        const dt = new Date(`${safeDate}T${safeTime}:00`);
-        return isNaN(dt.getTime()) ? null : dt;
-      }
-
-      const match = safeTime.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
-      if (match) {
-        let hour = parseInt(match[1], 10);
-        const minutes = match[2];
-        const suffix = match[3].toUpperCase();
-
-        if (suffix === "AM" && hour === 12) hour = 0;
-        if (suffix === "PM" && hour !== 12) hour += 12;
-
-        const hh = String(hour).padStart(2, "0");
-        const dt = new Date(`${safeDate}T${hh}:${minutes}:00`);
-        return isNaN(dt.getTime()) ? null : dt;
-      }
-
-      return null;
-    }
-
-    function isAppointmentExpired(appointment) {
-      const dt = parseAppointmentDateTime(appointment.fecha, appointment.hora);
-      if (!dt) return false;
-      return dt.getTime() < Date.now();
-    }
-
-    function autoDeleteExpiredAppointments() {
-      if (!auth.currentUser || deletingExpiredAppointments) return;
-
-      const expiredItems = appointments.filter(item => isAppointmentExpired(item));
-      if (!expiredItems.length) return;
-
-      deletingExpiredAppointments = true;
-
-      const updates = {};
-      expiredItems.forEach(item => {
-        updates[item.id] = null;
-      });
-
-      appointmentsRef.update(updates)
-        .then(() => {
-          showToast("Citas vencidas eliminadas automáticamente");
-        })
-        .catch((error) => {
-          console.error("Error eliminando citas vencidas:", error);
-          showToast("No se pudieron borrar las citas vencidas");
-        })
-        .finally(() => {
-          deletingExpiredAppointments = false;
-        });
-    }
-
-    function renderAll() {
-      const filtered = getFilteredAppointments();
-      renderStats();
-      renderTable(filtered);
-      renderMobileCards(filtered);
-    }
-
-    function renderStats() {
-      const today = getTodayISO();
-
-      statTotal.textContent = appointments.length;
-      statPending.textContent = appointments.filter(item => item.status === "pending").length;
-      statApproved.textContent = appointments.filter(item => item.status === "approved").length;
-      statCancelled.textContent = appointments.filter(item => item.status === "cancelled").length;
-      statToday.textContent = appointments.filter(item => item.fecha === today).length;
-    }
-
-    function getTodayISO() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, "0");
-      const day = String(today.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    }
-
-    function formatDate(dateString) {
-      if (!dateString) return "Sin fecha";
-      const [year, month, day] = String(dateString).split("-");
-      return `${day}/${month}/${year}`;
+        const matchesStatus = status === "all" || appointment.status === status;
+        const matchesDate = !date || appointment.fecha === date;
+        return matchesSearch && matchesStatus && matchesDate;
+      }).sort((a, b) => `${a.fecha} ${to24Hour(a.hora)}`.localeCompare(`${b.fecha} ${to24Hour(b.hora)}`));
     }
 
     function getStatusLabel(status) {
       if (status === "approved") return "Aprobada";
       if (status === "cancelled") return "Cancelada";
       return "Pendiente";
+    }
+
+    function renderStats() {
+      const today = getTodayISO();
+      statTotal.textContent = appointments.length;
+      statPending.textContent = appointments.filter(item => item.status === "pending").length;
+      statApproved.textContent = appointments.filter(item => item.status === "approved").length;
+      statCancelled.textContent = appointments.filter(item => item.status === "cancelled").length;
+      statToday.textContent = appointments.filter(item => item.fecha === today).length;
     }
 
     function renderTable(data) {
@@ -1823,53 +993,31 @@
         const precioText = serviceObj && serviceObj.precio ? `RD$${serviceObj.precio}` : "Precio no disp.";
 
         return `
-        <tr>
-          <td>
-            <div class="client-box">
-              <strong>${escapeHTML(appointment.nombre)}</strong>
-              <small>${escapeHTML(appointment.telefono)}</small>
-            </div>
-          </td>
-          <td>
-            <div class="service-box">
-              <strong>${escapeHTML(appointment.servicio)}</strong>
-              <small style="color: var(--success); font-weight: 600;">${precioText}</small><br>
-              <small>${appointment.anonimo ? "Publico: Anonimo" : "Publico: Nombre visible"}</small>
-            </div>
-          </td>
-          <td>${escapeHTML(appointment.barbero)}</td>
-          <td>${escapeHTML(formatDate(appointment.fecha))}</td>
-          <td>
-            ${escapeHTML(appointment.hora || "Sin hora")}<br>
-            <small class="meta-text">${escapeHTML(String(appointment.duration || 0))} min</small>
-          </td>
-          <td>
-            <span class="status-pill ${escapeHTML(appointment.status)}">
-              ${escapeHTML(getStatusLabel(appointment.status))}
-            </span>
-          </td>
-          <td>
-            <div class="row-actions">
-              <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}', 'approved')">Aprobar</button>
-              <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}', 'cancelled')">Cancelar</button>
-              <button onclick="deleteAppointment('${escapeHTMLAttr(appointment.id)}')">Eliminar</button>
-            </div>
-          </td>
-        </tr>
-      `}).join("");
+          <tr>
+            <td><div class="client-box"><strong>${escapeHTML(appointment.nombre)}</strong><small>${escapeHTML(appointment.telefono)}</small></div></td>
+            <td><div class="service-box"><strong>${escapeHTML(appointment.servicio)}</strong><small style="color:var(--success);font-weight:600;">${precioText}</small><br><small>${appointment.anonimo ? "Publico: Anonimo" : "Publico: Nombre visible"}</small></div></td>
+            <td>${escapeHTML(appointment.barbero)}</td>
+            <td>${escapeHTML(formatDate(appointment.fecha))}</td>
+            <td>${escapeHTML(appointment.hora || "Sin hora")}<br><small class="meta-text">${escapeHTML(String(appointment.duration || 0))} min</small></td>
+            <td><span class="status-pill ${escapeHTML(appointment.status)}">${escapeHTML(getStatusLabel(appointment.status))}</span></td>
+            <td>
+              <div class="row-actions">
+                <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}','approved')">Aprobar</button>
+                <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}','cancelled')">Cancelar</button>
+                <button onclick="deleteAppointment('${escapeHTMLAttr(appointment.id)}')">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
     }
 
     function renderMobileCards(data) {
       if (!mobileCards) return;
 
       mobileCards.innerHTML = data.map(appointment => {
-        const serviceObj = Object.values(servicesData || {}).find(
-          s => s.nombre === appointment.servicio
-        );
-
-        const precioText = serviceObj && serviceObj.precio
-          ? `RD$${serviceObj.precio}`
-          : "Precio no disp.";
+        const serviceObj = Object.values(servicesData || {}).find(s => s.nombre === appointment.servicio);
+        const precioText = serviceObj && serviceObj.precio ? `RD$${serviceObj.precio}` : "Precio no disp.";
 
         let mobileStatusClass = "mobile-status-pending";
         if (appointment.status === "approved") mobileStatusClass = "mobile-status-approved";
@@ -1877,49 +1025,19 @@
 
         return `
           <article class="mobile-card">
-            <div class="mobile-card-top">
-              <h4 class="mobile-service-title">${escapeHTML(appointment.servicio)}</h4>
-
-              <div class="mobile-status-pill ${mobileStatusClass}">
-                ${escapeHTML(getStatusLabel(appointment.status))}
-              </div>
-            </div>
-
+            <h4 class="mobile-service-title">${escapeHTML(appointment.servicio)}</h4>
+            <div class="mobile-status-pill ${mobileStatusClass}">${escapeHTML(getStatusLabel(appointment.status))}</div>
             <div class="mobile-fields">
-              <div class="mobile-field-box">
-                <span class="mobile-field-label">Cliente</span>
-                <span class="mobile-field-value">${escapeHTML(appointment.nombre)}</span>
-              </div>
-
-              <div class="mobile-field-box">
-                <span class="mobile-field-label">Barbero</span>
-                <span class="mobile-field-value">${escapeHTML(appointment.barbero)}</span>
-              </div>
-
-              <div class="mobile-field-box">
-                <span class="mobile-field-label">Hora</span>
-                <span class="mobile-field-value">${escapeHTML(appointment.hora || "Sin hora")}</span>
-              </div>
-
-              <div class="mobile-field-box">
-                <span class="mobile-field-label">Duración</span>
-                <span class="mobile-field-value">${escapeHTML(String(appointment.duration || 0))} min</span>
-              </div>
-
-              <div class="mobile-field-box">
-                <span class="mobile-field-label">Precio</span>
-                <span class="mobile-field-value">${escapeHTML(precioText)}</span>
-              </div>
-
-              <div class="mobile-field-box">
-                <span class="mobile-field-label">Fecha</span>
-                <span class="mobile-field-value">${escapeHTML(formatDate(appointment.fecha))}</span>
-              </div>
+              <div class="mobile-field-box"><span class="mobile-field-label">Cliente</span><span class="mobile-field-value">${escapeHTML(appointment.nombre)}</span></div>
+              <div class="mobile-field-box"><span class="mobile-field-label">Barbero</span><span class="mobile-field-value">${escapeHTML(appointment.barbero)}</span></div>
+              <div class="mobile-field-box"><span class="mobile-field-label">Hora</span><span class="mobile-field-value">${escapeHTML(appointment.hora || "Sin hora")}</span></div>
+              <div class="mobile-field-box"><span class="mobile-field-label">Duración</span><span class="mobile-field-value">${escapeHTML(String(appointment.duration || 0))} min</span></div>
+              <div class="mobile-field-box"><span class="mobile-field-label">Precio</span><span class="mobile-field-value">${escapeHTML(precioText)}</span></div>
+              <div class="mobile-field-box"><span class="mobile-field-label">Fecha</span><span class="mobile-field-value">${escapeHTML(formatDate(appointment.fecha))}</span></div>
             </div>
-
             <div class="mobile-actions">
-              <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}', 'approved')">Aprobar</button>
-              <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}', 'cancelled')">Cancelar</button>
+              <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}','approved')">Aprobar</button>
+              <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}','cancelled')">Cancelar</button>
               <button onclick="deleteAppointment('${escapeHTMLAttr(appointment.id)}')">Eliminar</button>
             </div>
           </article>
@@ -1927,57 +1045,18 @@
       }).join("");
     }
 
+    function renderAll() {
+      const filtered = getFilteredAppointments();
+      renderStats();
+      renderTable(filtered);
+      renderMobileCards(filtered);
+    }
+
     function updateAppointmentStatus(id, status) {
       if (!requireAuthAction()) return;
-
-      const cita = appointments.find(app => app.id === id);
-
-      appointmentsRef.child(id).update({
-        status: status,
-        updatedAt: new Date().toISOString()
-      }).then(() => {
-        showToast(status === "approved" ? "Cita aprobada" : "Cita cancelada");
-
-        if (cita && cita.telefono) {
-          let telefono = cita.telefono.replace(/[^\d+]/g, "");
-
-          if (telefono.length === 10) {
-            telefono = "+1" + telefono;
-          }
-
-          let mensaje = "";
-          const fechaFormateada = formatDate(cita.fecha);
-
-          if (status === "approved") {
-            mensaje = `Hola ${cita.nombre}! Tu cita en *La Pinta Barber* ha sido confirmada.\n\n` +
-                      `*Servicio:* ${cita.servicio}\n` +
-                      `*Barbero:* ${cita.barbero}\n` +
-                      `*Fecha:* ${fechaFormateada}\n` +
-                      `*Hora:* ${cita.hora}\n\n` +
-                      `Te esperamos!`;
-          } else if (status === "cancelled") {
-            mensaje = `Hola ${cita.nombre}, te escribimos de *La Pinta Barber*.\n\n` +
-                      `Lamentablemente hemos tenido que cancelar tu cita para el ${fechaFormateada} a las ${cita.hora}.\n\n` +
-                      `Por favor, contactanos para reprogramarla. Disculpa los inconvenientes!`;
-          }
-
-          const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-          if (isMobile) {
-            window.location.href = whatsappUrl;
-          } else {
-            const a = document.createElement("a");
-            a.href = whatsappUrl;
-            a.target = "_blank";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-          }
-        }
-      }).catch(() => {
-        showToast("No se pudo actualizar la cita");
-      });
+      appointmentsRef.child(id).update({ status, updatedAt: new Date().toISOString() })
+        .then(() => showToast(status === "approved" ? "Cita aprobada" : "Cita cancelada"))
+        .catch(() => showToast("No se pudo actualizar la cita"));
     }
 
     function deleteAppointment(id) {
@@ -1991,18 +1070,11 @@
 
     function deletePastAppointments() {
       if (!requireAuthAction()) return;
-
       const expiredItems = appointments.filter(item => isAppointmentExpired(item));
-
-      if (!expiredItems.length) {
-        showToast("No hay citas vencidas para eliminar");
-        return;
-      }
+      if (!expiredItems.length) return showToast("No hay citas vencidas para eliminar");
 
       const updates = {};
-      expiredItems.forEach(item => {
-        updates[item.id] = null;
-      });
+      expiredItems.forEach(item => { updates[item.id] = null; });
 
       appointmentsRef.update(updates)
         .then(() => showToast("Citas vencidas eliminadas"))
@@ -2027,11 +1099,7 @@
     }
 
     function exportAppointments() {
-      const blob = new Blob(
-        [JSON.stringify(appointments, null, 2)],
-        { type: "application/json;charset=utf-8" }
-      );
-
+      const blob = new Blob([JSON.stringify(appointments, null, 2)], { type: "application/json;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -2043,33 +1111,157 @@
       showToast("Exportacion lista");
     }
 
-    function escapeHTML(value) {
-      return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+    function refreshEverything() {
+      autoDeleteExpiredAppointments();
+      renderAll();
+      renderShopStatusUI();
+      renderServicesEditor();
+      renderTimeBlocks();
+      showToast("Panel actualizado");
     }
 
-    function escapeHTMLAttr(value) {
-      return escapeHTML(value);
+    function toggleSidebar() {
+      sidebar.classList.toggle("open");
+      sidebarOverlay.classList.toggle("show");
+      mobileMenuBtn.classList.toggle("active");
     }
 
-    function showToast(message) {
-      if (!toast) return;
-      toast.textContent = message;
-      toast.classList.add("show");
+    function closeSidebar() {
+      sidebar.classList.remove("open");
+      sidebarOverlay.classList.remove("show");
+      mobileMenuBtn.classList.remove("active");
+    }
 
-      clearTimeout(showToast._timer);
-      showToast._timer = setTimeout(() => {
-        toast.classList.remove("show");
-      }, 2400);
+    function listenAppointments() {
+      appointmentsRef.on("value", snapshot => {
+        const data = snapshot.val() || {};
+        appointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+        autoDeleteExpiredAppointments();
+        renderAll();
+      });
+    }
+
+    function listenShopStatus() {
+      shopStatusRef.on("value", snapshot => {
+        const data = snapshot.val() || {};
+        shopIsOpen = data.isOpen !== false;
+        tuesdayOpen = data.tuesdayOpen === true;
+        extendedHours = data.extendedHours === true;
+        renderShopStatusUI();
+      });
+    }
+
+    function listenDailyOverrides() {
+      dailyOverridesRef.on("value", snapshot => {
+        dailyOverrides = snapshot.val() || {};
+        renderShopStatusUI();
+      });
+    }
+
+    function listenServices() {
+      servicesRef.on("value", snapshot => {
+        const data = snapshot.val();
+        if (!data && isFirstServicesLoad) {
+          setTimeout(() => {
+            if (Object.keys(servicesData).length === 0) {
+              servicesData = {};
+              renderServicesEditor();
+              renderAll();
+            }
+          }, 800);
+        } else {
+          servicesData = data || {};
+          renderServicesEditor();
+          renderAll();
+        }
+        isFirstServicesLoad = false;
+      });
+    }
+
+    function listenCustomClosures() {
+      customClosuresRef.on("value", snapshot => {
+        const data = snapshot.val() || {};
+        customClosures = Object.entries(data)
+          .map(([id, block]) => normalizeTimeBlock(id, block))
+          .filter(Boolean)
+          .filter(block => block.type === "timeBlock");
+        renderTimeBlocks();
+      });
+    }
+
+    function bindEvents() {
+      loginBtn?.addEventListener("click", handleLogin);
+      logoutBtn?.addEventListener("click", handleLogout);
+      refreshBtn?.addEventListener("click", refreshEverything);
+      mobileRefreshBtn?.addEventListener("click", refreshEverything);
+      exportBtn?.addEventListener("click", exportAppointments);
+      deletePastBtn?.addEventListener("click", deletePastAppointments);
+      clearAllBtn?.addEventListener("click", clearAllAppointments);
+      clearFiltersBtn?.addEventListener("click", clearFilters);
+      openShopBtn?.addEventListener("click", () => setShopOpenState(true));
+      closeShopBtn?.addEventListener("click", () => setShopOpenState(false));
+      openOnlyTodayBtn?.addEventListener("click", openOnlyToday);
+      closeOnlyTodayBtn?.addEventListener("click", closeOnlyToday);
+      clearTodayOverrideBtn?.addEventListener("click", clearTodayOverride);
+      toggleTuesdayBtn?.addEventListener("click", toggleTuesdayState);
+      toggleExtendedHoursBtn?.addEventListener("click", toggleExtendedHoursState);
+      saveTimeBlockBtn?.addEventListener("click", saveTimeBlock);
+
+      openServicesModalBtn?.addEventListener("click", () => { servicesModalOverlay.style.display = "flex"; });
+      closeServicesModalBtn?.addEventListener("click", () => { servicesModalOverlay.style.display = "none"; });
+      servicesModalOverlay?.addEventListener("click", event => { if (event.target === servicesModalOverlay) servicesModalOverlay.style.display = "none"; });
+
+      searchInput?.addEventListener("input", renderAll);
+      statusFilter?.addEventListener("change", renderAll);
+      dateFilter?.addEventListener("change", renderAll);
+
+      usernameInput?.addEventListener("keydown", handleLoginEnterKey);
+      passwordInput?.addEventListener("keydown", handleLoginEnterKey);
+
+      mobileMenuBtn?.addEventListener("click", toggleSidebar);
+      sidebarOverlay?.addEventListener("click", closeSidebar);
+
+      addNewServiceBtn?.addEventListener("click", () => {
+        if (!requireAuthAction()) return;
+        const newKey = servicesRef.push().key;
+        servicesRef.child(newKey).set({ nombre: "Nuevo Servicio", precio: 0, duracion: 30 })
+          .then(() => {
+            showToast("Nuevo servicio creado. Editalo ahora.");
+            setTimeout(() => {
+              const card = document.getElementById(`card-${newKey}`);
+              if (card) {
+                card.classList.add("editing");
+                card.scrollIntoView({ behavior: "smooth", block: "end" });
+              }
+            }, 300);
+          });
+      });
+
+      document.querySelectorAll(".sidebar-nav a").forEach(link => {
+        link.addEventListener("click", closeSidebar);
+      });
+    }
+
+    function boot() {
+      bindEvents();
+      auth.onAuthStateChanged(() => {
+        setSessionUI();
+        if (auth.currentUser) autoDeleteExpiredAppointments();
+      });
+      listenAppointments();
+      listenShopStatus();
+      listenDailyOverrides();
+      listenServices();
+      listenCustomClosures();
+      setDefaultTimeBlockValues();
+      setInterval(autoDeleteExpiredAppointments, 60000);
     }
 
     window.updateAppointmentStatus = updateAppointmentStatus;
     window.deleteAppointment = deleteAppointment;
     window.deleteTimeBlock = deleteTimeBlock;
+
+    boot();
   </script>
 </body>
 </html>
