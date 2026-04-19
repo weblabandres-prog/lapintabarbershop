@@ -63,9 +63,6 @@ if (typeof emailjs !== "undefined") {
   emailjs.init(EMAILJS_PUBLIC_KEY);
 }
 
-/* =========================
-   HORARIO REAL
-========================= */
 const normalWorkingDays = {
   0: null,
   1: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
@@ -98,24 +95,6 @@ const extendedTuesdaySchedule = {
   breaks: []
 };
 
-function cloneSchedule(config) {
-  if (!config) return null;
-  return {
-    start: config.start,
-    end: config.end,
-    breaks: Array.isArray(config.breaks) ? [...config.breaks] : []
-  };
-}
-
-function getDefaultOpenSchedule() {
-  return extendedHours
-    ? { start: "8:00 AM", end: "10:00 PM", breaks: [] }
-    : { start: "8:00 AM", end: "8:00 PM", breaks: [] };
-}
-
-/* =========================
-   UTILIDADES
-========================= */
 function escapeHTML(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -283,9 +262,6 @@ function formatStatusTime(time24or12) {
   return `${hour}:${minute} ${suffix}`;
 }
 
-/* =========================
-   OVERRIDES POR DÍA
-========================= */
 function getDailyOverride(dateString) {
   if (!dateString || !dailyOverrides) return null;
   return dailyOverrides[dateString] || null;
@@ -300,9 +276,6 @@ function listenDailyOverrides() {
   });
 }
 
-/* =========================
-   SERVICIOS Y APPOINTMENTS
-========================= */
 function getServiceDuration(serviceName) {
   if (!serviceName) return 60;
   const serviceObj = Object.values(servicesData).find(s => s.nombre === serviceName);
@@ -341,9 +314,6 @@ function normalizeAppointment(id, app) {
   };
 }
 
-/* =========================
-   CIERRES Y BLOQUES
-========================= */
 function normalizeCustomClosure(block, fallbackDate = "") {
   if (!block || typeof block !== "object") return null;
 
@@ -423,9 +393,6 @@ function applySpecialClosingToConfig(dateString, config) {
   return config;
 }
 
-/* =========================
-   LÓGICA DE HORARIO
-========================= */
 function getWorkingConfigByDate(dateString) {
   if (!dateString) return null;
 
@@ -440,26 +407,19 @@ function getWorkingConfigByDate(dateString) {
 
   if (day === 2) {
     if (!tuesdayForcedOpen && !override?.forceOpen) return null;
-    config = cloneSchedule(extendedHours ? extendedTuesdaySchedule : normalTuesdaySchedule);
+    config = extendedHours ? extendedTuesdaySchedule : normalTuesdaySchedule;
   } else {
     const source = extendedHours ? extendedWorkingDays : normalWorkingDays;
-    config = cloneSchedule(source[day] || null);
+    config = source[day] || null;
   }
 
   if (!config && override?.forceOpen) {
-    config = cloneSchedule(getDefaultOpenSchedule());
+    config = extendedHours
+      ? { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+      : { start: "8:00 AM", end: "8:00 PM", breaks: [] };
   }
 
   if (!config) return null;
-
-  if (override?.customStart && override?.customEnd) {
-    config.start = formatStatusTime(override.customStart);
-    config.end = formatStatusTime(override.customEnd);
-  }
-
-  if (Array.isArray(override?.breaks)) {
-    config.breaks = override.breaks.map(formatStatusTime);
-  }
 
   return applySpecialClosingToConfig(dateString, config);
 }
@@ -520,9 +480,6 @@ function isSlotAvailable(date, barber, startSlot, serviceName, list) {
   return true;
 }
 
-/* =========================
-   PAGO Y TELÉFONO
-========================= */
 function getCuentaTransferenciaSeleccionada() {
   if (cuentaPopularInput?.checked) return "Popular - Ahorro - 853557841";
   return "Banreservas - Ahorro - 960200381";
@@ -600,9 +557,6 @@ function configurarInputTelefono() {
   });
 }
 
-/* =========================
-   RENDER
-========================= */
 function renderHours() {
   if (!hoursGrid) return;
 
@@ -693,180 +647,197 @@ function renderHours() {
   if (!availableCount) {
     const empty = document.createElement("p");
     empty.style.color = "#93a3bd";
-    empty.style.gridColumn = "1/-1";
-    empty.style.marginTop = "12px";
-    empty.textContent = "No hay horas disponibles para esa fecha.";
+    empty.style.gridColumn = "1 / -1";
+    empty.style.marginTop = "10px";
+    empty.textContent = "No quedan horarios disponibles para esta selección.";
     hoursGrid.appendChild(empty);
   }
-}
-
-function renderAppointments() {
-  if (!appointmentsList) return;
-
-  const todayISO = getTodayISO();
-
-  const sortedAppointments = [...appointments]
-    .filter(app => {
-      if (app.status === "cancelled") return false;
-      if (!app.fecha) return false;
-      if (app.agendaDesde && todayISO < app.agendaDesde) return false;
-      return true;
-    })
-    .sort((a, b) => {
-      const dateA = `${a.fecha} ${to24Hour(a.hora)}`;
-      const dateB = `${b.fecha} ${to24Hour(b.hora)}`;
-      return dateA.localeCompare(dateB);
-    });
-
-  if (!sortedAppointments.length) {
-    appointmentsList.innerHTML = `
-      <article class="appointment-card empty">
-        <h3>No hay citas visibles</h3>
-        <p>Todavía no hay reservas disponibles para mostrar en esta sección.</p>
-      </article>
-    `;
-    return;
-  }
-
-  appointmentsList.innerHTML = sortedAppointments.map(app => `
-    <article class="appointment-card">
-      <div class="appointment-card-top">
-        <span class="appointment-status ${app.status}">${escapeHTML(app.status)}</span>
-        <span class="appointment-price">RD$${Number(app.precio || getServicePrice(app.servicio) || 0)}</span>
-      </div>
-      <h3>${escapeHTML(app.servicio || "Servicio")}</h3>
-      <p><strong>Cliente:</strong> ${escapeHTML(app.anonimo ? "Reservado" : app.nombre || "Sin nombre")}</p>
-      <p><strong>Barbero:</strong> ${escapeHTML(app.barbero || "No definido")}</p>
-      <p><strong>Fecha:</strong> ${escapeHTML(formatDateSafe(app.fecha))}</p>
-      <p><strong>Hora:</strong> ${escapeHTML(app.hora || "Sin hora")}</p>
-    </article>
-  `).join("");
 }
 
 function updateSummary() {
   if (!bookingSummary) return;
 
-  const nombre = nombreInput?.value?.trim() || "Sin nombre";
-  const telefono = telefonoInput?.value?.trim() || "Sin teléfono";
-  const servicio = servicioInput?.value || "Sin servicio";
-  const barbero = barberoInput?.value || "Sin barbero";
-  const fecha = fechaInput?.value ? formatDateSafe(fechaInput.value) : "Sin fecha";
-  const hora = horaInput?.value || "Sin hora";
-  const metodo = getMetodoPagoSeleccionado();
-  const precio = servicioInput?.value ? `RD$${getServicePrice(servicio)}` : "RD$0";
+  const nombre = nombreInput?.value.trim() || "-";
+  const telefono = telefonoInput?.value.trim() || "-";
+  const servicio = servicioInput?.value || "-";
+  const barbero = barberoInput?.value || "-";
+  const fecha = fechaInput?.value ? formatDateSafe(fechaInput.value) : "-";
+  const hora = horaInput?.value || "-";
+
+  const duration = getServiceDuration(servicio);
+  const precio = getServicePrice(servicio);
+
+  const anonimo = anonimoInput?.checked ? "Sí" : "No";
+  const nombrePublico = anonimo === "Sí" ? "Anónimo" : nombre;
+  const metodoPago = getMetodoPagoSeleccionado() || "-";
+  const estadoBarberia = getShopStatus().type === "open" ? "Abierta" : "Cerrada";
 
   bookingSummary.innerHTML = `
-    <div class="summary-item"><strong>Nombre:</strong> <span>${escapeHTML(anonimoInput?.checked ? "Reservado" : nombre)}</span></div>
-    <div class="summary-item"><strong>Teléfono:</strong> <span>${escapeHTML(telefono)}</span></div>
-    <div class="summary-item"><strong>Servicio:</strong> <span>${escapeHTML(servicio)}</span></div>
-    <div class="summary-item"><strong>Barbero:</strong> <span>${escapeHTML(barbero)}</span></div>
-    <div class="summary-item"><strong>Fecha:</strong> <span>${escapeHTML(fecha)}</span></div>
-    <div class="summary-item"><strong>Hora:</strong> <span>${escapeHTML(hora)}</span></div>
-    <div class="summary-item"><strong>Pago:</strong> <span>${escapeHTML(metodo)}</span></div>
-    <div class="summary-item"><strong>Precio:</strong> <span>${escapeHTML(precio)}</span></div>
+    <p><strong>Nombre real:</strong> ${nombre}</p>
+    <p><strong>Nombre en público:</strong> ${nombrePublico}</p>
+    <p><strong>Teléfono:</strong> ${telefono}</p>
+    <p><strong>Servicio:</strong> ${servicio}</p>
+    <p><strong>Precio:</strong> ${precio ? `RD$${precio}` : "-"}</p>
+    <p><strong>Barbero:</strong> ${barbero}</p>
+    <p><strong>Fecha:</strong> ${fecha}</p>
+    <p><strong>Hora:</strong> ${hora}</p>
+    <p><strong>Duración:</strong> ${duration} minutos</p>
+    <p><strong>Anónimo en público:</strong> ${anonimo}</p>
+    <p><strong>Método de pago:</strong> ${metodoPago}</p>
+    <p><strong>Estado barbería:</strong> ${estadoBarberia}</p>
   `;
 }
 
-/* =========================
-   ESTADO REAL DE LA BARBERÍA
-========================= */
-function getShopStatusForDate(dateString) {
-  if (!dateString) {
-    return {
-      type: "closed",
-      text: "Selecciona una fecha",
-      showBanner: false
-    };
+function renderAppointments() {
+  if (!appointmentsList) return;
+
+  const publicStatTotal = document.getElementById("publicStatTotal");
+  const publicStatApproved = document.getElementById("publicStatApproved");
+  const publicStatPending = document.getElementById("publicStatPending");
+  const todayISO = getTodayISO();
+
+  const publicAppointments = appointments.filter(app => {
+    if (app.status === "cancelled") return false;
+    const agendaVisibleDate = app.agendaDesde || app.fecha;
+    return agendaVisibleDate <= todayISO;
+  });
+
+  const orderedAppointments = [...publicAppointments].sort((a, b) => {
+    const aValue = `${a.fecha} ${to24Hour(a.hora)}`;
+    const bValue = `${b.fecha} ${to24Hour(b.hora)}`;
+    return aValue.localeCompare(bValue);
+  });
+
+  const approvedCount = orderedAppointments.filter(app => app.status === "approved").length;
+  const pendingCount = orderedAppointments.filter(app => app.status === "pending").length;
+
+  if (publicStatTotal) publicStatTotal.textContent = orderedAppointments.length;
+  if (publicStatApproved) publicStatApproved.textContent = approvedCount;
+  if (publicStatPending) publicStatPending.textContent = pendingCount;
+
+  appointmentsList.innerHTML = "";
+
+  if (!orderedAppointments.length) {
+    appointmentsList.innerHTML = `
+      <div class="public-empty-state">
+        <h3>No hay citas agendadas</h3>
+        <p>Cuando entren nuevas reservas aparecerán aquí automáticamente.</p>
+      </div>
+    `;
+    return;
   }
 
-  const override = getDailyOverride(dateString);
-  const config = getWorkingConfigByDate(dateString);
+  orderedAppointments.forEach(app => {
+    const item = document.createElement("article");
+    item.classList.add("appointment-item");
 
-  if (!shopIsOpen && dateString === getTodayISO() && !override?.forceOpen) {
-    return {
-      type: "closed",
-      text: "Cerrada por hoy",
-      showBanner: true
-    };
-  }
+    const publicStatus =
+      app.status === "approved"
+        ? '<span class="public-status approved">Aprobada</span>'
+        : '<span class="public-status pending">Pendiente</span>';
 
-  if (!config) {
-    return {
-      type: "closed",
-      text: "Cerrada ese día",
-      showBanner: true
-    };
-  }
+    const publicName = app.anonimo === true ? "Anónimo" : (app.nombre || "Cliente");
+    const price = app.precio || getServicePrice(app.servicio);
 
-  const isToday = dateString === getTodayISO();
+    item.innerHTML = `
+      <div class="appointment-top">
+        <div class="appointment-title-box">
+          <h3>${escapeHTML(app.servicio)}</h3>
+          <div class="appointment-subtitle">Reserva pública visible para clientes</div>
+        </div>
+        ${publicStatus}
+      </div>
 
-  if (!isToday) {
-    return {
-      type: "open",
-      text: `Disponible ${config.start} - ${config.end}`,
-      showBanner: false
-    };
-  }
+      <div class="appointment-meta-grid">
+        <div class="appointment-meta-card">
+          <span>Cliente</span>
+          <strong>${escapeHTML(publicName)}</strong>
+        </div>
 
-  const now = new Date();
-  const currentMinutes = (now.getHours() * 60) + now.getMinutes();
-  const startMinutes = convertToMinutes(config.start);
-  const endMinutes = convertToMinutes(config.end);
+        <div class="appointment-meta-card">
+          <span>Barbero</span>
+          <strong>${escapeHTML(app.barbero)}</strong>
+        </div>
+
+        <div class="appointment-meta-card">
+          <span>Fecha</span>
+          <strong>${escapeHTML(formatDateSafe(app.fecha))}</strong>
+        </div>
+
+        <div class="appointment-meta-card">
+          <span>Hora</span>
+          <strong>${escapeHTML(app.hora)}</strong>
+        </div>
+
+        <div class="appointment-meta-card">
+          <span>Duración</span>
+          <strong>${escapeHTML(String(app.duration))} min</strong>
+        </div>
+
+        <div class="appointment-meta-card">
+          <span>Precio</span>
+          <strong>RD$${escapeHTML(String(price))}</strong>
+        </div>
+      </div>
+    `;
+
+    appointmentsList.appendChild(item);
+  });
+}
+
+function getShopStatus() {
+  const todayISO = getTodayISO();
+  const todayDay = getDayFromDate(todayISO);
+  const override = getDailyOverride(todayISO);
 
   if (!shopIsOpen && !override?.forceOpen) {
     return {
       type: "closed",
-      text: "Cerrada por hoy",
+      text: "Cerrado por el momento, agenda para otra hora o día",
       showBanner: true
     };
   }
 
-  const activeBlock = getActiveCustomClosureForNow(dateString);
+  if (override?.forceClosed === true) {
+    return {
+      type: "closed",
+      text: "Cerrado por el momento, agenda para otra hora o día",
+      showBanner: true
+    };
+  }
+
+  if (todayDay === 2 && !tuesdayForcedOpen && !override?.forceOpen) {
+    return {
+      type: "closed",
+      text: "Cerrado por el momento, agenda para otra hora o día",
+      showBanner: true
+    };
+  }
+
+  const activeBlock = getActiveCustomClosureForNow(todayISO);
   if (activeBlock) {
     return {
-      type: "break",
-      text: activeBlock.reason
-        ? `Cerrada ahora: ${activeBlock.reason}`
-        : `Cerrada hasta ${activeBlock.end}`,
+      type: "closed",
+      text: "Cerrado por el momento, agenda para otra hora o día",
       showBanner: true
     };
   }
 
-  if (currentMinutes < startMinutes) {
-    return {
-      type: "closed",
-      text: `Abre hoy a las ${config.start}`,
-      showBanner: false
-    };
-  }
+  const config = getWorkingConfigByDate(todayISO);
 
-  if (currentMinutes >= endMinutes) {
+  if (config) {
     return {
-      type: "closed",
-      text: "Cerrada por hoy",
-      showBanner: true
-    };
-  }
-
-  const nowSlot = convertToTime(currentMinutes - (currentMinutes % 30));
-  if ((config.breaks || []).includes(nowSlot)) {
-    return {
-      type: "break",
-      text: "En receso",
+      type: "open",
+      text: `Abierto hoy • ${config.start} - ${config.end}`,
       showBanner: false
     };
   }
 
   return {
-    type: "open",
-    text: `Abierta hasta las ${config.end}`,
-    showBanner: false
+    type: "closed",
+    text: "Cerrado por el momento, agenda para otra hora o día",
+    showBanner: true
   };
-}
-
-function getShopStatus() {
-  const selectedDate = fechaInput?.value || getTodayISO();
-  return getShopStatusForDate(selectedDate);
 }
 
 function updateShopStatusBadge() {
@@ -883,12 +854,10 @@ function updateShopStatusBadge() {
 
   if (closedBanner) {
     closedBanner.classList.toggle("show", status.showBanner === true);
+    closedBanner.textContent = "Cerrado por el momento, agenda para otra hora o día.";
   }
 }
 
-/* =========================
-   APROBACIÓN OCULTA
-========================= */
 function showApproveButtons() {
   if (btnAprobarMenu) btnAprobarMenu.style.display = "inline-flex";
   if (btnAprobarHero) btnAprobarHero.style.display = "inline-flex";
@@ -952,9 +921,6 @@ function bindSecretShortcut() {
   logoSecret.addEventListener("click", registerTap);
 }
 
-/* =========================
-   EMAIL
-========================= */
 async function sendAppointmentEmail(appointment, appointmentId) {
   if (typeof emailjs === "undefined") {
     throw new Error("EmailJS no está cargado.");
@@ -980,9 +946,6 @@ async function sendAppointmentEmail(appointment, appointmentId) {
   return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
 }
 
-/* =========================
-   CLEANUP
-========================= */
 function isAppointmentPast(app) {
   if (!app?.fecha || !app?.hora) return false;
 
@@ -1013,118 +976,6 @@ async function cleanupPastAppointments() {
   }
 }
 
-/* =========================
-   LISTENERS FIREBASE
-========================= */
-function listenAppointments() {
-  appointmentsRef.on("value", snapshot => {
-    const data = snapshot.val() || {};
-    appointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
-
-    if (appointmentsList) renderAppointments();
-    renderHours();
-    updateSummary();
-  });
-}
-
-function listenShopStatus() {
-  shopStatusRef.on("value", snapshot => {
-    const data = snapshot.val() || {};
-    shopIsOpen = data.isOpen !== false;
-    tuesdayForcedOpen = data.tuesdayOpen === true;
-    extendedHours = data.extendedHours === true;
-
-    updateShopStatusBadge();
-    renderHours();
-    updateSummary();
-  });
-}
-
-function listenCustomClosures() {
-  customClosuresRef.on("value", snapshot => {
-    customClosures = snapshot.val() || {};
-    renderHours();
-    updateShopStatusBadge();
-    updateSummary();
-  });
-}
-
-function listenServices() {
-  servicesRef.on("value", snapshot => {
-    servicesData = snapshot.val() || {};
-    updateSummary();
-    renderHours();
-    if (appointmentsList) renderAppointments();
-  });
-}
-
-/* =========================
-   URL Y MENÚ
-========================= */
-function applyServiceFromURL() {
-  if (!servicioInput) return;
-
-  const params = new URLSearchParams(window.location.search);
-  const servicioURL = params.get("servicio");
-
-  if (servicioURL) {
-    servicioInput.value = servicioURL;
-  }
-}
-
-if (menuToggle && navPanel) {
-  menuToggle.addEventListener("click", function () {
-    navPanel.classList.toggle("open");
-    menuToggle.classList.toggle("active");
-
-    const expanded = menuToggle.getAttribute("aria-expanded") === "true";
-    menuToggle.setAttribute("aria-expanded", String(!expanded));
-  });
-
-  navPanel.querySelectorAll("a").forEach(link => {
-    link.addEventListener("click", function () {
-      navPanel.classList.remove("open");
-      menuToggle.classList.remove("active");
-      menuToggle.setAttribute("aria-expanded", "false");
-    });
-  });
-
-  document.addEventListener("click", function (e) {
-    if (
-      window.innerWidth <= 1100 &&
-      !navPanel.contains(e.target) &&
-      !menuToggle.contains(e.target)
-    ) {
-      navPanel.classList.remove("open");
-      menuToggle.classList.remove("active");
-      menuToggle.setAttribute("aria-expanded", "false");
-    }
-  });
-}
-
-document.querySelectorAll(".select-service-btn").forEach(btn => {
-  btn.addEventListener("click", function (e) {
-    if (!servicioInput) return;
-
-    e.preventDefault();
-    servicioInput.value = this.getAttribute("data-service") || "";
-
-    if (horaInput) horaInput.value = "";
-    renderHours();
-    updateSummary();
-
-    const target =
-      document.getElementById("bookingForm") ||
-      document.getElementById("reservas") ||
-      bookingForm;
-
-    target?.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-});
-
-/* =========================
-   FORMULARIO
-========================= */
 if (bookingForm) {
   bookingForm.addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -1280,9 +1131,109 @@ if (bookingForm) {
   });
 }
 
-/* =========================
-   EVENTOS UI
-========================= */
+function listenAppointments() {
+  appointmentsRef.on("value", snapshot => {
+    const data = snapshot.val() || {};
+    appointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+
+    if (appointmentsList) renderAppointments();
+    renderHours();
+    updateSummary();
+  });
+}
+
+function listenShopStatus() {
+  shopStatusRef.on("value", snapshot => {
+    const data = snapshot.val() || {};
+    shopIsOpen = data.isOpen !== false;
+    tuesdayForcedOpen = data.tuesdayOpen === true;
+    extendedHours = data.extendedHours === true;
+
+    updateShopStatusBadge();
+    renderHours();
+    updateSummary();
+  });
+}
+
+function listenCustomClosures() {
+  customClosuresRef.on("value", snapshot => {
+    customClosures = snapshot.val() || {};
+    renderHours();
+    updateShopStatusBadge();
+    updateSummary();
+  });
+}
+
+function listenServices() {
+  servicesRef.on("value", snapshot => {
+    servicesData = snapshot.val() || {};
+    updateSummary();
+    renderHours();
+    if (appointmentsList) renderAppointments();
+  });
+}
+
+function applyServiceFromURL() {
+  if (!servicioInput) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const servicioURL = params.get("servicio");
+
+  if (servicioURL) {
+    servicioInput.value = servicioURL;
+  }
+}
+
+if (menuToggle && navPanel) {
+  menuToggle.addEventListener("click", function () {
+    navPanel.classList.toggle("open");
+    menuToggle.classList.toggle("active");
+
+    const expanded = menuToggle.getAttribute("aria-expanded") === "true";
+    menuToggle.setAttribute("aria-expanded", String(!expanded));
+  });
+
+  navPanel.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", function () {
+      navPanel.classList.remove("open");
+      menuToggle.classList.remove("active");
+      menuToggle.setAttribute("aria-expanded", "false");
+    });
+  });
+
+  document.addEventListener("click", function (e) {
+    if (
+      window.innerWidth <= 1100 &&
+      !navPanel.contains(e.target) &&
+      !menuToggle.contains(e.target)
+    ) {
+      navPanel.classList.remove("open");
+      menuToggle.classList.remove("active");
+      menuToggle.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
+document.querySelectorAll(".select-service-btn").forEach(btn => {
+  btn.addEventListener("click", function (e) {
+    if (!servicioInput) return;
+
+    e.preventDefault();
+    servicioInput.value = this.getAttribute("data-service") || "";
+
+    if (horaInput) horaInput.value = "";
+    renderHours();
+    updateSummary();
+
+    const target =
+      document.getElementById("bookingForm") ||
+      document.getElementById("reservas") ||
+      bookingForm;
+
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+});
+
 fechaInput?.addEventListener("change", () => {
   if (horaInput) horaInput.value = "";
   renderHours();
@@ -1320,9 +1271,6 @@ metodoTransferenciaInput?.addEventListener("change", () => {
 cuentaBanreservasInput?.addEventListener("change", updateSummary);
 cuentaPopularInput?.addEventListener("change", updateSummary);
 
-/* =========================
-   INICIO
-========================= */
 applyServiceFromURL();
 setMinDate();
 hideApproveButtons();
