@@ -230,6 +230,21 @@ function to24Hour(time12) {
   return `${String(hour).padStart(2, "0")}:${minutes}`;
 }
 
+function formatStatusTime(time24or12) {
+  if (!time24or12) return "";
+
+  if (/AM|PM/i.test(time24or12)) return time24or12;
+
+  const [hourStr, minute] = String(time24or12).split(":");
+  let hour = parseInt(hourStr, 10);
+  const suffix = hour >= 12 ? "PM" : "AM";
+
+  if (hour === 0) hour = 12;
+  else if (hour > 12) hour -= 12;
+
+  return `${hour}:${minute} ${suffix}`;
+}
+
 function generateTimeSlots(start, end, interval = 30) {
   const slots = [];
   let current = convertToMinutes(start);
@@ -245,21 +260,6 @@ function generateTimeSlots(start, end, interval = 30) {
 
 function getDayFromDate(dateString) {
   return new Date(dateString + "T00:00:00").getDay();
-}
-
-function formatStatusTime(time24or12) {
-  if (!time24or12) return "";
-
-  if (/AM|PM/i.test(time24or12)) return time24or12;
-
-  const [hourStr, minute] = time24or12.split(":");
-  let hour = parseInt(hourStr, 10);
-  const suffix = hour >= 12 ? "PM" : "AM";
-
-  if (hour === 0) hour = 12;
-  else if (hour > 12) hour -= 12;
-
-  return `${hour}:${minute} ${suffix}`;
 }
 
 function getDailyOverride(dateString) {
@@ -598,7 +598,7 @@ function renderHours() {
     info.style.lineHeight = "1.6";
 
     const detail = timeBlocks
-      .map(block => `${block.start} - ${block.end}${block.reason ? ` (${block.reason})` : ""}`)
+      .map(block => `${formatStatusTime(block.start)} - ${formatStatusTime(block.end)}${block.reason ? ` (${block.reason})` : ""}`)
       .join(" | ");
 
     info.textContent = `Bloques cerrados para esta fecha: ${detail}`;
@@ -662,7 +662,7 @@ function updateSummary() {
   const servicio = servicioInput?.value || "-";
   const barbero = barberoInput?.value || "-";
   const fecha = fechaInput?.value ? formatDateSafe(fechaInput.value) : "-";
-  const hora = horaInput?.value || "-";
+  const hora = horaInput?.value ? formatStatusTime(horaInput.value) : "-";
 
   const duration = getServiceDuration(servicio);
   const precio = getServicePrice(servicio);
@@ -766,7 +766,7 @@ function renderAppointments() {
 
         <div class="appointment-meta-card">
           <span>Hora</span>
-          <strong>${escapeHTML(app.hora)}</strong>
+          <strong>${escapeHTML(formatStatusTime(app.hora))}</strong>
         </div>
 
         <div class="appointment-meta-card">
@@ -828,7 +828,7 @@ function getShopStatus() {
   if (config) {
     return {
       type: "open",
-      text: `Abierto hoy • ${config.start} - ${config.end}`,
+      text: `Abierto hoy • ${formatStatusTime(config.start)} - ${formatStatusTime(config.end)}`,
       showBanner: false
     };
   }
@@ -936,7 +936,7 @@ async function sendAppointmentEmail(appointment, appointmentId) {
     barbero: appointment.barbero || "",
     fecha: formatDateSafe(appointment.fecha) || "",
     fecha_iso: formatDateISOForSubject(appointment.fecha) || "",
-    hora: appointment.hora || "",
+    hora: formatStatusTime(appointment.hora) || "",
     duration: `${appointment.duration || 0} min`,
     precio: `RD$${appointment.precio || getServicePrice(appointment.servicio)}`,
     metodo_pago: appointment.metodoPago || "Efectivo",
