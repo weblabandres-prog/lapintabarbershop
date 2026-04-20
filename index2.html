@@ -278,11 +278,67 @@
           </div>
           <div id="timeBlockCountBadge" class="badge-inline">0 bloques activos</div>
         </div>
-        <p class="status-help">Elige una fecha y un rango de tiempo para bloquear citas solo durante esas horas. Ejemplo: hoy de 13:00 a 20:00.</p>
+        <p class="status-help">Elige una fecha y un rango de tiempo para bloquear citas solo durante esas horas. Ejemplo: hoy de 1:00 PM a 8:00 PM.</p>
         <div class="time-block-form">
           <div class="field"><label for="blockDateInput">Fecha</label><input id="blockDateInput" type="date" /></div>
-          <div class="field"><label for="blockStartInput">Desde</label><input id="blockStartInput" type="time" step="900" /></div>
-          <div class="field"><label for="blockEndInput">Hasta</label><input id="blockEndInput" type="time" step="900" /></div>
+          <div class="field">
+            <label>Desde</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+              <select id="blockStartHour">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+              </select>
+              <select id="blockStartMinute">
+                <option value="00">00</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+              </select>
+              <select id="blockStartPeriod">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Hasta</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+              <select id="blockEndHour">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+              </select>
+              <select id="blockEndMinute">
+                <option value="00">00</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+              </select>
+              <select id="blockEndPeriod">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
           <div class="field"><label for="blockReasonInput">Motivo</label><input id="blockReasonInput" type="text" placeholder="Almuerzo, evento, diligencia..." maxlength="80" /></div>
           <button id="saveTimeBlockBtn" class="primary-btn" type="button">Bloquear</button>
         </div>
@@ -457,8 +513,12 @@
     const servicesContainer = document.getElementById("servicesContainer");
     const addNewServiceBtn = document.getElementById("addNewServiceBtn");
     const blockDateInput = document.getElementById("blockDateInput");
-    const blockStartInput = document.getElementById("blockStartInput");
-    const blockEndInput = document.getElementById("blockEndInput");
+    const blockStartHour = document.getElementById("blockStartHour");
+    const blockStartMinute = document.getElementById("blockStartMinute");
+    const blockStartPeriod = document.getElementById("blockStartPeriod");
+    const blockEndHour = document.getElementById("blockEndHour");
+    const blockEndMinute = document.getElementById("blockEndMinute");
+    const blockEndPeriod = document.getElementById("blockEndPeriod");
     const blockReasonInput = document.getElementById("blockReasonInput");
     const saveTimeBlockBtn = document.getElementById("saveTimeBlockBtn");
     const timeBlocksList = document.getElementById("timeBlocksList");
@@ -787,14 +847,69 @@
       currentUserLabel.textContent = user ? user.email : "invitado";
     }
 
+    function convert12To24(hour, minute, period) {
+      let h = parseInt(hour, 10);
+      const m = String(minute).padStart(2, "0");
+      const p = String(period).toUpperCase();
+
+      if (p === "AM" && h === 12) h = 0;
+      if (p === "PM" && h !== 12) h += 12;
+
+      return `${String(h).padStart(2, "0")}:${m}`;
+    }
+
+    function convert24To12(time24) {
+      if (!time24 || !/^\d{2}:\d{2}$/.test(time24)) {
+        return { hour: "1", minute: "00", period: "PM" };
+      }
+
+      let [hour, minute] = time24.split(":").map(Number);
+      let period = "AM";
+
+      if (hour >= 12) period = "PM";
+      if (hour === 0) hour = 12;
+      else if (hour > 12) hour -= 12;
+
+      return {
+        hour: String(hour),
+        minute: String(minute).padStart(2, "0"),
+        period
+      };
+    }
+
+    function getTimeBlockInputsAs24() {
+      const start = convert12To24(
+        blockStartHour?.value || "1",
+        blockStartMinute?.value || "00",
+        blockStartPeriod?.value || "PM"
+      );
+
+      const end = convert12To24(
+        blockEndHour?.value || "1",
+        blockEndMinute?.value || "00",
+        blockEndPeriod?.value || "PM"
+      );
+
+      return { start, end };
+    }
+
     function setDefaultTimeBlockValues() {
       const today = getTodayISO();
       if (blockDateInput) {
         blockDateInput.min = today;
         if (!blockDateInput.value) blockDateInput.value = today;
       }
-      if (blockStartInput && !blockStartInput.value) blockStartInput.value = "13:00";
-      if (blockEndInput && !blockEndInput.value) blockEndInput.value = "20:00";
+
+      const defaultStart = convert24To12("13:00");
+      const defaultEnd = convert24To12("20:00");
+
+      if (blockStartHour) blockStartHour.value = defaultStart.hour;
+      if (blockStartMinute) blockStartMinute.value = defaultStart.minute;
+      if (blockStartPeriod) blockStartPeriod.value = defaultStart.period;
+
+      if (blockEndHour) blockEndHour.value = defaultEnd.hour;
+      if (blockEndMinute) blockEndMinute.value = defaultEnd.minute;
+      if (blockEndPeriod) blockEndPeriod.value = defaultEnd.period;
     }
 
     function isValid24HourTime(time) {
@@ -840,8 +955,7 @@
       if (!requireAuthAction()) return;
 
       const fecha = blockDateInput?.value || "";
-      const start = blockStartInput?.value || "";
-      const end = blockEndInput?.value || "";
+      const { start, end } = getTimeBlockInputsAs24();
       const reason = blockReasonInput?.value.trim() || "Cierre por bloque de horas";
       const today = getTodayISO();
 
@@ -901,7 +1015,7 @@
         <article class="time-block-item">
           <div>
             <h4>${escapeHTML(formatDate(block.fecha))}</h4>
-            <p><strong>${escapeHTML(block.start)} - ${escapeHTML(block.end)}</strong> ${block.reason ? "• " + escapeHTML(block.reason) : ""}</p>
+            <p><strong>${escapeHTML(formatStatusTime(block.start))} - ${escapeHTML(formatStatusTime(block.end))}</strong> ${block.reason ? "• " + escapeHTML(block.reason) : ""}</p>
             <div class="time-block-meta">
               <span class="mini-pill">${isTimeBlockCurrentOrFuture(block) ? "Activo" : "Pasado"}</span>
               <span class="mini-pill">${escapeHTML(String(timeBlockDuration(block.start, block.end)))} horas</span>
@@ -1070,11 +1184,43 @@
       shopStatusText.textContent = stateFragments.join(" ");
     }
 
-    function setShopOpenState(isOpen) {
+    function logFirebaseError(context, error) {
+      console.error(context, error);
+    }
+
+    function applyShopStateChange({ isOpen = shopIsOpen, forceOpen = null, forceClosed = null, toastMessage = "Cambios guardados" }) {
       if (!requireAuthAction()) return;
-      shopStatusRef.update({ isOpen, updatedAt: new Date().toISOString() })
-        .then(() => showToast(isOpen ? "Barberia abierta" : "Barberia cerrada"))
-        .catch(() => showToast("No se pudo cambiar el estado"));
+
+      const today = getTodayISO();
+      const nowIso = new Date().toISOString();
+      const updates = {
+        [`shopStatus/isOpen`]: isOpen,
+        [`shopStatus/updatedAt`]: nowIso
+      };
+
+      if (forceOpen === null && forceClosed === null) {
+        updates[`dailyOverrides/${today}`] = null;
+      } else {
+        updates[`dailyOverrides/${today}/forceOpen`] = Boolean(forceOpen);
+        updates[`dailyOverrides/${today}/forceClosed`] = Boolean(forceClosed);
+        updates[`dailyOverrides/${today}/updatedAt`] = nowIso;
+      }
+
+      firebase.database().ref().update(updates)
+        .then(() => showToast(toastMessage))
+        .catch((error) => {
+          logFirebaseError("Error guardando estado de barberia:", error);
+          showToast(error?.message ? `Error: ${error.message}` : "No se pudo guardar el cambio");
+        });
+    }
+
+    function setShopOpenState(isOpen) {
+      applyShopStateChange({
+        isOpen,
+        forceOpen: null,
+        forceClosed: null,
+        toastMessage: isOpen ? "Barberia abierta y cambio de hoy limpiado" : "Barberia cerrada y cambio de hoy limpiado"
+      });
     }
 
     function toggleTuesdayState() {
@@ -1092,32 +1238,35 @@
     }
 
     function openOnlyToday() {
-      if (!requireAuthAction()) return;
-      const today = getTodayISO();
-      dailyOverridesRef.child(today).set({
+      applyShopStateChange({
+        isOpen: true,
         forceOpen: true,
         forceClosed: false,
-        updatedAt: new Date().toISOString()
-      }).then(() => showToast("La barbería se abrió solo por hoy"))
-        .catch(() => showToast("No se pudo abrir solo por hoy"));
+        toastMessage: "La barberia se abrio solo por hoy"
+      });
     }
 
     function closeOnlyToday() {
-      if (!requireAuthAction()) return;
-      const today = getTodayISO();
-      dailyOverridesRef.child(today).set({
+      applyShopStateChange({
+        isOpen: false,
         forceOpen: false,
         forceClosed: true,
-        updatedAt: new Date().toISOString()
-      }).then(() => showToast("La barbería se cerró solo por hoy"))
-        .catch(() => showToast("No se pudo cerrar solo por hoy"));
+        toastMessage: "La barberia se cerro solo por hoy"
+      });
     }
 
     function clearTodayOverride() {
       if (!requireAuthAction()) return;
-      dailyOverridesRef.child(getTodayISO()).remove()
-        .then(() => showToast("Se restauró el horario normal de hoy"))
-        .catch(() => showToast("No se pudo restaurar el horario"));
+      const today = getTodayISO();
+      firebase.database().ref().update({
+        [`dailyOverrides/${today}`]: null,
+        [`shopStatus/updatedAt`]: new Date().toISOString()
+      })
+        .then(() => showToast("Se restauro el horario normal de hoy"))
+        .catch((error) => {
+          logFirebaseError("Error limpiando cambio de hoy:", error);
+          showToast(error?.message ? `Error: ${error.message}` : "No se pudo restaurar el horario");
+        });
     }
 
     function getFilteredAppointments() {
