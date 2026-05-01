@@ -54,6 +54,7 @@ let tuesdayForcedOpen = false;
 let extendedHours = false;
 let customClosures = {};
 let dailyOverrides = {};
+let requestedServiceFromURL = "";
 
 const EMAILJS_PUBLIC_KEY = "TXQSraRTJ0Ro5hhuk";
 const EMAILJS_SERVICE_ID = "service_15uyzin";
@@ -258,6 +259,17 @@ function formatStatusTime(time24or12) {
   return `${hour}:${minute} ${suffix}`;
 }
 
+function normalizeLookupText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function isKidsService(serviceName) {
+  return normalizeLookupText(serviceName).includes("nino");
+}
+
 function generateTimeSlots(start, end, interval = 30) {
   const slots = [];
   let current = convertToMinutes(start);
@@ -278,6 +290,74 @@ function getDayFromDate(dateString) {
 function getDailyOverride(dateString) {
   if (!dateString || !dailyOverrides) return null;
   return dailyOverrides[dateString] || null;
+}
+
+function cloneSchedule(config) {
+  if (!config) return null;
+
+  return {
+    start: config.start,
+    end: config.end,
+    breaks: Array.isArray(config.breaks) ? [...config.breaks] : []
+  };
+}
+
+function getDefaultOpenSchedule() {
+  return extendedHours
+    ? { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+    : { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+}
+
+function getCurrentBreak(config) {
+  const breaks = Array.isArray(config?.breaks) ? [...config.breaks] : [];
+  if (!breaks.length) return null;
+
+  const now = new Date();
+  const currentMinutes = (now.getHours() * 60) + now.getMinutes();
+  const breakMinutes = breaks
+    .map(convertToMinutes)
+    .filter(minutes => !Number.isNaN(minutes))
+    .sort((a, b) => a - b);
+
+  for (let i = 0; i < breakMinutes.length; i++) {
+    const startMinutes = breakMinutes[i];
+    let endMinutes = startMinutes + 30;
+
+    while (i + 1 < breakMinutes.length && breakMinutes[i + 1] === endMinutes) {
+      i += 1;
+      endMinutes += 30;
+    }
+
+    if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
+      return {
+        start: convertToTime(startMinutes),
+        end: convertToTime(endMinutes)
+      };
+    }
+  }
+
+  return null;
+}
+
+function getNextOpenInfoFromDate(baseDate = new Date()) {
+  const dayNames = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
+
+  for (let i = 1; i <= 7; i++) {
+    const nextDate = new Date(baseDate);
+    nextDate.setDate(baseDate.getDate() + i);
+
+    const iso = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}-${String(nextDate.getDate()).padStart(2, "0")}`;
+    const config = getWorkingConfigByDate(iso);
+
+    if (config) {
+      return {
+        dayName: dayNames[nextDate.getDay()],
+        open: formatStatusTime(config.start)
+      };
+    }
+  }
+
+  return null;
 }
 
 function listenDailyOverrides() {
@@ -409,7 +489,12 @@ function applySpecialClosingToConfig(dateString, config) {
 function getWorkingConfigByDate(dateString) {
   if (!dateString) return null;
 
+  const todayISO = getTodayISO();
   const override = getDailyOverride(dateString);
+
+  if (dateString === todayISO && !shopIsOpen && !override?.forceOpen) {
+    return null;
+  }
 
   if (override?.forceClosed === true) {
     return null;
@@ -430,18 +515,16 @@ function getWorkingConfigByDate(dateString) {
   }
 
   if (!config && override?.forceOpen) {
-    config = extendedHours
-      ? { start: "8:00 AM", end: "10:00 PM", breaks: [] }
-      : { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    config = getDefaultOpenSchedule();
   }
 
   if (!config) return null;
 
-  return applySpecialClosingToConfig(dateString, config);
+  return applySpecialClosingToConfig(dateString, cloneSchedule(config));
 }
 
 function shouldShowSlot(slot, serviceName) {
-  if (serviceName && serviceName.toLowerCase().includes("niño")) return true;
+  if (isKidsService(serviceName)) return true;
   return convertToMinutes(slot) % 60 === 0;
 }
 
@@ -624,12 +707,12 @@ function renderHours() {
   const allSlots = generateTimeSlots(config.start, config.end, 30);
   const visibleSlots = allSlots.filter(slot => shouldShowSlot(slot, selectedService));
 
-  if (selectedService.toLowerCase().includes("niño")) {
+  if (isKidsService(selectedService)) {
     const info = document.createElement("p");
     info.style.color = "#93a3bd";
     info.style.gridColumn = "1 / -1";
     info.style.marginBottom = "8px";
-    info.textContent = "Corte de niño usa media hora.";
+    info.textContent = "Corte de nino usa media hora.";
     hoursGrid.appendChild(info);
   }
 
@@ -804,11 +887,13 @@ function renderAppointments() {
 function getShopStatus() {
   const todayISO = getTodayISO();
   const override = getDailyOverride(todayISO);
+  const now = new Date();
+  const currentMinutes = (now.getHours() * 60) + now.getMinutes();
 
   if (!shopIsOpen && !override?.forceOpen) {
     return {
       type: "closed",
-      text: "Cerrado por el momento, agenda para otra hora o día",
+      text: "Cerrado por el momento, agenda para otra hora o dia",
       showBanner: true
     };
   }
@@ -816,7 +901,7 @@ function getShopStatus() {
   if (override?.forceClosed === true) {
     return {
       type: "closed",
-      text: "Cerrado por el momento, agenda para otra hora o día",
+      text: "Cerrado por el momento, agenda para otra hora o dia",
       showBanner: true
     };
   }
@@ -825,25 +910,59 @@ function getShopStatus() {
   if (activeBlock) {
     return {
       type: "closed",
-      text: "Cerrado por el momento, agenda para otra hora o día",
+      text: `Cerrado por bloque de horas. Volvemos a las ${formatStatusTime(activeBlock.end)}`,
       showBanner: true
     };
   }
 
   const config = getWorkingConfigByDate(todayISO);
 
-  if (config) {
+  if (!config) {
+    const nextOpen = getNextOpenInfoFromDate(now);
     return {
-      type: "open",
-      text: `Abierto hoy • ${formatStatusTime(config.start)} - ${formatStatusTime(config.end)}`,
+      type: "closed",
+      text: nextOpen
+        ? `Cerrado por hoy. Abrimos ${nextOpen.dayName} a las ${nextOpen.open}`
+        : "Cerrado por el momento, agenda para otra hora o dia",
+      showBanner: true
+    };
+  }
+
+  const openMinutes = convertToMinutes(config.start);
+  const closeMinutes = convertToMinutes(config.end);
+
+  if (currentMinutes < openMinutes) {
+    return {
+      type: "closed",
+      text: `Cerrado ahora. Abrimos hoy a las ${formatStatusTime(config.start)}`,
+      showBanner: true
+    };
+  }
+
+  if (currentMinutes >= closeMinutes) {
+    const nextOpen = getNextOpenInfoFromDate(now);
+    return {
+      type: "closed",
+      text: nextOpen
+        ? `Cerrado por hoy. Abrimos ${nextOpen.dayName} a las ${nextOpen.open}`
+        : "Cerrado por el momento, agenda para otra hora o dia",
+      showBanner: true
+    };
+  }
+
+  const currentBreak = getCurrentBreak(config);
+  if (currentBreak) {
+    return {
+      type: "break",
+      text: `En descanso. Volvemos a las ${formatStatusTime(currentBreak.end)}`,
       showBanner: false
     };
   }
 
   return {
-    type: "closed",
-    text: "Cerrado por el momento, agenda para otra hora o día",
-    showBanner: true
+    type: "open",
+    text: `Abierto hoy - ${formatStatusTime(config.start)} a ${formatStatusTime(config.end)}`,
+    showBanner: false
   };
 }
 
@@ -1173,9 +1292,36 @@ function listenCustomClosures() {
   });
 }
 
+function populateServiceOptions() {
+  if (!servicioInput) return;
+
+  const currentValue = servicioInput.value || requestedServiceFromURL;
+  const services = Object.values(servicesData || {}).filter(service => service && service.nombre);
+
+  servicioInput.innerHTML = '<option value="">Selecciona un servicio</option>';
+
+  if (!services.length) {
+    servicioInput.innerHTML = '<option value="">No hay servicios disponibles</option>';
+    return;
+  }
+
+  services.forEach(servicio => {
+    const option = document.createElement("option");
+    option.value = servicio.nombre;
+    option.textContent = `${servicio.nombre} - RD$${Number(servicio.precio || 0)}`;
+    option.dataset.duracion = String(servicio.duracion || "");
+    servicioInput.appendChild(option);
+  });
+
+  if (currentValue && services.some(servicio => servicio.nombre === currentValue)) {
+    servicioInput.value = currentValue;
+  }
+}
+
 function listenServices() {
   servicesRef.on("value", snapshot => {
     servicesData = snapshot.val() || {};
+    populateServiceOptions();
     updateSummary();
     renderHours();
     if (appointmentsList) renderAppointments();
@@ -1189,6 +1335,7 @@ function applyServiceFromURL() {
   const servicioURL = params.get("servicio");
 
   if (servicioURL) {
+    requestedServiceFromURL = servicioURL;
     servicioInput.value = servicioURL;
   }
 }
