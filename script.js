@@ -49,6 +49,7 @@ const logoSecret = document.getElementById("logoSecret");
 let appointments = [];
 let servicesData = {};
 let shopIsOpen = true;
+let sundayOpen = false;
 let tuesdayForcedOpen = false;
 let extendedHours = false;
 let customClosures = {};
@@ -81,6 +82,18 @@ const extendedWorkingDays = {
   4: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
   5: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
   6: { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+};
+
+const normalSundaySchedule = {
+  start: "8:00 AM",
+  end: "8:00 PM",
+  breaks: []
+};
+
+const extendedSundaySchedule = {
+  start: "8:00 AM",
+  end: "10:00 PM",
+  breaks: []
 };
 
 const normalTuesdaySchedule = {
@@ -405,7 +418,10 @@ function getWorkingConfigByDate(dateString) {
   const day = getDayFromDate(dateString);
   let config = null;
 
-  if (day === 2) {
+  if (day === 0) {
+    if (!sundayOpen && !override?.forceOpen) return null;
+    config = extendedHours ? extendedSundaySchedule : normalSundaySchedule;
+  } else if (day === 2) {
     if (!tuesdayForcedOpen && !override?.forceOpen) return null;
     config = extendedHours ? extendedTuesdaySchedule : normalTuesdaySchedule;
   } else {
@@ -787,7 +803,6 @@ function renderAppointments() {
 
 function getShopStatus() {
   const todayISO = getTodayISO();
-  const todayDay = getDayFromDate(todayISO);
   const override = getDailyOverride(todayISO);
 
   if (!shopIsOpen && !override?.forceOpen) {
@@ -799,14 +814,6 @@ function getShopStatus() {
   }
 
   if (override?.forceClosed === true) {
-    return {
-      type: "closed",
-      text: "Cerrado por el momento, agenda para otra hora o día",
-      showBanner: true
-    };
-  }
-
-  if (todayDay === 2 && !tuesdayForcedOpen && !override?.forceOpen) {
     return {
       type: "closed",
       text: "Cerrado por el momento, agenda para otra hora o día",
@@ -1069,7 +1076,8 @@ if (bookingForm) {
       metodoPago: getMetodoPagoSeleccionado(),
       status: "pending",
       approveToken: generateApproveToken(),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      recordatorioEnviado: false
     };
 
     const submitButton = bookingForm.querySelector('button[type="submit"]');
@@ -1146,6 +1154,7 @@ function listenShopStatus() {
   shopStatusRef.on("value", snapshot => {
     const data = snapshot.val() || {};
     shopIsOpen = data.isOpen !== false;
+    sundayOpen = data.sundayOpen === true;
     tuesdayForcedOpen = data.tuesdayOpen === true;
     extendedHours = data.extendedHours === true;
 
