@@ -253,6 +253,7 @@
           </div>
           <div class="two-line-status">
             <div id="shopStatusBadge" class="badge-inline open">Abierta</div>
+            <div id="sundayStatusBadge" class="badge-inline">Domingo cerrado</div>
             <div id="tuesdayStatusBadge" class="badge-inline">Martes cerrado</div>
             <div id="extendedHoursBadge" class="badge-inline">Horario normal</div>
           </div>
@@ -264,6 +265,7 @@
           <button id="openOnlyTodayBtn" class="success-btn">Abrir solo hoy</button>
           <button id="closeOnlyTodayBtn" class="danger-btn">Cerrar solo hoy</button>
           <button id="clearTodayOverrideBtn" class="ghost-btn">Quitar cambio de hoy</button>
+          <button id="toggleSundayBtn" class="warning-btn">Abrir domingo</button>
           <button id="toggleTuesdayBtn" class="warning-btn">Abrir martes</button>
           <button id="toggleExtendedHoursBtn" class="warning-btn">Horario extendido</button>
           <button id="openServicesModalBtn" class="primary-btn">Ver servicios</button>
@@ -492,9 +494,11 @@
     const openOnlyTodayBtn = document.getElementById("openOnlyTodayBtn");
     const closeOnlyTodayBtn = document.getElementById("closeOnlyTodayBtn");
     const clearTodayOverrideBtn = document.getElementById("clearTodayOverrideBtn");
+    const toggleSundayBtn = document.getElementById("toggleSundayBtn");
     const toggleTuesdayBtn = document.getElementById("toggleTuesdayBtn");
     const toggleExtendedHoursBtn = document.getElementById("toggleExtendedHoursBtn");
     const shopStatusBadge = document.getElementById("shopStatusBadge");
+    const sundayStatusBadge = document.getElementById("sundayStatusBadge");
     const tuesdayStatusBadge = document.getElementById("tuesdayStatusBadge");
     const extendedHoursBadge = document.getElementById("extendedHoursBadge");
     const shopStatusText = document.getElementById("shopStatusText");
@@ -528,6 +532,7 @@
     let servicesData = {};
     let customClosures = [];
     let shopIsOpen = true;
+    let sundayOpen = false;
     let tuesdayOpen = false;
     let extendedHours = false;
     let dailyOverrides = {};
@@ -554,12 +559,14 @@
       6: { start: "8:00 AM", end: "10:00 PM", breaks: [] }
     };
 
+    const normalSundaySchedule = { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    const extendedSundaySchedule = { start: "8:00 AM", end: "10:00 PM", breaks: [] };
     const normalTuesdaySchedule = { start: "8:00 AM", end: "8:00 PM", breaks: [] };
     const extendedTuesdaySchedule = { start: "8:00 AM", end: "10:00 PM", breaks: [] };
 
     function getTodayISO() {
       const today = new Date();
-      return `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
     }
 
     function getDayFromDate(dateString) {
@@ -581,7 +588,9 @@
         .replace(/'/g, "&#39;");
     }
 
-    function escapeHTMLAttr(value) { return escapeHTML(value); }
+    function escapeHTMLAttr(value) {
+      return escapeHTML(value);
+    }
 
     function formatDate(dateString) {
       if (!dateString) return "Sin fecha";
@@ -658,7 +667,15 @@
       const start = block?.start || block?.inicio || block?.startTime || "";
       const end = block?.end || block?.fin || block?.endTime || "";
       if (!fecha || !start || !end) return null;
-      return { id, fecha, start, end, reason: block?.reason || block?.motivo || "", type: block?.type || "timeBlock", createdAt: block?.createdAt || "" };
+      return {
+        id,
+        fecha,
+        start,
+        end,
+        reason: block?.reason || block?.motivo || "",
+        type: block?.type || "timeBlock",
+        createdAt: block?.createdAt || ""
+      };
     }
 
     function getTodayOverride() {
@@ -747,7 +764,10 @@
       const day = getDayFromDate(dateString);
       let config = null;
 
-      if (day === 2) {
+      if (day === 0) {
+        if (!sundayOpen && !override?.forceOpen) return null;
+        config = extendedHours ? extendedSundaySchedule : normalSundaySchedule;
+      } else if (day === 2) {
         if (!tuesdayOpen && !override?.forceOpen) return null;
         config = extendedHours ? extendedTuesdaySchedule : normalTuesdaySchedule;
       } else {
@@ -793,7 +813,7 @@
       expiredItems.forEach(item => { updates[item.id] = null; });
 
       appointmentsRef.update(updates)
-        .then(() => showToast("Citas vencidas eliminadas automáticamente"))
+        .then(() => showToast("Citas vencidas eliminadas automaticamente"))
         .catch(error => {
           console.error("Error eliminando citas vencidas:", error);
           showToast("No se pudieron borrar las citas vencidas");
@@ -995,6 +1015,7 @@
     function deleteTimeBlock(id) {
       if (!requireAuthAction()) return;
       if (!confirm("Seguro que quieres eliminar este bloqueo de horas?")) return;
+
       customClosuresRef.child(id).remove()
         .then(() => showToast("Bloque de horas eliminado"))
         .catch(() => showToast("No se pudo eliminar el bloqueo"));
@@ -1002,6 +1023,7 @@
 
     function renderTimeBlocks() {
       if (!timeBlocksList) return;
+
       const orderedBlocks = [...customClosures].sort(compareTimeBlocks);
       const activeBlocks = orderedBlocks.filter(block => isTimeBlockCurrentOrFuture(block));
       timeBlockCountBadge.textContent = `${activeBlocks.length} ${activeBlocks.length === 1 ? "bloque activo" : "bloques activos"}`;
@@ -1029,6 +1051,7 @@
     function renderServicesEditor() {
       if (!servicesContainer) return;
       const entries = Object.entries(servicesData || {});
+
       if (!entries.length) {
         servicesContainer.innerHTML = '<div class="empty-state"><h4>No hay servicios guardados</h4><p>Usa el boton "+ Nuevo" arriba para empezar.</p></div>';
         return;
@@ -1089,11 +1112,13 @@
 
     function saveOneService(key, card, buttonElement) {
       if (!requireAuthAction()) return;
+
       const data = {
         nombre: card.querySelector(".service-name")?.value.trim() || "",
         precio: Number(card.querySelector(".service-price")?.value || 0),
         duracion: Number(card.querySelector(".service-duration")?.value || 0)
       };
+
       if (!data.nombre) return showToast("El nombre del servicio es obligatorio");
 
       buttonElement.disabled = true;
@@ -1138,7 +1163,15 @@
         shopStatusBadge.className = "badge-inline closed";
       } else if (!todayConfig) {
         const todayDay = getDayFromDate(today);
-        shopStatusBadge.textContent = todayDay === 2 && !tuesdayOpen && !todayOverride?.forceOpen ? "Martes cerrado" : "Cerrada hoy";
+
+        if (todayDay === 0 && !sundayOpen && !todayOverride?.forceOpen) {
+          shopStatusBadge.textContent = "Domingo cerrado";
+        } else if (todayDay === 2 && !tuesdayOpen && !todayOverride?.forceOpen) {
+          shopStatusBadge.textContent = "Martes cerrado";
+        } else {
+          shopStatusBadge.textContent = "Cerrada hoy";
+        }
+
         shopStatusBadge.className = "badge-inline closed";
       } else if (currentBlock) {
         shopStatusBadge.textContent = `Bloque activo hasta ${formatStatusTime(currentBlock.end)}`;
@@ -1162,8 +1195,13 @@
         }
       }
 
+      sundayStatusBadge.textContent = sundayOpen ? "Domingo abierto" : "Domingo cerrado";
       tuesdayStatusBadge.textContent = tuesdayOpen ? "Martes abierto" : "Martes cerrado";
       extendedHoursBadge.textContent = extendedHours ? "Horario extendido" : "Horario normal";
+
+      if (toggleSundayBtn) toggleSundayBtn.textContent = sundayOpen ? "Cerrar domingo" : "Abrir domingo";
+      if (toggleTuesdayBtn) toggleTuesdayBtn.textContent = tuesdayOpen ? "Cerrar martes" : "Abrir martes";
+      if (toggleExtendedHoursBtn) toggleExtendedHoursBtn.textContent = extendedHours ? "Horario normal" : "Horario extendido";
 
       const stateFragments = [];
       if (!shopIsOpen && !todayOverride?.forceOpen) {
@@ -1178,6 +1216,7 @@
       if (todayOverride?.forceClosed) stateFragments.push("Cambio temporal de cierre activo para hoy.");
       if (currentBlock) stateFragments.push(`Hay un bloque de horas activo hasta las ${formatStatusTime(currentBlock.end)}.`);
       if (currentBreak) stateFragments.push(`Hay un receso activo hasta las ${formatStatusTime(currentBreak.end)}.`);
+      stateFragments.push(sundayOpen ? "El domingo esta habilitado." : "El domingo esta cerrado.");
       stateFragments.push(tuesdayOpen ? "El martes esta habilitado." : "El martes esta cerrado.");
       stateFragments.push(extendedHours ? "El horario extendido esta activo." : "El horario normal esta activo.");
 
@@ -1194,8 +1233,8 @@
       const today = getTodayISO();
       const nowIso = new Date().toISOString();
       const updates = {
-        [`shopStatus/isOpen`]: isOpen,
-        [`shopStatus/updatedAt`]: nowIso
+        "shopStatus/isOpen": isOpen,
+        "shopStatus/updatedAt": nowIso
       };
 
       if (forceOpen === null && forceClosed === null) {
@@ -1221,6 +1260,13 @@
         forceClosed: null,
         toastMessage: isOpen ? "Barberia abierta y cambio de hoy limpiado" : "Barberia cerrada y cambio de hoy limpiado"
       });
+    }
+
+    function toggleSundayState() {
+      if (!requireAuthAction()) return;
+      shopStatusRef.update({ sundayOpen: !sundayOpen, updatedAt: new Date().toISOString() })
+        .then(() => showToast(!sundayOpen ? "Domingo abierto" : "Domingo cerrado"))
+        .catch(() => showToast("No se pudo cambiar el domingo"));
     }
 
     function toggleTuesdayState() {
@@ -1260,7 +1306,7 @@
       const today = getTodayISO();
       firebase.database().ref().update({
         [`dailyOverrides/${today}`]: null,
-        [`shopStatus/updatedAt`]: new Date().toISOString()
+        "shopStatus/updatedAt": new Date().toISOString()
       })
         .then(() => showToast("Se restauro el horario normal de hoy"))
         .catch((error) => {
@@ -1355,7 +1401,7 @@
               <div class="mobile-field-box"><span class="mobile-field-label">Cliente</span><span class="mobile-field-value">${escapeHTML(appointment.nombre)}</span></div>
               <div class="mobile-field-box"><span class="mobile-field-label">Barbero</span><span class="mobile-field-value">${escapeHTML(appointment.barbero)}</span></div>
               <div class="mobile-field-box"><span class="mobile-field-label">Hora</span><span class="mobile-field-value">${escapeHTML(appointment.hora || "Sin hora")}</span></div>
-              <div class="mobile-field-box"><span class="mobile-field-label">Duración</span><span class="mobile-field-value">${escapeHTML(String(appointment.duration || 0))} min</span></div>
+              <div class="mobile-field-box"><span class="mobile-field-label">Duracion</span><span class="mobile-field-value">${escapeHTML(String(appointment.duration || 0))} min</span></div>
               <div class="mobile-field-box"><span class="mobile-field-label">Precio</span><span class="mobile-field-value">${escapeHTML(precioText)}</span></div>
               <div class="mobile-field-box"><span class="mobile-field-label">Fecha</span><span class="mobile-field-value">${escapeHTML(formatDate(appointment.fecha))}</span></div>
             </div>
@@ -1469,6 +1515,7 @@
       shopStatusRef.on("value", snapshot => {
         const data = snapshot.val() || {};
         shopIsOpen = data.isOpen !== false;
+        sundayOpen = data.sundayOpen === true;
         tuesdayOpen = data.tuesdayOpen === true;
         extendedHours = data.extendedHours === true;
         renderShopStatusUI();
@@ -1527,13 +1574,16 @@
       openOnlyTodayBtn?.addEventListener("click", openOnlyToday);
       closeOnlyTodayBtn?.addEventListener("click", closeOnlyToday);
       clearTodayOverrideBtn?.addEventListener("click", clearTodayOverride);
+      toggleSundayBtn?.addEventListener("click", toggleSundayState);
       toggleTuesdayBtn?.addEventListener("click", toggleTuesdayState);
       toggleExtendedHoursBtn?.addEventListener("click", toggleExtendedHoursState);
       saveTimeBlockBtn?.addEventListener("click", saveTimeBlock);
 
       openServicesModalBtn?.addEventListener("click", () => { servicesModalOverlay.style.display = "flex"; });
       closeServicesModalBtn?.addEventListener("click", () => { servicesModalOverlay.style.display = "none"; });
-      servicesModalOverlay?.addEventListener("click", event => { if (event.target === servicesModalOverlay) servicesModalOverlay.style.display = "none"; });
+      servicesModalOverlay?.addEventListener("click", event => {
+        if (event.target === servicesModalOverlay) servicesModalOverlay.style.display = "none";
+      });
 
       searchInput?.addEventListener("input", renderAll);
       statusFilter?.addEventListener("change", renderAll);
@@ -1547,6 +1597,7 @@
 
       addNewServiceBtn?.addEventListener("click", () => {
         if (!requireAuthAction()) return;
+
         const newKey = servicesRef.push().key;
         servicesRef.child(newKey).set({ nombre: "Nuevo Servicio", precio: 0, duracion: 30 })
           .then(() => {
