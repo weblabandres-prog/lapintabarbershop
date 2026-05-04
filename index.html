@@ -42,7 +42,6 @@
           <a href="#inicio">Inicio</a>
           <a href="#nosotros">Nosotros</a>
           <a href="#servicios">Servicios</a>
-          <a href="#citas">Citas</a>
           <a href="#contacto">Contacto</a>
           <a href="ver-citas.html">Ver citas</a>
         </div>
@@ -73,7 +72,6 @@
           <a href="#inicio">Inicio</a>
           <a href="#nosotros">Nosotros</a>
           <a href="#servicios">Servicios</a>
-          <a href="#citas">Citas</a>
           <a href="#contacto">Contacto</a>
           <a href="ver-citas.html">Ver citas</a>
         </div>
@@ -267,42 +265,6 @@
     </div>
   </section>
 
-  <section class="section section-soft" id="citas">
-    <div class="container">
-      <div class="section-heading">
-        <span class="section-tag">Reservas</span>
-        <h2>Agenda pública con mejor presencia visual</h2>
-        <p>
-          Tus reservas siguen funcionando, pero ahora dentro de una sección más
-          elegante y más limpia para que el diseño completo se sienta premium.
-        </p>
-      </div>
-
-      <div class="appointments-dashboard">
-        <div class="appointments-stats">
-          <article class="appointment-stat-card">
-            <span>Total</span>
-            <strong id="publicStatTotal">0</strong>
-            <small>Citas registradas</small>
-          </article>
-
-          <article class="appointment-stat-card">
-            <span>Aprobadas</span>
-            <strong id="publicStatApproved">0</strong>
-            <small>Confirmadas</small>
-          </article>
-
-          <article class="appointment-stat-card">
-            <span>Pendientes</span>
-            <strong id="publicStatPending">0</strong>
-            <small>Esperando aprobación</small>
-          </article>
-        </div>
-
-        
-      </div>
-    </div>
-  </section>
 
   <section class="section" id="contacto">
     <div class="container contact-grid">
@@ -402,38 +364,5 @@
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="script.js"></script>
 
-  <script>
-    const menuToggle = document.getElementById("menuToggle");
-    const navPanel = document.getElementById("navPanel");
-
-    if (menuToggle && navPanel) {
-      menuToggle.addEventListener("click", () => {
-        navPanel.classList.toggle("open");
-        menuToggle.classList.toggle("active");
-        const expanded = menuToggle.getAttribute("aria-expanded") === "true";
-        menuToggle.setAttribute("aria-expanded", String(!expanded));
-      });
-
-      document.querySelectorAll(".nav-mobile-links a, .nav-mobile-actions a").forEach((link) => {
-        link.addEventListener("click", () => {
-          navPanel.classList.remove("open");
-          menuToggle.classList.remove("active");
-          menuToggle.setAttribute("aria-expanded", "false");
-        });
-      });
-
-      document.addEventListener("click", (e) => {
-        if (
-          window.innerWidth <= 1100 &&
-          !navPanel.contains(e.target) &&
-          !menuToggle.contains(e.target)
-        ) {
-          navPanel.classList.remove("open");
-          menuToggle.classList.remove("active");
-          menuToggle.setAttribute("aria-expanded", "false");
-        }
-      });
-    }
-  </script>
 </body>
 </html>
