@@ -17,6 +17,7 @@ if (!firebase.apps.length) {
 
 const db = firebase.database();
 const appointmentsRef = db.ref("appointments");
+const servicesRef = db.ref("services");
 
 const searchInput = document.getElementById("searchInput");
 const filterStatus = document.getElementById("filterStatus");
@@ -37,6 +38,7 @@ const STORAGE_CLIENT_TOKEN = "lapinta_client_token";
 const STORAGE_CLIENT_APPOINTMENTS = "lapinta_client_appointments";
 
 let allAppointments = [];
+let servicesData = {};
 let myAppointmentId = localStorage.getItem(STORAGE_APPOINTMENT_ID);
 let myClientToken = localStorage.getItem(STORAGE_CLIENT_TOKEN);
 let myAppointments = [];
@@ -93,6 +95,10 @@ function normalizeAppointment(id, app) {
     fecha: app?.fecha || "",
     hora: app?.hora || "",
     duration: Number(app?.duration || 0),
+    precio: Number(app?.precio || 0),
+    slots: Array.isArray(app?.slots) ? app.slots : [],
+    agendaDesde: app?.agendaDesde || app?.fecha || "",
+    mostrarEnAgendaDosDiasAntes: Boolean(app?.mostrarEnAgendaDosDiasAntes),
     anonimo: Boolean(app?.anonimo),
     status: normalizeStatus(app?.status),
     clientToken: app?.clientToken || "",
@@ -101,6 +107,146 @@ function normalizeAppointment(id, app) {
   };
 }
 
+function getServiceOptions() {
+  const services = Object.values(servicesData || {})
+    .filter(service => service && service.nombre)
+    .sort((a, b) => String(a.nombre).localeCompare(String(b.nombre), "es"));
+
+  if (services.length) return services;
+
+  return [...new Set(allAppointments.map(app => app.servicio).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "es"))
+    .map(nombre => ({ nombre, precio: 0, duracion: 60 }));
+}
+
+function getServiceByName(serviceName) {
+  return getServiceOptions().find(service => service.nombre === serviceName) || null;
+}
+
+function getServiceDuration(serviceName, fallback = 60) {
+  const service = getServiceByName(serviceName);
+  const duration = Number(service?.duracion || fallback || 60);
+  return Number.isFinite(duration) && duration > 0 ? duration : 60;
+}
+
+function getServicePrice(serviceName, fallback = 0) {
+  const service = getServiceByName(serviceName);
+  const price = Number(service?.precio || fallback || 0);
+  return Number.isFinite(price) && price >= 0 ? price : 0;
+}
+
+function populateEditServiceOptions(selectedValue = "") {
+  const select = document.getElementById("editServicio");
+  if (!select) return;
+
+  const currentValue = selectedValue || select.value;
+  const services = getServiceOptions();
+  select.innerHTML = '<option value="">Seleccionar servicio</option>';
+
+  services.forEach(service => {
+    const option = document.createElement("option");
+    option.value = service.nombre;
+    option.textContent = service.precio ? `${service.nombre} - RD$${Number(service.precio)}` : service.nombre;
+    select.appendChild(option);
+  });
+
+  if (currentValue && !services.some(service => service.nombre === currentValue)) {
+    const option = document.createElement("option");
+    option.value = currentValue;
+    option.textContent = currentValue;
+    select.appendChild(option);
+  }
+
+  if (currentValue) select.value = currentValue;
+}
+
+function populateEditBarberOptions(selectedValue = "") {
+  const select = document.getElementById("editBarbero");
+  if (!select) return;
+
+  const currentValue = selectedValue || select.value;
+  const barbers = [...new Set(allAppointments.map(app => app.barbero).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "es"));
+
+  if (currentValue && !barbers.includes(currentValue)) barbers.push(currentValue);
+  if (!barbers.length) barbers.push("La Pinta");
+
+  select.innerHTML = '<option value="">Seleccionar barbero</option>';
+  barbers.forEach(barber => {
+    const option = document.createElement("option");
+    option.value = barber;
+    option.textContent = barber;
+    select.appendChild(option);
+  });
+
+  if (currentValue) select.value = currentValue;
+}
+
+function timeToMinutes(value) {
+  const inputValue = formatTimeToInput(value);
+  if (!inputValue) return NaN;
+
+  const [hour, minute] = inputValue.split(":").map(Number);
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return NaN;
+
+  return (hour * 60) + minute;
+}
+
+function minutesToInputTime(minutes) {
+  const safeMinutes = ((minutes % 1440) + 1440) % 1440;
+  const hour = Math.floor(safeMinutes / 60);
+  const minute = safeMinutes % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+function buildReservedSlots(startTime, duration) {
+  const startMinutes = timeToMinutes(startTime);
+  if (!Number.isFinite(startMinutes)) return [];
+
+  const blocks = Math.max(1, Math.ceil(Number(duration || 30) / 30));
+  return Array.from({ length: blocks }, (_, index) => {
+    return formatTimeTo12Hour(minutesToInputTime(startMinutes + (index * 30)));
+  });
+}
+
+function hasAppointmentConflict(id, fecha, barbero, requestedSlots) {
+  const requestedMinutes = new Set(requestedSlots.map(timeToMinutes).filter(minutes => Number.isFinite(minutes)));
+  if (!requestedMinutes.size) return false;
+
+  return allAppointments.some(app => {
+    if (String(app.id) === String(id)) return false;
+    if (app.status === "cancelled") return false;
+    if (app.fecha !== fecha || app.barbero !== barbero) return false;
+
+    const otherSlots = Array.isArray(app.slots) && app.slots.length
+      ? app.slots
+      : buildReservedSlots(app.hora, app.duration || 60);
+    return otherSlots.some(slot => requestedMinutes.has(timeToMinutes(slot)));
+  });
+}
+
+function daysFromToday(dateString) {
+  if (!dateString) return 0;
+
+  const today = new Date();
+  const todayClean = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const [year, month, day] = String(dateString).split("-").map(Number);
+  const target = new Date(year, month - 1, day);
+
+  return Math.floor((target.getTime() - todayClean.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function subtractDays(dateString, days) {
+  const [year, month, day] = String(dateString).split("-").map(Number);
+  const target = new Date(year, month - 1, day);
+  target.setDate(target.getDate() - days);
+
+  return `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, "0")}-${String(target.getDate()).padStart(2, "0")}`;
+}
+
+function getAgendaDesde(dateString) {
+  return daysFromToday(dateString) > 15 ? subtractDays(dateString, 2) : dateString;
+}
 function isMine(app) {
   refreshMyAppointmentData();
 
@@ -508,6 +654,13 @@ function listenAppointments() {
   });
 }
 
+function listenServices() {
+  servicesRef.on("value", snapshot => {
+    servicesData = snapshot.val() || {};
+    populateEditServiceOptions(document.getElementById("editServicio")?.value || "");
+  });
+}
+
 function clearFilters() {
   searchInput.value = "";
   filterStatus.value = "all";
@@ -554,6 +707,8 @@ function openEditModal(id) {
   document.getElementById("editAppointmentId").value = app.id;
   document.getElementById("editNombre").value = app.nombre || "";
   document.getElementById("editTelefono").value = app.telefono || "";
+  populateEditServiceOptions(app.servicio || "");
+  populateEditBarberOptions(app.barbero || "");
   document.getElementById("editServicio").value = app.servicio || "";
   document.getElementById("editBarbero").value = app.barbero || "";
   document.getElementById("editFecha").value = app.fecha || "";
@@ -607,15 +762,35 @@ async function saveEditAppointment(event) {
     return;
   }
 
+  const hora = formatTimeTo12Hour(horaInput);
+  const duration = getServiceDuration(servicio, app.duration || 60);
+  const precio = getServicePrice(servicio, app.precio || 0);
+  const slots = buildReservedSlots(horaInput, duration);
+
+  if (!slots.length) {
+    alert("Selecciona una hora válida.");
+    return;
+  }
+
+  if (hasAppointmentConflict(id, fecha, barbero, slots)) {
+    alert("Ese horario ya está ocupado con ese barbero. Elige otra hora.");
+    return;
+  }
+
   const updatedData = {
     nombre,
     telefono,
     servicio,
     barbero,
     fecha,
-    hora: formatTimeTo12Hour(horaInput),
+    agendaDesde: getAgendaDesde(fecha),
+    mostrarEnAgendaDosDiasAntes: daysFromToday(fecha) > 15,
+    hora,
+    duration,
+    precio,
+    slots,
     status: "pending",
-    updatedAt: Date.now()
+    updatedAt: new Date().toISOString()
   };
 
   try {
@@ -648,7 +823,8 @@ async function cancelMyAppointment(id) {
   try {
     await appointmentsRef.child(id).update({
       status: "cancelled",
-      cancelledAt: Date.now()
+      cancelledAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     });
 
     alert("Tu cita fue cancelada correctamente.");
@@ -887,12 +1063,6 @@ function createEditModal() {
               <label for="editServicio">Servicio</label>
               <select id="editServicio" required>
                 <option value="">Seleccionar servicio</option>
-                <option value="Corte">Corte</option>
-                <option value="Corte y barba">Corte y barba</option>
-                <option value="Barba">Barba</option>
-                <option value="Cerquillo">Cerquillo</option>
-                <option value="Tinte">Tinte</option>
-                <option value="Otro">Otro</option>
               </select>
             </div>
 
@@ -900,9 +1070,6 @@ function createEditModal() {
               <label for="editBarbero">Barbero</label>
               <select id="editBarbero" required>
                 <option value="">Seleccionar barbero</option>
-                <option value="La Pinta">La Pinta</option>
-                <option value="Barbero 1">Barbero 1</option>
-                <option value="Barbero 2">Barbero 2</option>
               </select>
             </div>
 
@@ -947,4 +1114,5 @@ clearFiltersBtn.addEventListener("click", clearFilters);
 
 refreshMyAppointmentData();
 createEditModal();
+listenServices();
 listenAppointments();
