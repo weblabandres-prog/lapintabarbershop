@@ -149,9 +149,22 @@ function getServiceByName(serviceName) {
   return getServiceOptions().find(service => service.nombre === serviceName) || null;
 }
 
+function normalizeText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function isKidsService(serviceName) {
+  const normalizedName = normalizeText(serviceName);
+  return normalizedName.includes("nino") || normalizedName.includes("ninos");
+}
+
 function getServiceDuration(serviceName, fallback = 60) {
   const service = getServiceByName(serviceName);
-  const duration = Number(service?.duracion || fallback || 60);
+  const defaultDuration = isKidsService(serviceName) ? 30 : fallback;
+  const duration = Number(service?.duracion || defaultDuration || 60);
   return Number.isFinite(duration) && duration > 0 ? duration : 60;
 }
 
@@ -404,6 +417,52 @@ function formatTimeTo12Hour(time24) {
   if (hour === 0) hour = 12;
 
   return `${hour}:${minutes} ${suffix}`;
+}
+
+function buildEditTimeOptions(serviceName, selectedValue = "", keepSelected = true) {
+  const selectedTime = formatTimeToInput(selectedValue);
+  const interval = isKidsService(serviceName) ? 30 : 60;
+  const startMinutes = timeToMinutes("08:00");
+  const endMinutes = timeToMinutes("22:00");
+  const options = [];
+
+  for (let minutes = startMinutes; minutes < endMinutes; minutes += interval) {
+    const value = minutesToInputTime(minutes);
+    options.push({
+      value,
+      label: formatTimeTo12Hour(value)
+    });
+  }
+
+  if (keepSelected && selectedTime && !options.some(option => option.value === selectedTime)) {
+    options.push({
+      value: selectedTime,
+      label: `${formatTimeTo12Hour(selectedTime)} (hora actual)`
+    });
+    options.sort((a, b) => timeToMinutes(a.value) - timeToMinutes(b.value));
+  }
+
+  return options;
+}
+
+function populateEditTimeOptions(serviceName, selectedValue = "", keepSelected = true) {
+  const select = document.getElementById("editHora");
+  if (!select) return;
+
+  const selectedTime = formatTimeToInput(selectedValue);
+  const options = buildEditTimeOptions(serviceName, selectedTime, keepSelected);
+
+  select.innerHTML = '<option value="">Seleccionar hora</option>';
+  options.forEach(optionData => {
+    const option = document.createElement("option");
+    option.value = optionData.value;
+    option.textContent = optionData.label;
+    select.appendChild(option);
+  });
+
+  if (selectedTime && options.some(option => option.value === selectedTime)) {
+    select.value = selectedTime;
+  }
 }
 
 function getTodayInputValue() {
@@ -778,7 +837,7 @@ function openEditModal(id) {
   document.getElementById("editServicio").value = app.servicio || "";
   document.getElementById("editBarbero").value = app.barbero || "";
   document.getElementById("editFecha").value = app.fecha || "";
-  document.getElementById("editHora").value = formatTimeToInput(app.hora);
+  populateEditTimeOptions(app.servicio || "", app.hora);
 
   document.getElementById("editFecha").min = getTodayInputValue();
 
@@ -1151,7 +1210,9 @@ function createEditModal() {
 
             <div class="client-edit-group">
               <label for="editHora">Hora</label>
-              <input type="time" id="editHora" required />
+              <select id="editHora" required>
+                <option value="">Seleccionar hora</option>
+              </select>
             </div>
           </div>
 
@@ -1169,6 +1230,9 @@ function createEditModal() {
   document.getElementById("clientEditForm").addEventListener("submit", saveEditAppointment);
   document.getElementById("closeEditModalBtn").addEventListener("click", closeEditModal);
   document.getElementById("cancelEditModalBtn").addEventListener("click", closeEditModal);
+  document.getElementById("editServicio").addEventListener("change", (event) => {
+    populateEditTimeOptions(event.target.value, document.getElementById("editHora").value, false);
+  });
 
   document.getElementById("clientEditModal").addEventListener("click", (e) => {
     if (e.target.id === "clientEditModal") {
