@@ -419,7 +419,35 @@ function formatTimeTo12Hour(time24) {
   return `${hour}:${minutes} ${suffix}`;
 }
 
-function buildEditTimeOptions(serviceName, selectedValue = "", keepSelected = true) {
+function isEditTimeOptionAvailable(serviceName, timeValue, context = {}) {
+  const fecha = context.fecha || "";
+  const barbero = context.barbero || "";
+  const appointmentId = context.appointmentId || "";
+
+  if (!serviceName || !timeValue || !fecha || !barbero) return true;
+
+  const selectedDateTime = new Date(`${fecha}T${timeValue}:00`);
+  if (!Number.isNaN(selectedDateTime.getTime()) && selectedDateTime.getTime() < Date.now()) {
+    return false;
+  }
+
+  const duration = getServiceDuration(serviceName, isKidsService(serviceName) ? 30 : 60);
+  const slots = buildReservedSlots(timeValue, duration);
+
+  if (!slots.length) return false;
+
+  return !hasAppointmentConflict(appointmentId, fecha, barbero, slots);
+}
+
+function getEditTimeContext() {
+  return {
+    appointmentId: document.getElementById("editAppointmentId")?.value || "",
+    fecha: document.getElementById("editFecha")?.value || "",
+    barbero: document.getElementById("editBarbero")?.value || ""
+  };
+}
+
+function buildEditTimeOptions(serviceName, selectedValue = "", keepSelected = true, context = {}) {
   const selectedTime = formatTimeToInput(selectedValue);
   const interval = isKidsService(serviceName) ? 30 : 60;
   const startMinutes = timeToMinutes("08:00");
@@ -428,13 +456,20 @@ function buildEditTimeOptions(serviceName, selectedValue = "", keepSelected = tr
 
   for (let minutes = startMinutes; minutes < endMinutes; minutes += interval) {
     const value = minutesToInputTime(minutes);
-    options.push({
-      value,
-      label: formatTimeTo12Hour(value)
-    });
+    if (isEditTimeOptionAvailable(serviceName, value, context)) {
+      options.push({
+        value,
+        label: formatTimeTo12Hour(value)
+      });
+    }
   }
 
-  if (keepSelected && selectedTime && !options.some(option => option.value === selectedTime)) {
+  if (
+    keepSelected &&
+    selectedTime &&
+    !options.some(option => option.value === selectedTime) &&
+    isEditTimeOptionAvailable(serviceName, selectedTime, context)
+  ) {
     options.push({
       value: selectedTime,
       label: `${formatTimeTo12Hour(selectedTime)} (hora actual)`
@@ -445,14 +480,24 @@ function buildEditTimeOptions(serviceName, selectedValue = "", keepSelected = tr
   return options;
 }
 
-function populateEditTimeOptions(serviceName, selectedValue = "", keepSelected = true) {
+function populateEditTimeOptions(serviceName, selectedValue = "", keepSelected = true, context = getEditTimeContext()) {
   const select = document.getElementById("editHora");
   if (!select) return;
 
   const selectedTime = formatTimeToInput(selectedValue);
-  const options = buildEditTimeOptions(serviceName, selectedTime, keepSelected);
+  const options = buildEditTimeOptions(serviceName, selectedTime, keepSelected, context);
 
   select.innerHTML = '<option value="">Seleccionar hora</option>';
+
+  if (!options.length) {
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = "No hay horas disponibles";
+    emptyOption.disabled = true;
+    select.appendChild(emptyOption);
+    return;
+  }
+
   options.forEach(optionData => {
     const option = document.createElement("option");
     option.value = optionData.value;
@@ -837,7 +882,11 @@ function openEditModal(id) {
   document.getElementById("editServicio").value = app.servicio || "";
   document.getElementById("editBarbero").value = app.barbero || "";
   document.getElementById("editFecha").value = app.fecha || "";
-  populateEditTimeOptions(app.servicio || "", app.hora);
+  populateEditTimeOptions(app.servicio || "", app.hora, true, {
+    appointmentId: app.id,
+    fecha: app.fecha || "",
+    barbero: app.barbero || ""
+  });
 
   document.getElementById("editFecha").min = getTodayInputValue();
 
@@ -1232,6 +1281,12 @@ function createEditModal() {
   document.getElementById("cancelEditModalBtn").addEventListener("click", closeEditModal);
   document.getElementById("editServicio").addEventListener("change", (event) => {
     populateEditTimeOptions(event.target.value, document.getElementById("editHora").value, false);
+  });
+  document.getElementById("editBarbero").addEventListener("change", () => {
+    populateEditTimeOptions(document.getElementById("editServicio").value, document.getElementById("editHora").value, false);
+  });
+  document.getElementById("editFecha").addEventListener("change", () => {
+    populateEditTimeOptions(document.getElementById("editServicio").value, document.getElementById("editHora").value, false);
   });
 
   document.getElementById("clientEditModal").addEventListener("click", (e) => {
