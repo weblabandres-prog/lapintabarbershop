@@ -131,6 +131,14 @@ function generateApproveToken() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
+function generateClientToken() {
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return window.crypto.randomUUID();
+  }
+
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 12);
+}
+
 function getBaseUrl() {
   return "https://weblabandres-prog.github.io/lapintabarbershop";
 }
@@ -403,6 +411,7 @@ function normalizeAppointment(id, app) {
     metodoPago: app?.metodoPago || "",
     status: normalizeStatus(app?.status),
     approveToken: app?.approveToken || "",
+    clientToken: app?.clientToken || "",
     createdAt: app?.createdAt || new Date().toISOString()
   };
 }
@@ -1175,9 +1184,12 @@ if (bookingForm) {
     }
 
     const reservedSlots = [];
+
     for (let i = 0; i < neededBlocks; i++) {
       if (slots[startIndex + i]) reservedSlots.push(slots[startIndex + i]);
     }
+
+    const clientToken = generateClientToken();
 
     const newAppointment = {
       nombre: nombre,
@@ -1195,6 +1207,7 @@ if (bookingForm) {
       metodoPago: getMetodoPagoSeleccionado(),
       status: "pending",
       approveToken: generateApproveToken(),
+      clientToken: clientToken,
       createdAt: new Date().toISOString(),
       recordatorioEnviado: false
     };
@@ -1212,6 +1225,9 @@ if (bookingForm) {
       await newRef.set(newAppointment);
 
       const appointmentId = newRef.key;
+
+      localStorage.setItem("lapinta_client_appointment_id", appointmentId);
+      localStorage.setItem("lapinta_client_token", clientToken);
 
       try {
         await sendAppointmentEmail(newAppointment, appointmentId);
@@ -1246,6 +1262,8 @@ if (bookingForm) {
       updatePaymentMethodUI();
       updateSummary();
       renderHours();
+
+      window.location.href = "ver-citas.html";
     } catch (firebaseError) {
       console.error("Error guardando cita:", firebaseError);
       alert("No se pudo guardar la cita en Firebase.");
