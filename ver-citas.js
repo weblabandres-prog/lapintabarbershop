@@ -36,6 +36,7 @@ const statCancelled = document.getElementById("statCancelled");
 const STORAGE_APPOINTMENT_ID = "lapinta_client_appointment_id";
 const STORAGE_CLIENT_TOKEN = "lapinta_client_token";
 const STORAGE_CLIENT_APPOINTMENTS = "lapinta_client_appointments";
+const WHATSAPP_NOTIFICATION_PHONE = "18493757710";
 
 let allAppointments = [];
 let servicesData = {};
@@ -275,6 +276,33 @@ function formatDateSafe(dateString) {
 
   const [year, month, day] = parts;
   return `${day}/${month}/${year}`;
+}
+
+function buildWhatsAppNotificationMessage(type, appointment) {
+  const actionText = type === "cancel"
+    ? "Mi cita fue cancelada correctamente."
+    : "Mi cita fue actualizada correctamente.";
+
+  return [
+    "Hola, su cambio fue aceptado.",
+    actionText,
+    "",
+    `Nombre: ${appointment?.nombre || "Sin nombre"}`,
+    `Servicio: ${appointment?.servicio || "Sin servicio"}`,
+    `Fecha: ${formatDateSafe(appointment?.fecha)}`,
+    `Hora: ${appointment?.hora || "Sin hora"}`,
+    `Barbero: ${appointment?.barbero || "No definido"}`
+  ].join("\n");
+}
+
+function openWhatsAppNotification(type, appointment) {
+  const message = buildWhatsAppNotificationMessage(type, appointment);
+  const url = `https://wa.me/${WHATSAPP_NOTIFICATION_PHONE}?text=${encodeURIComponent(message)}`;
+  const whatsappWindow = window.open(url, "_blank", "noopener,noreferrer");
+
+  if (!whatsappWindow) {
+    window.location.href = url;
+  }
 }
 
 function to24Hour(time12) {
@@ -796,6 +824,10 @@ async function saveEditAppointment(event) {
   try {
     await appointmentsRef.child(id).update(updatedData);
     closeEditModal();
+    openWhatsAppNotification("edit", {
+      ...app,
+      ...updatedData
+    });
     alert("Tu cita fue actualizada correctamente.");
   } catch (error) {
     console.error(error);
@@ -827,6 +859,10 @@ async function cancelMyAppointment(id) {
       updatedAt: new Date().toISOString()
     });
 
+    openWhatsAppNotification("cancel", {
+      ...app,
+      status: "cancelled"
+    });
     alert("Tu cita fue cancelada correctamente.");
   } catch (error) {
     console.error(error);
