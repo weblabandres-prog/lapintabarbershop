@@ -7,6 +7,8 @@
   <meta name="description" content="Panel de administracion de La Pinta Barber para gestionar citas, horarios, bloqueos y precios." />
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
+  <link rel="preload" as="image" href="logo.jpeg" />
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -44,9 +46,11 @@
       overflow-x: hidden;
     }
     a { color: inherit; text-decoration: none; }
-    button, input, select { font: inherit; }
+    button, input, select { font: inherit; min-width:0; }
     button { cursor: pointer; }
     .hidden { display:none!important; }
+    :focus-visible{outline:3px solid rgba(31,134,255,.28);outline-offset:3px;}
+    button:disabled{opacity:.65;cursor:not-allowed;transform:none!important;}
     .admin-shell { display:grid; grid-template-columns:310px 1fr; min-height:100vh; }
     .sidebar {
       position:sticky; top:0; height:100vh; padding:24px 20px;
@@ -107,6 +111,7 @@
     .status-help,.shop-status-text{margin:0 0 18px;font-size:.95rem;line-height:1.65;}
     .filters-grid,.tools-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}
     .time-block-form{display:grid;grid-template-columns:1.1fr .8fr .8fr 1.4fr auto;gap:14px;align-items:end;}
+    .time-select-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
     .time-block-list{display:grid;gap:12px;margin-top:18px;}
     .time-block-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.02);}
     .time-block-item h4{margin:0 0 5px;color:#fff;font-size:1rem;}
@@ -120,6 +125,7 @@
     .service-info p{margin:0;font-size:.95rem;color:var(--muted);}
     .service-info strong{color:var(--success);font-weight:700;}
     .service-editor-mode{display:none;grid-template-columns:1.5fr 1fr 1fr auto auto;gap:12px;align-items:end;}
+    .service-editor-actions{margin-bottom:2px;}
     .service-item-card.editing .service-view-mode{display:none;}
     .service-item-card.editing .service-editor-mode{display:grid;}
     .field{display:flex;flex-direction:column;gap:8px;}
@@ -133,6 +139,7 @@
     tbody tr:hover{background:rgba(255,255,255,.02);}
     .client-box strong,.service-box strong{display:block;margin-bottom:4px;color:#fff;}
     .client-box small,.service-box small,.meta-text{color:var(--muted);line-height:1.5;}
+    .price-text{color:var(--success)!important;font-weight:700;}
     .status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:110px;padding:8px 12px;border-radius:999px;font-size:.85rem;font-weight:700;text-transform:capitalize;}
     .status-pill.pending{background:rgba(245,158,11,.12);color:#ffc76b;border:1px solid rgba(245,158,11,.22);}
     .status-pill.approved{background:rgba(62,207,142,.12);color:#8ff0bc;border:1px solid rgba(62,207,142,.22);}
@@ -167,8 +174,15 @@
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:80;}
     .login-card{width:min(100%,430px);padding:26px;}
     .login-card h2{font-family:"Cormorant Garamond",serif;font-size:2.2rem;line-height:1;margin-bottom:8px;}
+    .login-submit{margin-top:15px;}
     .services-modal{width:min(100%,750px);max-height:90vh;display:flex;flex-direction:column;padding:26px;}
+    .modal-head{margin-bottom:10px;}
+    .modal-title{font-family:"Cormorant Garamond",serif;font-size:2rem;margin:0;line-height:1;}
+    .modal-actions{display:flex;gap:10px;}
+    .modal-description{color:var(--muted);margin-top:0;margin-bottom:16px;font-size:.95rem;}
+    .modal-close-btn{padding:0 16px;}
     .services-scroll{overflow-y:auto;padding-right:8px;margin-top:10px;flex-grow:1;}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important;}}
     @media (max-width:1180px){.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.filters-grid,.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form{grid-template-columns:repeat(2,minmax(0,1fr));}}
     @media (max-width:920px){
       .mobile-topbar{display:flex;}
@@ -193,7 +207,7 @@
 </head>
 <body>
   <div class="mobile-topbar">
-    <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menu admin">
+    <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menu admin" aria-controls="sidebar" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
     <h2>La Pinta Admin</h2>
@@ -206,7 +220,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="brand-box">
         <span class="brand-mini">Panel privado</span>
-        <div class="admin-logo-wrap"><img src="logo.jpeg" alt="La Pinta Barber" class="admin-logo" /></div>
+        <div class="admin-logo-wrap"><img src="logo.jpeg" alt="La Pinta Barber" class="admin-logo" width="96" height="96" decoding="async" /></div>
         <h1>La Pinta <span>Admin</span></h1>
         <p>Control de citas, reservas, horarios y precios.</p>
       </div>
@@ -285,7 +299,7 @@
           <div class="field"><label for="blockDateInput">Fecha</label><input id="blockDateInput" type="date" /></div>
           <div class="field">
             <label>Desde</label>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div class="time-select-grid">
               <select id="blockStartHour">
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -314,7 +328,7 @@
           </div>
           <div class="field">
             <label>Hasta</label>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div class="time-select-grid">
               <select id="blockEndHour">
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -417,30 +431,30 @@
     </main>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <div class="modal-overlay" id="servicesModalOverlay" style="display:none;">
+  <div class="modal-overlay hidden" id="servicesModalOverlay" role="dialog" aria-modal="true" aria-labelledby="servicesModalTitle">
     <div class="login-card services-modal">
-      <div class="filters-header" style="margin-bottom:10px;">
-        <div><span class="eyebrow">Gestion</span><h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;margin:0;line-height:1;">Servicios</h2></div>
-        <div style="display:flex;gap:10px;">
+      <div class="filters-header modal-head">
+        <div><span class="eyebrow">Gestion</span><h2 class="modal-title" id="servicesModalTitle">Servicios</h2></div>
+        <div class="modal-actions">
           <button id="addNewServiceBtn" class="success-btn">+ Nuevo</button>
-          <button id="closeServicesModalBtn" class="danger-btn" style="padding:0 16px;">X</button>
+          <button id="closeServicesModalBtn" class="danger-btn modal-close-btn" aria-label="Cerrar servicios">X</button>
         </div>
       </div>
-      <p style="color:var(--muted);margin-top:0;margin-bottom:16px;font-size:.95rem;">Agrega, edita o elimina servicios en tiempo real.</p>
+      <p class="modal-description">Agrega, edita o elimina servicios en tiempo real.</p>
       <div id="servicesContainer" class="services-grid services-scroll"></div>
     </div>
   </div>
 
-  <div class="modal-overlay" id="loginOverlay" style="display:none;">
+  <div class="modal-overlay hidden" id="loginOverlay" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
     <div class="login-card">
       <span class="eyebrow">Acceso admin</span>
-      <h2>Inicia sesion</h2>
+      <h2 id="loginTitle">Inicia sesion</h2>
       <p>Panel privado para administrar citas, horarios y precios.</p>
-      <div class="field"><label for="usernameInput">Correo</label><input id="usernameInput" type="email" placeholder="tuadmin@correo.com" /></div>
-      <div class="field"><label for="passwordInput">Contrasena</label><input id="passwordInput" type="password" placeholder="****" /></div>
-      <button id="loginBtn" class="primary-btn full-width" style="margin-top:15px;">Entrar</button>
+      <div class="field"><label for="usernameInput">Correo</label><input id="usernameInput" type="email" autocomplete="username" placeholder="tuadmin@correo.com" /></div>
+      <div class="field"><label for="passwordInput">Contrasena</label><input id="passwordInput" type="password" autocomplete="current-password" placeholder="****" /></div>
+      <button id="loginBtn" class="primary-btn full-width login-submit">Entrar</button>
       <small class="login-hint">Usa el usuario creado en Firebase Authentication.</small>
     </div>
   </div>
@@ -592,9 +606,33 @@
       return escapeHTML(value);
     }
 
+    function debounce(fn, delay = 160) {
+      let timer = null;
+      return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+      };
+    }
+
+    function setModalOpen(modal, isOpen) {
+      if (!modal) return;
+      modal.classList.toggle("hidden", !isOpen);
+    }
+
+    function getServiceByName(serviceName) {
+      if (!serviceName) return null;
+      return Object.values(servicesData || {}).find(service => service?.nombre === serviceName) || null;
+    }
+
+    function getServicePriceText(serviceName) {
+      const serviceObj = getServiceByName(serviceName);
+      return serviceObj && Number(serviceObj.precio) > 0 ? `RD$${Number(serviceObj.precio)}` : "Precio no disp.";
+    }
+
     function formatDate(dateString) {
       if (!dateString) return "Sin fecha";
       const [year, month, day] = String(dateString).split("-");
+      if (!year || !month || !day) return String(dateString);
       return `${day}/${month}/${year}`;
     }
 
@@ -846,13 +884,24 @@
       const password = passwordInput?.value.trim() || "";
       if (!email || !password) return showToast("Completa correo y contrasena");
 
+      if (loginBtn) {
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Entrando...";
+      }
+
       auth.signInWithEmailAndPassword(email, password)
         .then(() => {
           showToast("Bienvenido al panel admin");
           usernameInput.value = "";
           passwordInput.value = "";
         })
-        .catch(() => showToast("Correo o contrasena incorrectos"));
+        .catch(() => showToast("Correo o contrasena incorrectos"))
+        .finally(() => {
+          if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Entrar";
+          }
+        });
     }
 
     function handleLogout() {
@@ -863,7 +912,7 @@
 
     function setSessionUI() {
       const user = auth.currentUser;
-      loginOverlay.style.display = user ? "none" : "flex";
+      setModalOpen(loginOverlay, !user);
       currentUserLabel.textContent = user ? user.email : "invitado";
     }
 
@@ -1043,7 +1092,7 @@
               <span class="mini-pill">${escapeHTML(String(timeBlockDuration(block.start, block.end)))} horas</span>
             </div>
           </div>
-          <button class="danger-btn" type="button" onclick="deleteTimeBlock('${escapeHTMLAttr(block.id)}')">Eliminar</button>
+          <button class="danger-btn" type="button" data-time-block-id="${escapeHTMLAttr(block.id)}">Eliminar</button>
         </article>
       `).join("");
     }
@@ -1074,40 +1123,40 @@
             <div class="field"><label>Nombre del servicio</label><input type="text" class="service-name" value="${escapeHTML(service?.nombre || "")}" /></div>
             <div class="field"><label>Precio (RD$)</label><input type="number" min="0" class="service-price" value="${Number(service?.precio || 0)}" /></div>
             <div class="field"><label>Duracion (min)</label><input type="number" min="0" class="service-duration" value="${Number(service?.duracion || 0)}" /></div>
-            <div class="row-actions" style="margin-bottom:2px;">
+            <div class="row-actions service-editor-actions">
               <button type="button" class="success-btn save-one-service">Guardar</button>
               <button type="button" class="ghost-btn cancel-edit-btn">Volver</button>
             </div>
           </div>
         </div>
       `).join("");
+    }
 
-      document.querySelectorAll(".edit-toggle-btn").forEach(btn => {
-        btn.addEventListener("click", function () {
-          this.closest(".service-item-card").classList.add("editing");
-        });
-      });
+    function handleServicesContainerClick(event) {
+      const button = event.target.closest("button");
+      if (!button || !servicesContainer?.contains(button)) return;
 
-      document.querySelectorAll(".cancel-edit-btn").forEach(btn => {
-        btn.addEventListener("click", function () {
-          this.closest(".service-item-card").classList.remove("editing");
-        });
-      });
+      const card = button.closest(".service-item-card");
+      if (!card) return;
 
-      document.querySelectorAll(".save-one-service").forEach(btn => {
-        btn.addEventListener("click", function () {
-          const card = this.closest(".service-item-card");
-          const key = card.dataset.key;
-          saveOneService(key, card, this);
-        });
-      });
+      if (button.classList.contains("edit-toggle-btn")) {
+        card.classList.add("editing");
+        return;
+      }
 
-      document.querySelectorAll(".delete-one-service").forEach(btn => {
-        btn.addEventListener("click", function () {
-          const card = this.closest(".service-item-card");
-          deleteOneService(card.dataset.key);
-        });
-      });
+      if (button.classList.contains("cancel-edit-btn")) {
+        card.classList.remove("editing");
+        return;
+      }
+
+      if (button.classList.contains("save-one-service")) {
+        saveOneService(card.dataset.key, card, button);
+        return;
+      }
+
+      if (button.classList.contains("delete-one-service")) {
+        deleteOneService(card.dataset.key);
+      }
     }
 
     function saveOneService(key, card, buttonElement) {
@@ -1120,6 +1169,8 @@
       };
 
       if (!data.nombre) return showToast("El nombre del servicio es obligatorio");
+      if (!Number.isFinite(data.precio) || data.precio < 0) return showToast("El precio debe ser un numero valido");
+      if (!Number.isFinite(data.duracion) || data.duracion <= 0) return showToast("La duracion debe ser mayor que 0");
 
       buttonElement.disabled = true;
       buttonElement.textContent = "...";
@@ -1359,22 +1410,21 @@
       emptyState.classList.add("hidden");
 
       appointmentsTableBody.innerHTML = data.map(appointment => {
-        const serviceObj = Object.values(servicesData || {}).find(s => s.nombre === appointment.servicio);
-        const precioText = serviceObj && serviceObj.precio ? `RD$${serviceObj.precio}` : "Precio no disp.";
+        const precioText = getServicePriceText(appointment.servicio);
 
         return `
           <tr>
             <td><div class="client-box"><strong>${escapeHTML(appointment.nombre)}</strong><small>${escapeHTML(appointment.telefono)}</small></div></td>
-            <td><div class="service-box"><strong>${escapeHTML(appointment.servicio)}</strong><small style="color:var(--success);font-weight:600;">${precioText}</small><br><small>${appointment.anonimo ? "Publico: Anonimo" : "Publico: Nombre visible"}</small></div></td>
+            <td><div class="service-box"><strong>${escapeHTML(appointment.servicio)}</strong><small class="price-text">${escapeHTML(precioText)}</small><br><small>${appointment.anonimo ? "Publico: Anonimo" : "Publico: Nombre visible"}</small></div></td>
             <td>${escapeHTML(appointment.barbero)}</td>
             <td>${escapeHTML(formatDate(appointment.fecha))}</td>
             <td>${escapeHTML(appointment.hora || "Sin hora")}<br><small class="meta-text">${escapeHTML(String(appointment.duration || 0))} min</small></td>
             <td><span class="status-pill ${escapeHTML(appointment.status)}">${escapeHTML(getStatusLabel(appointment.status))}</span></td>
             <td>
               <div class="row-actions">
-                <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}','approved')">Aprobar</button>
-                <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}','cancelled')">Cancelar</button>
-                <button onclick="deleteAppointment('${escapeHTMLAttr(appointment.id)}')">Eliminar</button>
+                <button type="button" data-action="approve" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Aprobar</button>
+                <button type="button" data-action="cancel" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Cancelar</button>
+                <button type="button" data-action="delete" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Eliminar</button>
               </div>
             </td>
           </tr>
@@ -1386,8 +1436,7 @@
       if (!mobileCards) return;
 
       mobileCards.innerHTML = data.map(appointment => {
-        const serviceObj = Object.values(servicesData || {}).find(s => s.nombre === appointment.servicio);
-        const precioText = serviceObj && serviceObj.precio ? `RD$${serviceObj.precio}` : "Precio no disp.";
+        const precioText = getServicePriceText(appointment.servicio);
 
         let mobileStatusClass = "mobile-status-pending";
         if (appointment.status === "approved") mobileStatusClass = "mobile-status-approved";
@@ -1406,13 +1455,35 @@
               <div class="mobile-field-box"><span class="mobile-field-label">Fecha</span><span class="mobile-field-value">${escapeHTML(formatDate(appointment.fecha))}</span></div>
             </div>
             <div class="mobile-actions">
-              <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}','approved')">Aprobar</button>
-              <button onclick="updateAppointmentStatus('${escapeHTMLAttr(appointment.id)}','cancelled')">Cancelar</button>
-              <button onclick="deleteAppointment('${escapeHTMLAttr(appointment.id)}')">Eliminar</button>
+              <button type="button" data-action="approve" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Aprobar</button>
+              <button type="button" data-action="cancel" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Cancelar</button>
+              <button type="button" data-action="delete" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Eliminar</button>
             </div>
           </article>
         `;
       }).join("");
+    }
+
+    function handleAppointmentActionClick(event) {
+      const button = event.target.closest("button[data-action][data-appointment-id]");
+      if (!button) return;
+
+      const appointmentId = button.dataset.appointmentId;
+      const action = button.dataset.action;
+
+      if (action === "approve") {
+        updateAppointmentStatus(appointmentId, "approved");
+      } else if (action === "cancel") {
+        updateAppointmentStatus(appointmentId, "cancelled");
+      } else if (action === "delete") {
+        deleteAppointment(appointmentId);
+      }
+    }
+
+    function handleTimeBlocksListClick(event) {
+      const button = event.target.closest("button[data-time-block-id]");
+      if (!button || !timeBlocksList?.contains(button)) return;
+      deleteTimeBlock(button.dataset.timeBlockId);
     }
 
     function renderAll() {
@@ -1490,16 +1561,28 @@
       showToast("Panel actualizado");
     }
 
+    function openServicesModal() {
+      setModalOpen(servicesModalOverlay, true);
+      addNewServiceBtn?.focus();
+    }
+
+    function closeServicesModal() {
+      setModalOpen(servicesModalOverlay, false);
+      openServicesModalBtn?.focus();
+    }
+
     function toggleSidebar() {
       sidebar.classList.toggle("open");
       sidebarOverlay.classList.toggle("show");
       mobileMenuBtn.classList.toggle("active");
+      mobileMenuBtn?.setAttribute("aria-expanded", sidebar.classList.contains("open") ? "true" : "false");
     }
 
     function closeSidebar() {
       sidebar.classList.remove("open");
       sidebarOverlay.classList.remove("show");
       mobileMenuBtn.classList.remove("active");
+      mobileMenuBtn?.setAttribute("aria-expanded", "false");
     }
 
     function listenAppointments() {
@@ -1578,14 +1661,24 @@
       toggleTuesdayBtn?.addEventListener("click", toggleTuesdayState);
       toggleExtendedHoursBtn?.addEventListener("click", toggleExtendedHoursState);
       saveTimeBlockBtn?.addEventListener("click", saveTimeBlock);
+      timeBlocksList?.addEventListener("click", handleTimeBlocksListClick);
+      appointmentsTableBody?.addEventListener("click", handleAppointmentActionClick);
+      mobileCards?.addEventListener("click", handleAppointmentActionClick);
+      servicesContainer?.addEventListener("click", handleServicesContainerClick);
 
-      openServicesModalBtn?.addEventListener("click", () => { servicesModalOverlay.style.display = "flex"; });
-      closeServicesModalBtn?.addEventListener("click", () => { servicesModalOverlay.style.display = "none"; });
+      openServicesModalBtn?.addEventListener("click", openServicesModal);
+      closeServicesModalBtn?.addEventListener("click", closeServicesModal);
       servicesModalOverlay?.addEventListener("click", event => {
-        if (event.target === servicesModalOverlay) servicesModalOverlay.style.display = "none";
+        if (event.target === servicesModalOverlay) closeServicesModal();
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && !servicesModalOverlay?.classList.contains("hidden")) {
+          closeServicesModal();
+        }
       });
 
-      searchInput?.addEventListener("input", renderAll);
+      const debouncedRenderAll = debounce(renderAll, 160);
+      searchInput?.addEventListener("input", debouncedRenderAll);
       statusFilter?.addEventListener("change", renderAll);
       dateFilter?.addEventListener("change", renderAll);
 
@@ -1631,10 +1724,6 @@
       setDefaultTimeBlockValues();
       setInterval(autoDeleteExpiredAppointments, 60000);
     }
-
-    window.updateAppointmentStatus = updateAppointmentStatus;
-    window.deleteAppointment = deleteAppointment;
-    window.deleteTimeBlock = deleteTimeBlock;
 
     boot();
   </script>
