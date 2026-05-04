@@ -1,1308 +1,996 @@
-/* ver-citas.js COMPLETO */
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ver citas | La Pinta Barber</title>
+  <meta
+    name="description"
+    content="Consulta todas las citas registradas en La Pinta Barber con una vista moderna y profesional."
+  />
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD4WCEUcsgfjK_LgNkY5rexqvPMxQ-RdEE",
-  authDomain: "barberia2-bb033.firebaseapp.com",
-  databaseURL: "https://barberia2-bb033-default-rtdb.firebaseio.com",
-  projectId: "barberia2-bb033",
-  storageBucket: "barberia2-bb033.firebasestorage.app",
-  messagingSenderId: "763008264452",
-  appId: "1:763008264452:web:4adb64267606266deb4851",
-  measurementId: "G-QHN4PX48D4"
-};
+  <link rel="icon" type="image/jpeg" href="logo.jpeg" />
+  <link rel="apple-touch-icon" href="logo.jpeg" />
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
 
-const db = firebase.database();
-const appointmentsRef = db.ref("appointments");
-const servicesRef = db.ref("services");
-
-const searchInput = document.getElementById("searchInput");
-const filterStatus = document.getElementById("filterStatus");
-const filterBarber = document.getElementById("filterBarber");
-const filterDate = document.getElementById("filterDate");
-const clearFiltersBtn = document.getElementById("clearFiltersBtn");
-
-const appointmentsView = document.getElementById("appointmentsView");
-const resultsInfo = document.getElementById("resultsInfo");
-
-const statTotal = document.getElementById("statTotal");
-const statApproved = document.getElementById("statApproved");
-const statPending = document.getElementById("statPending");
-const statCancelled = document.getElementById("statCancelled");
-
-const STORAGE_APPOINTMENT_ID = "lapinta_client_appointment_id";
-const STORAGE_CLIENT_TOKEN = "lapinta_client_token";
-const STORAGE_CLIENT_APPOINTMENTS = "lapinta_client_appointments";
-const WHATSAPP_NOTIFICATION_PHONE = "18493757710";
-
-let allAppointments = [];
-let servicesData = {};
-let myAppointmentId = localStorage.getItem(STORAGE_APPOINTMENT_ID);
-let myClientToken = localStorage.getItem(STORAGE_CLIENT_TOKEN);
-let myAppointments = [];
-
-function refreshMyAppointmentData() {
-  myAppointmentId = localStorage.getItem(STORAGE_APPOINTMENT_ID);
-  myClientToken = localStorage.getItem(STORAGE_CLIENT_TOKEN);
-
-  try {
-    myAppointments = JSON.parse(localStorage.getItem(STORAGE_CLIENT_APPOINTMENTS)) || [];
-  } catch (error) {
-    myAppointments = [];
-  }
-
-  if (myAppointmentId && myClientToken) {
-    const exists = myAppointments.some(item => {
-      return String(item.id) === String(myAppointmentId) &&
-             String(item.token) === String(myClientToken);
-    });
-
-    if (!exists) {
-      myAppointments.push({
-        id: myAppointmentId,
-        token: myClientToken
-      });
-
-      localStorage.setItem(STORAGE_CLIENT_APPOINTMENTS, JSON.stringify(myAppointments));
-    }
-  }
-}
-
-function forgetClientAppointment(appointmentId) {
-  if (!appointmentId) return;
-
-  try {
-    const rawAppointments = localStorage.getItem(STORAGE_CLIENT_APPOINTMENTS);
-    const savedAppointments = rawAppointments ? JSON.parse(rawAppointments) : [];
-    const filteredAppointments = Array.isArray(savedAppointments)
-      ? savedAppointments.filter(item => String(item.id) !== String(appointmentId))
-      : [];
-
-    localStorage.setItem(STORAGE_CLIENT_APPOINTMENTS, JSON.stringify(filteredAppointments));
-
-    if (String(localStorage.getItem(STORAGE_APPOINTMENT_ID)) === String(appointmentId)) {
-      localStorage.removeItem(STORAGE_APPOINTMENT_ID);
-      localStorage.removeItem(STORAGE_CLIENT_TOKEN);
-      myAppointmentId = "";
-      myClientToken = "";
+  <style>
+    :root {
+      --bg: #05070b;
+      --bg-soft: #0b1018;
+      --bg-deep: #03050a;
+      --panel: rgba(14, 20, 30, 0.88);
+      --panel-strong: #101722;
+      --panel-soft: #121b28;
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(255, 255, 255, 0.14);
+      --text: #f3f7ff;
+      --muted: #b8c6da;
+      --muted-2: #8ea2bf;
+      --primary: #1f86ff;
+      --primary-strong: #57a7ff;
+      --primary-dark: #0d6fe6;
+      --primary-soft: rgba(31, 134, 255, 0.12);
+      --success: #8ff0bc;
+      --success-bg: rgba(62, 207, 142, 0.12);
+      --warning: #ffc76b;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --danger: #ff9e99;
+      --danger-bg: rgba(229, 57, 53, 0.12);
+      --white: #ffffff;
+      --shadow-lg: 0 25px 70px rgba(0, 0, 0, 0.42);
+      --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.28);
+      --container: 1240px;
     }
 
-    myAppointments = filteredAppointments;
-  } catch (error) {
-    console.warn("No se pudo limpiar la cita cancelada de este dispositivo:", error);
-  }
-}
-
-function escapeHTML(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function normalizeStatus(status) {
-  if (status === "approved") return "approved";
-  if (status === "cancelled") return "cancelled";
-  return "pending";
-}
-
-function normalizeAppointment(id, app) {
-  return {
-    id,
-    nombre: app?.nombre || "Sin nombre",
-    telefono: app?.telefono || "",
-    servicio: app?.servicio || "Sin servicio",
-    barbero: app?.barbero || "No definido",
-    fecha: app?.fecha || "",
-    hora: app?.hora || "",
-    duration: Number(app?.duration || 0),
-    precio: Number(app?.precio || 0),
-    slots: Array.isArray(app?.slots) ? app.slots : [],
-    agendaDesde: app?.agendaDesde || app?.fecha || "",
-    mostrarEnAgendaDosDiasAntes: Boolean(app?.mostrarEnAgendaDosDiasAntes),
-    anonimo: Boolean(app?.anonimo),
-    status: normalizeStatus(app?.status),
-    clientToken: app?.clientToken || "",
-    createdAt: app?.createdAt || "",
-    updatedAt: app?.updatedAt || ""
-  };
-}
-
-function getServiceOptions() {
-  const services = Object.values(servicesData || {})
-    .filter(service => service && service.nombre)
-    .sort((a, b) => String(a.nombre).localeCompare(String(b.nombre), "es"));
-
-  if (services.length) return services;
-
-  return [...new Set(allAppointments.map(app => app.servicio).filter(Boolean))]
-    .sort((a, b) => a.localeCompare(b, "es"))
-    .map(nombre => ({ nombre, precio: 0, duracion: 60 }));
-}
-
-function getServiceByName(serviceName) {
-  return getServiceOptions().find(service => service.nombre === serviceName) || null;
-}
-
-function normalizeText(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
-function isKidsService(serviceName) {
-  const normalizedName = normalizeText(serviceName);
-  return normalizedName.includes("nino") || normalizedName.includes("ninos");
-}
-
-function getServiceDuration(serviceName, fallback = 60) {
-  const service = getServiceByName(serviceName);
-  const defaultDuration = isKidsService(serviceName) ? 30 : fallback;
-  const duration = Number(service?.duracion || defaultDuration || 60);
-  return Number.isFinite(duration) && duration > 0 ? duration : 60;
-}
-
-function getServicePrice(serviceName, fallback = 0) {
-  const service = getServiceByName(serviceName);
-  const price = Number(service?.precio || fallback || 0);
-  return Number.isFinite(price) && price >= 0 ? price : 0;
-}
-
-function populateEditServiceOptions(selectedValue = "") {
-  const select = document.getElementById("editServicio");
-  if (!select) return;
-
-  const currentValue = selectedValue || select.value;
-  const services = getServiceOptions();
-  select.innerHTML = '<option value="">Seleccionar servicio</option>';
-
-  services.forEach(service => {
-    const option = document.createElement("option");
-    option.value = service.nombre;
-    option.textContent = service.precio ? `${service.nombre} - RD$${Number(service.precio)}` : service.nombre;
-    select.appendChild(option);
-  });
-
-  if (currentValue && !services.some(service => service.nombre === currentValue)) {
-    const option = document.createElement("option");
-    option.value = currentValue;
-    option.textContent = currentValue;
-    select.appendChild(option);
-  }
-
-  if (currentValue) select.value = currentValue;
-}
-
-function populateEditBarberOptions(selectedValue = "") {
-  const select = document.getElementById("editBarbero");
-  if (!select) return;
-
-  const currentValue = selectedValue || select.value;
-  const barbers = [...new Set(allAppointments.map(app => app.barbero).filter(Boolean))]
-    .sort((a, b) => a.localeCompare(b, "es"));
-
-  if (currentValue && !barbers.includes(currentValue)) barbers.push(currentValue);
-  if (!barbers.length) barbers.push("La Pinta");
-
-  select.innerHTML = '<option value="">Seleccionar barbero</option>';
-  barbers.forEach(barber => {
-    const option = document.createElement("option");
-    option.value = barber;
-    option.textContent = barber;
-    select.appendChild(option);
-  });
-
-  if (currentValue) select.value = currentValue;
-}
-
-function timeToMinutes(value) {
-  const inputValue = formatTimeToInput(value);
-  if (!inputValue) return NaN;
-
-  const [hour, minute] = inputValue.split(":").map(Number);
-  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return NaN;
-
-  return (hour * 60) + minute;
-}
-
-function minutesToInputTime(minutes) {
-  const safeMinutes = ((minutes % 1440) + 1440) % 1440;
-  const hour = Math.floor(safeMinutes / 60);
-  const minute = safeMinutes % 60;
-  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-}
-
-function buildReservedSlots(startTime, duration) {
-  const startMinutes = timeToMinutes(startTime);
-  if (!Number.isFinite(startMinutes)) return [];
-
-  const blocks = Math.max(1, Math.ceil(Number(duration || 30) / 30));
-  return Array.from({ length: blocks }, (_, index) => {
-    return formatTimeTo12Hour(minutesToInputTime(startMinutes + (index * 30)));
-  });
-}
-
-function hasAppointmentConflict(id, fecha, barbero, requestedSlots) {
-  const requestedMinutes = new Set(requestedSlots.map(timeToMinutes).filter(minutes => Number.isFinite(minutes)));
-  if (!requestedMinutes.size) return false;
-
-  return allAppointments.some(app => {
-    if (String(app.id) === String(id)) return false;
-    if (app.status === "cancelled") return false;
-    if (app.fecha !== fecha || app.barbero !== barbero) return false;
-
-    const otherSlots = Array.isArray(app.slots) && app.slots.length
-      ? app.slots
-      : buildReservedSlots(app.hora, app.duration || 60);
-    return otherSlots.some(slot => requestedMinutes.has(timeToMinutes(slot)));
-  });
-}
-
-function daysFromToday(dateString) {
-  if (!dateString) return 0;
-
-  const today = new Date();
-  const todayClean = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const [year, month, day] = String(dateString).split("-").map(Number);
-  const target = new Date(year, month - 1, day);
-
-  return Math.floor((target.getTime() - todayClean.getTime()) / (1000 * 60 * 60 * 24));
-}
-
-function subtractDays(dateString, days) {
-  const [year, month, day] = String(dateString).split("-").map(Number);
-  const target = new Date(year, month - 1, day);
-  target.setDate(target.getDate() - days);
-
-  return `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, "0")}-${String(target.getDate()).padStart(2, "0")}`;
-}
-
-function getAgendaDesde(dateString) {
-  return daysFromToday(dateString) > 15 ? subtractDays(dateString, 2) : dateString;
-}
-function isMine(app) {
-  refreshMyAppointmentData();
-
-  if (!app) return false;
-  if (!app.clientToken) return false;
-
-  return myAppointments.some(item => {
-    return String(item.id) === String(app.id) &&
-           String(item.token) === String(app.clientToken);
-  });
-}
-
-function canModify(app) {
-  if (!isMine(app)) return false;
-  if (app.status !== "pending") return false;
-  if (isPastAppointment(app.fecha, app.hora)) return false;
-
-  return true;
-}
-
-function formatDateSafe(dateString) {
-  if (!dateString) return "Sin fecha";
-
-  const parts = String(dateString).split("-");
-  if (parts.length !== 3) return dateString;
-
-  const [year, month, day] = parts;
-  return `${day}/${month}/${year}`;
-}
-
-function buildWhatsAppNotificationMessage(type, appointment, previousAppointment = null) {
-  const previousHour = previousAppointment?.hora || appointment?.hora || "Sin hora";
-  const newHour = appointment?.hora || "Sin hora";
-
-  if (type === "cancel") {
-    return [
-      "Cancelé mi cita, será en otro momento.",
-      "",
-      `Nombre: ${appointment?.nombre || "Sin nombre"}`,
-      `Servicio: ${appointment?.servicio || "Sin servicio"}`,
-      `Fecha: ${formatDateSafe(appointment?.fecha)}`,
-      `Hora: ${appointment?.hora || "Sin hora"}`,
-      `Barbero: ${appointment?.barbero || "No definido"}`
-    ].join("\n");
-  }
-
-  const actionText = `Soy la cita de las ${previousHour} y cambié para esta hora nueva: ${newHour}.`;
-
-  return [
-    "Hola, su cambio fue aceptado.",
-    actionText,
-    "",
-    `Nombre: ${appointment?.nombre || "Sin nombre"}`,
-    `Servicio: ${appointment?.servicio || "Sin servicio"}`,
-    `Fecha: ${formatDateSafe(appointment?.fecha)}`,
-    `Hora: ${appointment?.hora || "Sin hora"}`,
-    `Barbero: ${appointment?.barbero || "No definido"}`
-  ].join("\n");
-}
-
-function openWhatsAppNotification(type, appointment, previousAppointment = null) {
-  const message = buildWhatsAppNotificationMessage(type, appointment, previousAppointment);
-  const url = `https://wa.me/${WHATSAPP_NOTIFICATION_PHONE}?text=${encodeURIComponent(message)}`;
-  const whatsappWindow = window.open(url, "_blank", "noopener,noreferrer");
-
-  if (!whatsappWindow) {
-    window.location.href = url;
-  }
-}
-
-function to24Hour(time12) {
-  if (!time12) return "00:00";
-
-  const value = String(time12).trim();
-
-  if (/^\d{1,2}:\d{2}$/.test(value)) {
-    const [h, m] = value.split(":");
-    return `${String(Number(h)).padStart(2, "0")}:${m}`;
-  }
-
-  const match = value.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
-  if (!match) return value;
-
-  let hour = parseInt(match[1], 10);
-  const minutes = match[2];
-  const suffix = match[3].toUpperCase();
-
-  if (suffix === "AM" && hour === 12) hour = 0;
-  if (suffix === "PM" && hour !== 12) hour += 12;
-
-  return `${String(hour).padStart(2, "0")}:${minutes}`;
-}
-
-function formatTimeToInput(timeValue) {
-  if (!timeValue) return "";
-
-  const value = String(timeValue).trim();
-
-  if (/^\d{1,2}:\d{2}$/.test(value)) {
-    const [h, m] = value.split(":");
-    return `${String(Number(h)).padStart(2, "0")}:${m}`;
-  }
-
-  const match = value.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
-  if (!match) return "";
-
-  let hour = parseInt(match[1], 10);
-  const minutes = match[2];
-  const suffix = match[3].toUpperCase();
-
-  if (suffix === "AM" && hour === 12) hour = 0;
-  if (suffix === "PM" && hour !== 12) hour += 12;
-
-  return `${String(hour).padStart(2, "0")}:${minutes}`;
-}
-
-function formatTimeTo12Hour(time24) {
-  if (!time24) return "";
-
-  const [hourString, minuteString] = String(time24).split(":");
-  let hour = Number(hourString);
-  const minutes = minuteString || "00";
-
-  if (Number.isNaN(hour)) return time24;
-
-  const suffix = hour >= 12 ? "PM" : "AM";
-  hour = hour % 12;
-
-  if (hour === 0) hour = 12;
-
-  return `${hour}:${minutes} ${suffix}`;
-}
-
-function isEditTimeOptionAvailable(serviceName, timeValue, context = {}) {
-  const fecha = context.fecha || "";
-  const barbero = context.barbero || "";
-  const appointmentId = context.appointmentId || "";
-
-  if (!serviceName || !timeValue || !fecha || !barbero) return true;
-
-  const selectedDateTime = new Date(`${fecha}T${timeValue}:00`);
-  if (!Number.isNaN(selectedDateTime.getTime()) && selectedDateTime.getTime() < Date.now()) {
-    return false;
-  }
-
-  const duration = getServiceDuration(serviceName, isKidsService(serviceName) ? 30 : 60);
-  const slots = buildReservedSlots(timeValue, duration);
-
-  if (!slots.length) return false;
-
-  return !hasAppointmentConflict(appointmentId, fecha, barbero, slots);
-}
-
-function getEditTimeContext() {
-  return {
-    appointmentId: document.getElementById("editAppointmentId")?.value || "",
-    fecha: document.getElementById("editFecha")?.value || "",
-    barbero: document.getElementById("editBarbero")?.value || ""
-  };
-}
-
-function buildEditTimeOptions(serviceName, selectedValue = "", keepSelected = true, context = {}) {
-  const selectedTime = formatTimeToInput(selectedValue);
-  const interval = isKidsService(serviceName) ? 30 : 60;
-  const startMinutes = timeToMinutes("08:00");
-  const endMinutes = timeToMinutes("22:00");
-  const options = [];
-
-  for (let minutes = startMinutes; minutes < endMinutes; minutes += interval) {
-    const value = minutesToInputTime(minutes);
-    if (isEditTimeOptionAvailable(serviceName, value, context)) {
-      options.push({
-        value,
-        label: formatTimeTo12Hour(value)
-      });
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-  }
-
-  if (
-    keepSelected &&
-    selectedTime &&
-    !options.some(option => option.value === selectedTime) &&
-    isEditTimeOptionAvailable(serviceName, selectedTime, context)
-  ) {
-    options.push({
-      value: selectedTime,
-      label: `${formatTimeTo12Hour(selectedTime)} (hora actual)`
-    });
-    options.sort((a, b) => timeToMinutes(a.value) - timeToMinutes(b.value));
-  }
-
-  return options;
-}
-
-function populateEditTimeOptions(serviceName, selectedValue = "", keepSelected = true, context = getEditTimeContext()) {
-  const select = document.getElementById("editHora");
-  if (!select) return;
-
-  const selectedTime = formatTimeToInput(selectedValue);
-  const options = buildEditTimeOptions(serviceName, selectedTime, keepSelected, context);
-
-  select.innerHTML = '<option value="">Seleccionar hora</option>';
-
-  if (!options.length) {
-    const emptyOption = document.createElement("option");
-    emptyOption.value = "";
-    emptyOption.textContent = "No hay horas disponibles";
-    emptyOption.disabled = true;
-    select.appendChild(emptyOption);
-    return;
-  }
-
-  options.forEach(optionData => {
-    const option = document.createElement("option");
-    option.value = optionData.value;
-    option.textContent = optionData.label;
-    select.appendChild(option);
-  });
-
-  if (selectedTime && options.some(option => option.value === selectedTime)) {
-    select.value = selectedTime;
-  }
-}
-
-function getTodayInputValue() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-function isPastAppointment(fecha, hora) {
-  if (!fecha || !hora) return false;
-
-  const time24 = formatTimeToInput(hora) || hora;
-  const dateTime = new Date(`${fecha}T${time24}:00`);
-
-  if (Number.isNaN(dateTime.getTime())) return false;
-
-  return dateTime.getTime() < Date.now();
-}
-
-function getStatusLabel(status) {
-  if (status === "approved") return "Aprobada";
-  if (status === "cancelled") return "Cancelada";
-  return "Pendiente";
-}
-
-function getRelativeDateLabel(dateString) {
-  const today = new Date();
-  const todayClean = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  const [year, month, day] = String(dateString).split("-").map(Number);
-  const target = new Date(year, month - 1, day);
-
-  const diffTime = target.getTime() - todayClean.getTime();
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return "Citas de hoy";
-  if (diffDays === 1) return "Citas de mañana";
-  if (diffDays === 2) return "Citas de pasado mañana";
-
-  return `Citas del ${formatDateSafe(dateString)}`;
-}
-
-function getRelativeDateSubtext(dateString) {
-  const today = new Date();
-  const todayClean = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  const [year, month, day] = String(dateString).split("-").map(Number);
-  const target = new Date(year, month - 1, day);
-
-  const diffTime = target.getTime() - todayClean.getTime();
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return "Reservas programadas para hoy";
-  if (diffDays === 1) return "Reservas programadas para mañana";
-  if (diffDays === 2) return "Reservas programadas para pasado mañana";
-
-  return `Fecha: ${formatDateSafe(dateString)}`;
-}
-
-function fillBarberFilter(appointments) {
-  const currentValue = filterBarber.value;
-
-  const barbers = [...new Set(
-    appointments
-      .map(app => app.barbero)
-      .filter(Boolean)
-  )].sort((a, b) => a.localeCompare(b, "es"));
-
-  filterBarber.innerHTML =
-    `<option value="all">Todos</option>` +
-    barbers.map(barber => `<option value="${escapeHTML(barber)}">${escapeHTML(barber)}</option>`).join("");
-
-  if (barbers.includes(currentValue)) {
-    filterBarber.value = currentValue;
-  } else {
-    filterBarber.value = "all";
-  }
-}
-
-function updateStats(appointments) {
-  statTotal.textContent = appointments.length;
-  statApproved.textContent = appointments.filter(app => app.status === "approved").length;
-  statPending.textContent = appointments.filter(app => app.status === "pending").length;
-  statCancelled.textContent = appointments.filter(app => app.status === "cancelled").length;
-}
-
-function getFilteredAppointments() {
-  const search = searchInput.value.trim().toLowerCase();
-  const status = filterStatus.value;
-  const barber = filterBarber.value;
-  const date = filterDate.value;
-
-  return allAppointments
-    .filter(app => {
-      const publicName = app.anonimo ? "anónimo" : app.nombre;
-
-      const matchesSearch =
-        !search ||
-        [
-          app.nombre,
-          publicName,
-          app.telefono,
-          app.servicio,
-          app.barbero,
-          app.fecha,
-          app.hora
-        ]
-          .map(v => String(v || "").toLowerCase())
-          .some(v => v.includes(search));
-
-      const matchesStatus = status === "all" || app.status === status;
-      const matchesBarber = barber === "all" || app.barbero === barber;
-      const matchesDate = !date || app.fecha === date;
-
-      return matchesSearch && matchesStatus && matchesBarber && matchesDate;
-    })
-    .sort((a, b) => {
-      const aKey = `${a.fecha} ${to24Hour(a.hora)}`;
-      const bKey = `${b.fecha} ${to24Hour(b.hora)}`;
-      return aKey.localeCompare(bKey);
-    });
-}
-
-function groupAppointmentsByDate(appointments) {
-  const grouped = {};
-
-  appointments.forEach(app => {
-    if (!grouped[app.fecha]) grouped[app.fecha] = [];
-    grouped[app.fecha].push(app);
-  });
-
-  return grouped;
-}
-
-function getActionsHTML(app) {
-  if (canModify(app)) {
-    return `
-      <div class="client-actions-wrap">
-        <button type="button" class="client-action-btn edit-client-btn" data-id="${escapeHTML(app.id)}">
-          Editar
-        </button>
-
-        <button type="button" class="client-action-btn cancel-client-btn" data-id="${escapeHTML(app.id)}">
-          Cancelar
-        </button>
-      </div>
-    `;
-  }
-
-  if (isMine(app) && app.status === "approved") {
-    return `<span class="client-note">Tu cita aprobada</span>`;
-  }
-
-  if (isMine(app) && app.status === "cancelled") {
-    return `<span class="client-note">Tu cita cancelada</span>`;
-  }
-
-  if (isMine(app) && isPastAppointment(app.fecha, app.hora)) {
-    return `<span class="client-note">Tu cita ya pasó</span>`;
-  }
-
-  return `<span class="client-note">Solo ver</span>`;
-}
-
-function renderGroupedAppointments(groupedAppointments) {
-  const dates = Object.keys(groupedAppointments).sort();
-
-  if (!dates.length) {
-    appointmentsView.innerHTML = `
-      <div class="empty-state">
-        <h3>No hay citas para mostrar</h3>
-        <p>No se encontraron citas con los filtros seleccionados.</p>
-      </div>
-    `;
-    return;
-  }
-
-  let html = "";
-
-  dates.forEach(date => {
-    const items = groupedAppointments[date];
-
-    html += `
-      <div class="date-group">
-        <div class="date-group-header">
-          <h3>${escapeHTML(getRelativeDateLabel(date))}</h3>
-          <p>${escapeHTML(getRelativeDateSubtext(date))}</p>
-        </div>
-
-        <div class="table-shell">
-          <table class="appointments-table">
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Servicio</th>
-                <th>Barbero</th>
-                <th>Hora</th>
-                <th>Estado</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              ${items.map(app => `
-                <tr>
-                  <td>
-                    <span class="client-name">
-                      ${escapeHTML(app.anonimo ? "Anónimo" : app.nombre)}
-                      ${isMine(app) ? `<small class="mine-badge">Mi cita</small>` : ""}
-                    </span>
-                  </td>
-
-                  <td>
-                    <span class="service-name">${escapeHTML(app.servicio)}</span>
-                  </td>
-
-                  <td>${escapeHTML(app.barbero)}</td>
-                  <td>${escapeHTML(app.hora)}</td>
-
-                  <td>
-                    <span class="status-pill status-${escapeHTML(app.status)}">
-                      ${escapeHTML(getStatusLabel(app.status))}
-                    </span>
-                  </td>
-
-                  <td>
-                    ${getActionsHTML(app)}
-                  </td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-        </div>
-
-        <div class="mobile-table-list">
-          ${items.map(app => {
-            let mobileStatusClass = "mobile-status-pending";
-            if (app.status === "approved") mobileStatusClass = "mobile-status-approved";
-            if (app.status === "cancelled") mobileStatusClass = "mobile-status-cancelled";
-
-            return `
-              <article class="mobile-row-card">
-                <h4 class="mobile-service-title">
-                  ${escapeHTML(app.servicio)}
-                  ${isMine(app) ? `<small class="mine-badge mobile-mine-badge">Mi cita</small>` : ""}
-                </h4>
-
-                <div class="mobile-status-pill ${mobileStatusClass}">
-                  ${escapeHTML(getStatusLabel(app.status))}
-                </div>
-
-                <div class="mobile-fields">
-                  <div class="mobile-field-box">
-                    <span class="mobile-field-label">Cliente</span>
-                    <span class="mobile-field-value">${escapeHTML(app.anonimo ? "Anónimo" : app.nombre)}</span>
-                  </div>
-
-                  <div class="mobile-field-box">
-                    <span class="mobile-field-label">Barbero</span>
-                    <span class="mobile-field-value">${escapeHTML(app.barbero)}</span>
-                  </div>
-
-                  <div class="mobile-field-box">
-                    <span class="mobile-field-label">Hora</span>
-                    <span class="mobile-field-value">${escapeHTML(app.hora)}</span>
-                  </div>
-
-                  <div class="mobile-field-box">
-                    <span class="mobile-field-label">Estado</span>
-                    <span class="mobile-field-value">${escapeHTML(getStatusLabel(app.status))}</span>
-                  </div>
-
-                  <div class="mobile-field-box">
-                    <span class="mobile-field-label">Acción</span>
-                    <span class="mobile-field-value">${getActionsHTML(app)}</span>
-                  </div>
-                </div>
-              </article>
-            `;
-          }).join("")}
-        </div>
-      </div>
-    `;
-  });
-
-  appointmentsView.innerHTML = html;
-  attachActionEvents();
-}
-
-function renderAll() {
-  refreshMyAppointmentData();
-
-  const filtered = getFilteredAppointments();
-  const grouped = groupAppointmentsByDate(filtered);
-
-  resultsInfo.textContent = filtered.length === 1
-    ? "1 cita encontrada"
-    : `${filtered.length} citas encontradas`;
-
-  renderGroupedAppointments(grouped);
-}
-
-function listenAppointments() {
-  appointmentsRef.on("value", snapshot => {
-    const data = snapshot.val() || {};
-    allAppointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
-
-    updateStats(allAppointments);
-    fillBarberFilter(allAppointments);
-    renderAll();
-  });
-}
-
-function listenServices() {
-  servicesRef.on("value", snapshot => {
-    servicesData = snapshot.val() || {};
-    populateEditServiceOptions(document.getElementById("editServicio")?.value || "");
-  });
-}
-
-function clearFilters() {
-  searchInput.value = "";
-  filterStatus.value = "all";
-  filterBarber.value = "all";
-  filterDate.value = "";
-  renderAll();
-}
-
-function attachActionEvents() {
-  document.querySelectorAll(".edit-client-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.id;
-      openEditModal(id);
-    });
-  });
-
-  document.querySelectorAll(".cancel-client-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.id;
-      cancelMyAppointment(id);
-    });
-  });
-}
-
-function getAppointmentById(id) {
-  return allAppointments.find(app => String(app.id) === String(id));
-}
-
-function openEditModal(id) {
-  const app = getAppointmentById(id);
-
-  if (!app) {
-    alert("No se encontró esta cita.");
-    return;
-  }
-
-  if (!canModify(app)) {
-    alert("No puedes modificar esta cita.");
-    return;
-  }
-
-  const modal = document.getElementById("clientEditModal");
-
-  document.getElementById("editAppointmentId").value = app.id;
-  document.getElementById("editNombre").value = app.nombre || "";
-  document.getElementById("editTelefono").value = app.telefono || "";
-  populateEditServiceOptions(app.servicio || "");
-  populateEditBarberOptions(app.barbero || "");
-  document.getElementById("editServicio").value = app.servicio || "";
-  document.getElementById("editBarbero").value = app.barbero || "";
-  document.getElementById("editFecha").value = app.fecha || "";
-  populateEditTimeOptions(app.servicio || "", app.hora, true, {
-    appointmentId: app.id,
-    fecha: app.fecha || "",
-    barbero: app.barbero || ""
-  });
-
-  document.getElementById("editFecha").min = getTodayInputValue();
-
-  modal.classList.add("open");
-}
-
-function closeEditModal() {
-  const modal = document.getElementById("clientEditModal");
-
-  if (modal) {
-    modal.classList.remove("open");
-  }
-}
-
-async function saveEditAppointment(event) {
-  event.preventDefault();
-
-  const id = document.getElementById("editAppointmentId").value;
-  const app = getAppointmentById(id);
-
-  if (!app) {
-    alert("No se encontró esta cita.");
-    return;
-  }
-
-  if (!canModify(app)) {
-    alert("No puedes modificar esta cita.");
-    return;
-  }
-
-  const nombre = document.getElementById("editNombre").value.trim();
-  const telefono = document.getElementById("editTelefono").value.trim();
-  const servicio = document.getElementById("editServicio").value;
-  const barbero = document.getElementById("editBarbero").value;
-  const fecha = document.getElementById("editFecha").value;
-  const horaInput = document.getElementById("editHora").value;
-
-  if (!nombre || !telefono || !servicio || !barbero || !fecha || !horaInput) {
-    alert("Completa todos los campos.");
-    return;
-  }
-
-  const selectedDateTime = new Date(`${fecha}T${horaInput}:00`);
-
-  if (selectedDateTime.getTime() < Date.now()) {
-    alert("No puedes seleccionar una fecha u hora pasada.");
-    return;
-  }
-
-  const hora = formatTimeTo12Hour(horaInput);
-  const duration = getServiceDuration(servicio, app.duration || 60);
-  const precio = getServicePrice(servicio, app.precio || 0);
-  const slots = buildReservedSlots(horaInput, duration);
-
-  if (!slots.length) {
-    alert("Selecciona una hora válida.");
-    return;
-  }
-
-  if (hasAppointmentConflict(id, fecha, barbero, slots)) {
-    alert("Ese horario ya está ocupado con ese barbero. Elige otra hora.");
-    return;
-  }
-
-  const updatedData = {
-    nombre,
-    telefono,
-    servicio,
-    barbero,
-    fecha,
-    agendaDesde: getAgendaDesde(fecha),
-    mostrarEnAgendaDosDiasAntes: daysFromToday(fecha) > 15,
-    hora,
-    duration,
-    precio,
-    slots,
-    status: "pending",
-    updatedAt: new Date().toISOString()
-  };
-
-  try {
-    await appointmentsRef.child(id).update(updatedData);
-    closeEditModal();
-    openWhatsAppNotification("edit", {
-      ...app,
-      ...updatedData
-    }, app);
-    alert("Tu cita fue actualizada correctamente.");
-  } catch (error) {
-    console.error(error);
-    alert("No se pudo actualizar la cita.");
-  }
-}
-
-async function cancelMyAppointment(id) {
-  const app = getAppointmentById(id);
-
-  if (!app) {
-    alert("No se encontró esta cita.");
-    return;
-  }
-
-  if (!canModify(app)) {
-    alert("No puedes cancelar esta cita.");
-    return;
-  }
-
-  const confirmCancel = confirm("¿Seguro que deseas cancelar tu cita?");
-
-  if (!confirmCancel) return;
-
-  try {
-    await appointmentsRef.child(id).remove();
-    forgetClientAppointment(id);
-
-    openWhatsAppNotification("cancel", {
-      ...app,
-      status: "cancelled"
-    });
-    alert("Tu cita fue cancelada correctamente y eliminada de la agenda.");
-  } catch (error) {
-    console.error(error);
-    alert("No se pudo cancelar la cita.");
-  }
-}
-
-function createEditModal() {
-  const modalHTML = `
-    <style>
-      .mine-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-left: 8px;
-        padding: 5px 9px;
-        border-radius: 999px;
-        background: rgba(31, 134, 255, 0.12);
-        border: 1px solid rgba(31, 134, 255, 0.28);
-        color: #d9ecff;
-        font-size: 0.72rem;
-        font-weight: 900;
-        white-space: nowrap;
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(31, 134, 255, 0.08), transparent 24%),
+        linear-gradient(180deg, #05070b 0%, #0b1018 45%, #03050a 100%);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    .container {
+      width: min(var(--container), 92%);
+      margin: 0 auto;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 50px;
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      transition: 0.28s ease;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #07111f;
+      box-shadow: 0 16px 32px rgba(31, 134, 255, 0.22);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--line);
+      color: var(--white);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(31, 134, 255, 0.22);
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(6, 10, 17, 0.82);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .nav {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 84px;
+      gap: 20px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+      min-width: 0;
+      max-width: calc(100% - 90px);
+    }
+
+    .brand-badge {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: #ffffff;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      flex-shrink: 0;
+    }
+
+    .brand-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+      min-width: 0;
+    }
+
+    .brand-top {
+      font-size: 0.72rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+      font-weight: 700;
+      margin-bottom: 8px;
+      white-space: nowrap;
+    }
+
+    .brand-bottom {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .nav-desktop {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .menu-toggle {
+      display: none;
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .menu-toggle:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .menu-toggle span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--white);
+      transition: 0.25s ease;
+    }
+
+    .menu-toggle.active span:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    .menu-toggle.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .menu-toggle.active span:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+
+    .mobile-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 12px);
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(10,14,22,0.98), rgba(7,11,18,0.98));
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.42);
+      z-index: 1200;
+    }
+
+    .mobile-menu.open {
+      display: flex;
+    }
+
+    .mobile-menu .btn {
+      width: 100%;
+    }
+
+    .hero {
+      padding: 42px 0 18px;
+    }
+
+    .hero-box {
+      background: linear-gradient(180deg, rgba(16,23,34,0.96), rgba(12,18,27,0.98));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 30px;
+      padding: 30px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .section-tag {
+      display: inline-block;
+      margin-bottom: 10px;
+      font-size: 0.8rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .hero-box h1 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(2.3rem, 5vw, 3.6rem);
+      line-height: 0.98;
+      letter-spacing: -0.03em;
+      margin-bottom: 10px;
+    }
+
+    .hero-box p {
+      color: var(--muted);
+      max-width: 760px;
+      font-size: 1rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 26px;
+    }
+
+    .stat-card {
+      padding: 22px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(18, 26, 39, 0.96), rgba(13, 19, 29, 0.98));
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: var(--shadow-md);
+    }
+
+    .stat-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 10px;
+    }
+
+    .stat-card strong {
+      display: block;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 2.45rem;
+      line-height: 1;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .stat-card small {
+      color: var(--muted-2);
+      font-size: 0.92rem;
+    }
+
+    .filters-section {
+      padding: 10px 0 20px;
+    }
+
+    .filters-box {
+      background: linear-gradient(180deg, rgba(16,23,34,0.94), rgba(12,18,27,0.96));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .filters-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .filters-head h2 {
+      font-size: 1.1rem;
+      color: var(--white);
+    }
+
+    .filters-head p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr auto;
+      gap: 14px;
+      align-items: end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-weight: 700;
+      color: var(--white);
+      font-size: 0.94rem;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      min-height: 52px;
+      background: #0a1119;
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 16px;
+      outline: none;
+      font-size: 15px;
+      transition: 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(31, 134, 255, 0.12);
+    }
+
+    .results-section {
+      padding: 4px 0 64px;
+    }
+
+    .results-box {
+      background: linear-gradient(180deg, rgba(16,23,34,0.94), rgba(12,18,27,0.96));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 30px;
+      padding: 24px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .results-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-bottom: 16px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .results-head h2 {
+      font-size: 1.16rem;
+      color: var(--white);
+    }
+
+    .results-head p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+
+    .results-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(31, 134, 255, 0.12);
+      border: 1px solid rgba(31, 134, 255, 0.22);
+      color: #d9ecff;
+      font-size: 0.86rem;
+      white-space: nowrap;
+      font-weight: 700;
+    }
+
+    .date-group {
+      margin-bottom: 28px;
+    }
+
+    .date-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .date-group-header {
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .date-group-header h3 {
+      font-size: 1.25rem;
+      color: #fff;
+      margin-bottom: 4px;
+      text-transform: capitalize;
+    }
+
+    .date-group-header p {
+      color: #8ea4c1;
+      font-size: 0.95rem;
+      text-transform: capitalize;
+    }
+
+    .table-shell {
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
+      background: linear-gradient(180deg, #0f1722, #0b1320);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.22);
+    }
+
+    .appointments-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .appointments-table thead th {
+      text-align: left;
+      padding: 16px 18px;
+      font-size: 0.80rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #8ea4c1;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.02);
+      white-space: nowrap;
+    }
+
+    .appointments-table tbody td {
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      color: #ffffff;
+      vertical-align: middle;
+    }
+
+    .appointments-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .appointments-table tbody tr:hover {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .client-name {
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .service-name {
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 130px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .status-approved {
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: rgba(62, 207, 142, 0.22);
+    }
+
+    .status-pending {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border-color: rgba(245, 158, 11, 0.22);
+    }
+
+    .status-cancelled {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-color: rgba(229, 57, 53, 0.22);
+    }
+
+    .mobile-table-list {
+      display: none;
+      gap: 16px;
+    }
+
+    .mobile-row-card {
+      background: linear-gradient(180deg, #121c2b, #0f1724);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.22);
+    }
+
+    .mobile-service-title {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .mobile-status-pill {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 54px;
+      border-radius: 999px;
+      font-size: 0.95rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      border: 1px solid transparent;
+    }
+
+    .mobile-status-approved {
+      background: rgba(62, 207, 142, 0.12);
+      color: #8ff0bc;
+      border-color: rgba(62, 207, 142, 0.25);
+    }
+
+    .mobile-status-pending {
+      background: rgba(245, 158, 11, 0.12);
+      color: #ffc76b;
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .mobile-status-cancelled {
+      background: rgba(229, 57, 53, 0.12);
+      color: #ff9e99;
+      border-color: rgba(229, 57, 53, 0.25);
+    }
+
+    .mobile-fields {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .mobile-field-box {
+      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 16px 18px;
+    }
+
+    .mobile-field-label {
+      display: block;
+      color: #8fb2e7;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .mobile-field-value {
+      display: block;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 800;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      border: 1px dashed rgba(255,255,255,0.12);
+      border-radius: 22px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .footer {
+      padding: 30px 0;
+      background: rgba(3, 5, 10, 0.96);
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .footer-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .footer h3 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.8rem;
+      color: var(--white);
+    }
+
+    .footer h3 span {
+      color: var(--primary);
+    }
+
+    .footer p {
+      color: var(--muted);
+    }
+
+    @media (max-width: 1180px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
       }
 
-      .mobile-mine-badge {
-        margin-left: 0;
-        margin-top: 8px;
-        width: fit-content;
+      .filters-grid {
+        grid-template-columns: 1fr 1fr;
       }
+    }
 
-      .client-note {
-        color: #8ea2bf;
-        font-weight: 800;
-        font-size: 0.85rem;
-        white-space: nowrap;
-      }
-
-      .client-actions-wrap {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      .client-action-btn {
-        min-height: 40px;
-        padding: 9px 13px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.1);
-        cursor: pointer;
-        font-weight: 900;
-        transition: 0.22s ease;
-      }
-
-      .client-action-btn:hover {
-        transform: translateY(-2px);
-      }
-
-      .edit-client-btn {
-        background: #1f86ff;
-        color: #07111f;
-      }
-
-      .cancel-client-btn {
-        background: rgba(229, 57, 53, 0.12);
-        color: #ff9e99;
-        border-color: rgba(229, 57, 53, 0.28);
-      }
-
-      .client-modal {
-        position: fixed;
-        inset: 0;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 18px;
-        background: rgba(0,0,0,0.72);
-        z-index: 9999;
-      }
-
-      .client-modal.open {
-        display: flex;
-      }
-
-      .client-modal-box {
-        width: min(720px, 96vw);
-        max-height: 92vh;
-        overflow-y: auto;
-        background: linear-gradient(180deg, #111a27, #0b111b);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 28px;
-        padding: 24px;
-        box-shadow: 0 28px 80px rgba(0,0,0,0.55);
-      }
-
-      .client-modal-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 14px;
-        margin-bottom: 18px;
-        padding-bottom: 14px;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-      }
-
-      .client-modal-head h2 {
-        color: #fff;
-        font-size: 1.28rem;
+    @media (max-width: 900px) {
+      .brand-top {
+        font-size: 0.56rem;
+        letter-spacing: 0.18em;
         margin-bottom: 4px;
       }
 
-      .client-modal-head p {
-        color: #b8c6da;
-        font-size: 0.95rem;
+      .brand-bottom {
+        font-size: 1rem;
+        line-height: 1;
       }
 
-      .client-modal-close {
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        border: 1px solid rgba(255,255,255,0.1);
-        background: rgba(255,255,255,0.05);
-        color: #fff;
-        cursor: pointer;
-        font-size: 1.25rem;
-        font-weight: 900;
+      .nav-desktop {
+        display: none;
       }
 
-      .client-edit-grid {
+      .menu-toggle {
+        display: inline-flex;
+      }
+
+      .hero-box,
+      .filters-box,
+      .results-box {
+        border-radius: 24px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        width: min(100%, 92%);
+      }
+
+      .nav {
+        min-height: 76px;
+        gap: 10px;
+      }
+
+      .brand {
+        gap: 10px;
+        max-width: calc(100% - 58px);
+      }
+
+      .brand-badge {
+        width: 52px;
+        height: 52px;
+        padding: 4px;
+      }
+
+      .brand-top {
+        font-size: 0.5rem;
+        letter-spacing: 0.14em;
+        margin-bottom: 3px;
+      }
+
+      .brand-bottom {
+        font-size: 0.88rem;
+      }
+
+      .hero {
+        padding: 28px 0 14px;
+      }
+
+      .hero-box,
+      .filters-box,
+      .results-box {
+        padding: 20px;
+        border-radius: 22px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .filters-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .table-shell {
+        display: none;
+      }
+
+      .mobile-table-list {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
       }
 
-      .client-edit-group {
-        display: flex;
+      .footer-content {
         flex-direction: column;
-        gap: 8px;
+        text-align: center;
       }
 
-      .client-edit-group label {
-        color: #fff;
-        font-weight: 900;
-        font-size: 0.92rem;
+      .mobile-service-title {
+        font-size: 1rem;
       }
+    }
+  </style>
+</head>
+<body>
 
-      .client-edit-group input,
-      .client-edit-group select {
-        min-height: 52px;
-        background: #0a1119;
-        color: #fff;
-        border: 1px solid rgba(255,255,255,0.09);
-        border-radius: 16px;
-        padding: 14px 16px;
-        outline: none;
-      }
-
-      .client-edit-actions {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-top: 18px;
-      }
-
-      .client-save-btn,
-      .client-close-btn {
-        min-height: 50px;
-        padding: 12px 20px;
-        border-radius: 999px;
-        cursor: pointer;
-        font-weight: 900;
-        border: 1px solid transparent;
-      }
-
-      .client-save-btn {
-        background: #1f86ff;
-        color: #07111f;
-      }
-
-      .client-close-btn {
-        background: rgba(255,255,255,0.05);
-        border-color: rgba(255,255,255,0.1);
-        color: #fff;
-      }
-
-      @media (max-width: 640px) {
-        .client-edit-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .client-save-btn,
-        .client-close-btn {
-          width: 100%;
-        }
-
-        .client-action-btn {
-          width: 100%;
-        }
-
-        .client-actions-wrap {
-          display: grid;
-          grid-template-columns: 1fr;
-          width: 100%;
-        }
-      }
-    </style>
-
-    <div class="client-modal" id="clientEditModal">
-      <div class="client-modal-box">
-        <div class="client-modal-head">
-          <div>
-            <h2>Editar mi cita</h2>
-            <p>Solo puedes modificar la cita guardada como tuya en este dispositivo.</p>
-          </div>
-
-          <button type="button" class="client-modal-close" id="closeEditModalBtn">×</button>
+  <header class="header">
+    <div class="container nav">
+      <a href="index.html" class="brand" aria-label="La Pinta Barber">
+        <div class="brand-badge">
+          <img src="logo.jpeg" alt="La Pinta Barber" class="brand-logo" />
         </div>
 
-        <form id="clientEditForm">
-          <input type="hidden" id="editAppointmentId" />
+        <div class="brand-text">
+          <span class="brand-top">Barbería premium</span>
+          <span class="brand-bottom">La Pinta Barber</span>
+        </div>
+      </a>
 
-          <div class="client-edit-grid">
-            <div class="client-edit-group">
-              <label for="editNombre">Nombre</label>
-              <input type="text" id="editNombre" required />
-            </div>
+      <nav class="nav-desktop">
+        <a href="index.html" class="btn btn-secondary">Inicio</a>
+        <a href="cita.html" class="btn btn-primary">Agendar cita</a>
+        <a href="index2.html" class="btn btn-secondary">Panel Admin</a>
+      </nav>
 
-            <div class="client-edit-group">
-              <label for="editTelefono">Teléfono</label>
-              <input type="tel" id="editTelefono" required />
-            </div>
+      <button
+        class="menu-toggle"
+        id="menuToggle"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+        type="button"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
 
-            <div class="client-edit-group">
-              <label for="editServicio">Servicio</label>
-              <select id="editServicio" required>
-                <option value="">Seleccionar servicio</option>
-              </select>
-            </div>
-
-            <div class="client-edit-group">
-              <label for="editBarbero">Barbero</label>
-              <select id="editBarbero" required>
-                <option value="">Seleccionar barbero</option>
-              </select>
-            </div>
-
-            <div class="client-edit-group">
-              <label for="editFecha">Fecha</label>
-              <input type="date" id="editFecha" required />
-            </div>
-
-            <div class="client-edit-group">
-              <label for="editHora">Hora</label>
-              <select id="editHora" required>
-                <option value="">Seleccionar hora</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="client-edit-actions">
-            <button type="submit" class="client-save-btn">Guardar cambios</button>
-            <button type="button" class="client-close-btn" id="cancelEditModalBtn">Cancelar</button>
-          </div>
-        </form>
+      <div class="mobile-menu" id="mobileMenu">
+        <a href="index.html" class="btn btn-secondary">Inicio</a>
+        <a href="cita.html" class="btn btn-primary">Agendar cita</a>
+        <a href="index2.html" class="btn btn-secondary">Panel Admin</a>
       </div>
     </div>
-  `;
+  </header>
 
-  document.body.insertAdjacentHTML("beforeend", modalHTML);
+  <section class="hero">
+    <div class="container">
+      <div class="hero-box">
+        <span class="section-tag">Reservas en vivo</span>
+        <h1>Ver todas las citas</h1>
+        <p>
+          Consulta las citas guardadas en tiempo real con una vista moderna,
+          organizada por fecha y sin necesidad de desplazarte en teléfono.
+        </p>
 
-  document.getElementById("clientEditForm").addEventListener("submit", saveEditAppointment);
-  document.getElementById("closeEditModalBtn").addEventListener("click", closeEditModal);
-  document.getElementById("cancelEditModalBtn").addEventListener("click", closeEditModal);
-  document.getElementById("editServicio").addEventListener("change", (event) => {
-    populateEditTimeOptions(event.target.value, document.getElementById("editHora").value, false);
-  });
-  document.getElementById("editBarbero").addEventListener("change", () => {
-    populateEditTimeOptions(document.getElementById("editServicio").value, document.getElementById("editHora").value, false);
-  });
-  document.getElementById("editFecha").addEventListener("change", () => {
-    populateEditTimeOptions(document.getElementById("editServicio").value, document.getElementById("editHora").value, false);
-  });
+        <div class="stats">
+          <article class="stat-card">
+            <span>Total</span>
+            <strong id="statTotal">0</strong>
+            <small>Citas registradas</small>
+          </article>
 
-  document.getElementById("clientEditModal").addEventListener("click", (e) => {
-    if (e.target.id === "clientEditModal") {
-      closeEditModal();
+          <article class="stat-card">
+            <span>Aprobadas</span>
+            <strong id="statApproved">0</strong>
+            <small>Citas confirmadas</small>
+          </article>
+
+          <article class="stat-card">
+            <span>Pendientes</span>
+            <strong id="statPending">0</strong>
+            <small>Esperando aprobación</small>
+          </article>
+
+          <article class="stat-card">
+            <span>Canceladas</span>
+            <strong id="statCancelled">0</strong>
+            <small>Citas anuladas</small>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="filters-section">
+    <div class="container">
+      <div class="filters-box">
+        <div class="filters-head">
+          <div>
+            <h2>Filtros de búsqueda</h2>
+            <p>Encuentra citas por cliente, servicio, barbero, estado o fecha.</p>
+          </div>
+        </div>
+
+        <div class="filters-grid">
+          <div class="form-group">
+            <label for="searchInput">Buscar</label>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Cliente, anónimo, teléfono, servicio o barbero..."
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="filterStatus">Estado</label>
+            <select id="filterStatus">
+              <option value="all">Todos</option>
+              <option value="approved">Aprobadas</option>
+              <option value="pending">Pendientes</option>
+              <option value="cancelled">Canceladas</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="filterBarber">Barbero</label>
+            <select id="filterBarber">
+              <option value="all">Todos</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="filterDate">Fecha</label>
+            <input type="date" id="filterDate" />
+          </div>
+
+          <button type="button" class="btn btn-secondary" id="clearFiltersBtn">
+            Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="results-section">
+    <div class="container">
+      <div class="results-box">
+        <div class="results-head">
+          <div>
+            <h2>Listado de citas</h2>
+            <p id="resultsInfo">Cargando citas...</p>
+          </div>
+
+          <div class="results-badge">Tabla por fecha</div>
+        </div>
+
+        <div id="appointmentsView"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-content">
+      <div>
+        <h3>LA PINTA <span>BARBER</span></h3>
+      </div>
+
+      <div>
+        <p>© 2026 Todos los derechos reservados</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="ver-citas.js?v=cancelar-retira-agenda-20260504"></script>
+
+  <script>
+    const menuToggle = document.getElementById("menuToggle");
+    const mobileMenu = document.getElementById("mobileMenu");
+
+    if (menuToggle && mobileMenu) {
+      menuToggle.addEventListener("click", () => {
+        mobileMenu.classList.toggle("open");
+        menuToggle.classList.toggle("active");
+        const expanded = menuToggle.getAttribute("aria-expanded") === "true";
+        menuToggle.setAttribute("aria-expanded", String(!expanded));
+      });
+
+      document.querySelectorAll("#mobileMenu a").forEach((link) => {
+        link.addEventListener("click", () => {
+          mobileMenu.classList.remove("open");
+          menuToggle.classList.remove("active");
+          menuToggle.setAttribute("aria-expanded", "false");
+        });
+      });
+
+      document.addEventListener("click", (e) => {
+        if (
+          window.innerWidth <= 900 &&
+          !mobileMenu.contains(e.target) &&
+          !menuToggle.contains(e.target)
+        ) {
+          mobileMenu.classList.remove("open");
+          menuToggle.classList.remove("active");
+          menuToggle.setAttribute("aria-expanded", "false");
+        }
+      });
     }
-  });
-}
-
-searchInput.addEventListener("input", renderAll);
-filterStatus.addEventListener("change", renderAll);
-filterBarber.addEventListener("change", renderAll);
-filterDate.addEventListener("change", renderAll);
-clearFiltersBtn.addEventListener("click", clearFilters);
-
-refreshMyAppointmentData();
-createEditModal();
-listenServices();
-listenAppointments();
+  </script>
+</body>
+</html>
