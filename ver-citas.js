@@ -71,6 +71,31 @@ function refreshMyAppointmentData() {
   }
 }
 
+function forgetClientAppointment(appointmentId) {
+  if (!appointmentId) return;
+
+  try {
+    const rawAppointments = localStorage.getItem(STORAGE_CLIENT_APPOINTMENTS);
+    const savedAppointments = rawAppointments ? JSON.parse(rawAppointments) : [];
+    const filteredAppointments = Array.isArray(savedAppointments)
+      ? savedAppointments.filter(item => String(item.id) !== String(appointmentId))
+      : [];
+
+    localStorage.setItem(STORAGE_CLIENT_APPOINTMENTS, JSON.stringify(filteredAppointments));
+
+    if (String(localStorage.getItem(STORAGE_APPOINTMENT_ID)) === String(appointmentId)) {
+      localStorage.removeItem(STORAGE_APPOINTMENT_ID);
+      localStorage.removeItem(STORAGE_CLIENT_TOKEN);
+      myAppointmentId = "";
+      myClientToken = "";
+    }
+
+    myAppointments = filteredAppointments;
+  } catch (error) {
+    console.warn("No se pudo limpiar la cita cancelada de este dispositivo:", error);
+  }
+}
+
 function escapeHTML(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -278,10 +303,23 @@ function formatDateSafe(dateString) {
   return `${day}/${month}/${year}`;
 }
 
-function buildWhatsAppNotificationMessage(type, appointment) {
-  const actionText = type === "cancel"
-    ? "Mi cita fue cancelada correctamente."
-    : "Mi cita fue actualizada correctamente.";
+function buildWhatsAppNotificationMessage(type, appointment, previousAppointment = null) {
+  const previousHour = previousAppointment?.hora || appointment?.hora || "Sin hora";
+  const newHour = appointment?.hora || "Sin hora";
+
+  if (type === "cancel") {
+    return [
+      "Cancelé mi cita, será en otro momento.",
+      "",
+      `Nombre: ${appointment?.nombre || "Sin nombre"}`,
+      `Servicio: ${appointment?.servicio || "Sin servicio"}`,
+      `Fecha: ${formatDateSafe(appointment?.fecha)}`,
+      `Hora: ${appointment?.hora || "Sin hora"}`,
+      `Barbero: ${appointment?.barbero || "No definido"}`
+    ].join("\n");
+  }
+
+  const actionText = `Soy la cita de las ${previousHour} y cambié para esta hora nueva: ${newHour}.`;
 
   return [
     "Hola, su cambio fue aceptado.",
@@ -295,8 +333,8 @@ function buildWhatsAppNotificationMessage(type, appointment) {
   ].join("\n");
 }
 
-function openWhatsAppNotification(type, appointment) {
-  const message = buildWhatsAppNotificationMessage(type, appointment);
+function openWhatsAppNotification(type, appointment, previousAppointment = null) {
+  const message = buildWhatsAppNotificationMessage(type, appointment, previousAppointment);
   const url = `https://wa.me/${WHATSAPP_NOTIFICATION_PHONE}?text=${encodeURIComponent(message)}`;
   const whatsappWindow = window.open(url, "_blank", "noopener,noreferrer");
 
@@ -827,7 +865,7 @@ async function saveEditAppointment(event) {
     openWhatsAppNotification("edit", {
       ...app,
       ...updatedData
-    });
+    }, app);
     alert("Tu cita fue actualizada correctamente.");
   } catch (error) {
     console.error(error);
@@ -853,17 +891,14 @@ async function cancelMyAppointment(id) {
   if (!confirmCancel) return;
 
   try {
-    await appointmentsRef.child(id).update({
-      status: "cancelled",
-      cancelledAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    });
+    await appointmentsRef.child(id).remove();
+    forgetClientAppointment(id);
 
     openWhatsAppNotification("cancel", {
       ...app,
       status: "cancelled"
     });
-    alert("Tu cita fue cancelada correctamente.");
+    alert("Tu cita fue cancelada correctamente y eliminada de la agenda.");
   } catch (error) {
     console.error(error);
     alert("No se pudo cancelar la cita.");
