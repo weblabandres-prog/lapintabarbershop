@@ -14,7 +14,6 @@ if (!firebase.apps.length) {
 }
 
 const db = firebase.database();
-
 const appointmentsRef = db.ref("appointments");
 const shopStatusRef = db.ref("shopStatus");
 const customClosuresRef = db.ref("customClosures");
@@ -45,6 +44,7 @@ const navPanel = document.getElementById("navPanel");
 
 const btnAprobarMenu = document.getElementById("btnAprobarMenu");
 const btnAprobarHero = document.getElementById("btnAprobarHero");
+const btnAprobarMobile = document.getElementById("btnAprobarMobile");
 const logoSecret = document.getElementById("logoSecret");
 
 let appointments = [];
@@ -129,7 +129,6 @@ function generateApproveToken() {
   if (window.crypto && typeof window.crypto.randomUUID === "function") {
     return window.crypto.randomUUID();
   }
-
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
@@ -138,7 +137,42 @@ function generateClientToken() {
     return window.crypto.randomUUID();
   }
 
-  return Date.now().toString(36) + Math.random().toString(36).substring(2, 14);
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 12);
+}
+
+function rememberClientAppointment(appointmentId, clientToken) {
+  if (!appointmentId || !clientToken) return;
+
+  try {
+    const storageAppointmentId = "lapinta_client_appointment_id";
+    const storageClientToken = "lapinta_client_token";
+    const storageClientAppointments = "lapinta_client_appointments";
+    let savedAppointments = [];
+
+    try {
+      const rawAppointments = localStorage.getItem(storageClientAppointments);
+      savedAppointments = rawAppointments ? JSON.parse(rawAppointments) : [];
+    } catch (error) {
+      savedAppointments = [];
+    }
+
+    if (!Array.isArray(savedAppointments)) savedAppointments = [];
+
+    const alreadySaved = savedAppointments.some(item => {
+      return String(item.id) === String(appointmentId) &&
+             String(item.token) === String(clientToken);
+    });
+
+    if (!alreadySaved) {
+      savedAppointments.push({ id: appointmentId, token: clientToken });
+    }
+
+    localStorage.setItem(storageAppointmentId, appointmentId);
+    localStorage.setItem(storageClientToken, clientToken);
+    localStorage.setItem(storageClientAppointments, JSON.stringify(savedAppointments));
+  } catch (error) {
+    console.warn("No se pudo guardar la cita en este dispositivo:", error);
+  }
 }
 
 function getBaseUrl() {
@@ -149,7 +183,6 @@ function buildApproveLink(appointmentId, approveToken) {
   if (!appointmentId || !approveToken) {
     return `${getBaseUrl()}/aprobar.html`;
   }
-
   return `${getBaseUrl()}/aprobar.html?id=${encodeURIComponent(appointmentId)}&token=${encodeURIComponent(approveToken)}`;
 }
 
@@ -158,16 +191,13 @@ function getTodayISO() {
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, "0");
   const day = String(today.getDate()).padStart(2, "0");
-
   return `${year}-${month}-${day}`;
 }
 
 function formatDateSafe(dateString) {
   if (!dateString) return "Sin fecha";
-
   const parts = String(dateString).split("-");
   if (parts.length !== 3) return dateString;
-
   const [year, month, day] = parts;
   return `${day}/${month}/${year}`;
 }
@@ -177,24 +207,17 @@ function formatDateISOForSubject(dateString) {
 }
 
 function restarDiasAFecha(fechaISO, dias) {
-  if (!fechaISO) return "";
-
   const [year, month, day] = fechaISO.split("-").map(Number);
   const fecha = new Date(year, month - 1, day);
   fecha.setDate(fecha.getDate() - dias);
-
   return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}`;
 }
 
 function diferenciaDiasDesdeHoy(fechaISO) {
-  if (!fechaISO) return 0;
-
   const hoy = new Date();
   const hoyLimpio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-
   const [year, month, day] = fechaISO.split("-").map(Number);
   const fecha = new Date(year, month - 1, day);
-
   return Math.floor((fecha.getTime() - hoyLimpio.getTime()) / (1000 * 60 * 60 * 24));
 }
 
@@ -203,9 +226,7 @@ function necesitaPublicarseDosDiasAntes(fechaISO) {
 }
 
 function setMinDate() {
-  if (fechaInput) {
-    fechaInput.min = getTodayISO();
-  }
+  if (fechaInput) fechaInput.min = getTodayISO();
 }
 
 function parseAnyTimeToMinutes(timeStr) {
@@ -216,11 +237,10 @@ function parseAnyTimeToMinutes(timeStr) {
   if (/^\d{1,2}:\d{2}$/.test(value)) {
     const [h, m] = value.split(":").map(Number);
     if (Number.isNaN(h) || Number.isNaN(m)) return NaN;
-    return h * 60 + m;
+    return (h * 60) + m;
   }
 
   const match = value.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/);
-
   if (!match) return NaN;
 
   let hour = Number(match[1]);
@@ -230,7 +250,7 @@ function parseAnyTimeToMinutes(timeStr) {
   if (suffix === "AM" && hour === 12) hour = 0;
   if (suffix === "PM" && hour !== 12) hour += 12;
 
-  return hour * 60 + minute;
+  return (hour * 60) + minute;
 }
 
 function convertToMinutes(timeStr) {
@@ -242,9 +262,7 @@ function convertToTime(minutes) {
   let hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   const ampm = hours >= 12 ? "PM" : "AM";
-
   hours = hours % 12 || 12;
-
   return `${hours}:${String(mins).padStart(2, "0")} ${ampm}`;
 }
 
@@ -252,14 +270,12 @@ function to24Hour(time12) {
   if (!time12) return "00:00";
 
   const value = String(time12).trim();
-
   if (/^\d{1,2}:\d{2}$/.test(value)) {
     const [h, m] = value.split(":");
     return `${String(Number(h)).padStart(2, "0")}:${m}`;
   }
 
   const match = value.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
-
   if (!match) return value;
 
   let hour = parseInt(match[1], 10);
@@ -275,9 +291,7 @@ function to24Hour(time12) {
 function formatStatusTime(time24or12) {
   if (!time24or12) return "";
 
-  if (/AM|PM/i.test(time24or12)) {
-    return time24or12;
-  }
+  if (/AM|PM/i.test(time24or12)) return time24or12;
 
   const [hourStr, minute] = String(time24or12).split(":");
   let hour = parseInt(hourStr, 10);
@@ -297,8 +311,7 @@ function normalizeLookupText(value) {
 }
 
 function isKidsService(serviceName) {
-  const normalized = normalizeLookupText(serviceName);
-  return normalized.includes("nino") || normalized.includes("niño");
+  return normalizeLookupText(serviceName).includes("nino");
 }
 
 function generateTimeSlots(start, end, interval = 30) {
@@ -341,12 +354,10 @@ function getDefaultOpenSchedule() {
 
 function getCurrentBreak(config) {
   const breaks = Array.isArray(config?.breaks) ? [...config.breaks] : [];
-
   if (!breaks.length) return null;
 
   const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
+  const currentMinutes = (now.getHours() * 60) + now.getMinutes();
   const breakMinutes = breaks
     .map(convertToMinutes)
     .filter(minutes => !Number.isNaN(minutes))
@@ -373,7 +384,7 @@ function getCurrentBreak(config) {
 }
 
 function getNextOpenInfoFromDate(baseDate = new Date()) {
-  const dayNames = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+  const dayNames = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
 
   for (let i = 1; i <= 7; i++) {
     const nextDate = new Date(baseDate);
@@ -393,23 +404,24 @@ function getNextOpenInfoFromDate(baseDate = new Date()) {
   return null;
 }
 
+function listenDailyOverrides() {
+  dailyOverridesRef.on("value", snapshot => {
+    dailyOverrides = snapshot.val() || {};
+    updateShopStatusBadge();
+    renderHours();
+    updateSummary();
+  });
+}
+
 function getServiceDuration(serviceName) {
   if (!serviceName) return 60;
-
-  const serviceObj = Object.values(servicesData || {}).find(service => {
-    return service && service.nombre === serviceName;
-  });
-
+  const serviceObj = Object.values(servicesData).find(s => s.nombre === serviceName);
   return serviceObj && serviceObj.duracion ? Number(serviceObj.duracion) : 60;
 }
 
 function getServicePrice(serviceName) {
   if (!serviceName) return 0;
-
-  const serviceObj = Object.values(servicesData || {}).find(service => {
-    return service && service.nombre === serviceName;
-  });
-
+  const serviceObj = Object.values(servicesData).find(s => s.nombre === serviceName);
   return serviceObj && serviceObj.precio ? Number(serviceObj.precio) : 0;
 }
 
@@ -456,13 +468,7 @@ function normalizeCustomClosure(block, fallbackDate = "") {
   if (Number.isNaN(startMinutes) || Number.isNaN(endMinutes)) return null;
   if (startMinutes >= endMinutes) return null;
 
-  return {
-    fecha,
-    start,
-    end,
-    reason,
-    type: "timeBlock"
-  };
+  return { fecha, start, end, reason, type: "timeBlock" };
 }
 
 function getCustomClosuresForDate(dateString) {
@@ -472,15 +478,8 @@ function getCustomClosuresForDate(dateString) {
 
   Object.entries(customClosures).forEach(([key, value]) => {
     if (!value || typeof value !== "object" || Array.isArray(value)) return;
-
-    const normalized = normalizeCustomClosure(
-      value,
-      key === dateString ? dateString : ""
-    );
-
-    if (normalized && normalized.fecha === dateString) {
-      closures.push(normalized);
-    }
+    const normalized = normalizeCustomClosure(value, key === dateString ? dateString : "");
+    if (normalized && normalized.fecha === dateString) closures.push(normalized);
   });
 
   return closures.sort((a, b) => convertToMinutes(a.start) - convertToMinutes(b.start));
@@ -496,38 +495,34 @@ function rangesOverlapMinutes(startA, endA, startB, endB) {
 
 function isSlotBlockedByCustomClosure(date, startSlot, serviceName) {
   const blocks = getTimeBlocksForDate(date);
-
   if (!blocks.length) return false;
 
   const neededBlocks = getServiceBlocks(serviceName);
   const slotStartMinutes = convertToMinutes(startSlot);
-  const slotEndMinutes = slotStartMinutes + neededBlocks * 30;
+  const slotEndMinutes = slotStartMinutes + (neededBlocks * 30);
 
   return blocks.some(block => {
     const blockStartMinutes = convertToMinutes(block.start);
     const blockEndMinutes = convertToMinutes(block.end);
 
-    return rangesOverlapMinutes(
-      slotStartMinutes,
-      slotEndMinutes,
-      blockStartMinutes,
-      blockEndMinutes
-    );
+    if (slotStartMinutes >= blockStartMinutes && slotStartMinutes < blockEndMinutes) {
+      return true;
+    }
+
+    return rangesOverlapMinutes(slotStartMinutes, slotEndMinutes, blockStartMinutes, blockEndMinutes);
   });
 }
 
 function getActiveCustomClosureForNow(dateString) {
   const blocks = getTimeBlocksForDate(dateString);
-
   if (!blocks.length) return null;
 
   const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentMinutes = (now.getHours() * 60) + now.getMinutes();
 
   return blocks.find(block => {
     const blockStartMinutes = convertToMinutes(block.start);
     const blockEndMinutes = convertToMinutes(block.end);
-
     return currentMinutes >= blockStartMinutes && currentMinutes < blockEndMinutes;
   }) || null;
 }
@@ -585,9 +580,7 @@ function isPastDateTime(date, slot) {
   const selectedDate = new Date(date + "T00:00:00");
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  if (selectedDate.getTime() !== today.getTime()) {
-    return false;
-  }
+  if (selectedDate.getTime() !== today.getTime()) return false;
 
   const slotMinutes = convertToMinutes(slot);
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
@@ -597,7 +590,6 @@ function isPastDateTime(date, slot) {
 
 function isSlotAvailable(date, barber, startSlot, serviceName, list) {
   const config = getWorkingConfigByDate(date);
-
   if (!config) return false;
 
   const slots = generateTimeSlots(config.start, config.end, 30);
@@ -612,13 +604,8 @@ function isSlotAvailable(date, barber, startSlot, serviceName, list) {
   for (let i = 0; i < neededBlocks; i++) {
     const currentSlot = slots[startIndex + i];
 
-    if (!currentSlot || breaks.includes(currentSlot)) {
-      return false;
-    }
-
-    if (date === getTodayISO() && isPastDateTime(date, currentSlot)) {
-      return false;
-    }
+    if (!currentSlot || breaks.includes(currentSlot)) return false;
+    if (date === getTodayISO() && isPastDateTime(date, currentSlot)) return false;
 
     for (const app of list) {
       if (app.status === "cancelled") continue;
@@ -638,10 +625,7 @@ function isSlotAvailable(date, barber, startSlot, serviceName, list) {
 }
 
 function getCuentaTransferenciaSeleccionada() {
-  if (cuentaPopularInput?.checked) {
-    return "Popular - Ahorro - 853557841";
-  }
-
+  if (cuentaPopularInput?.checked) return "Popular - Ahorro - 853557841";
   return "Banreservas - Ahorro - 960200381";
 }
 
@@ -649,17 +633,12 @@ function getMetodoPagoSeleccionado() {
   if (metodoTransferenciaInput?.checked) {
     return `Transferencia | ${getCuentaTransferenciaSeleccionada()}`;
   }
-
   return "Efectivo";
 }
 
 function updatePaymentMethodUI() {
   if (!paymentTransferInfo) return;
-
-  paymentTransferInfo.classList.toggle(
-    "hidden",
-    !metodoTransferenciaInput?.checked
-  );
+  paymentTransferInfo.classList.toggle("hidden", !metodoTransferenciaInput?.checked);
 }
 
 function limpiarTelefono(valor) {
@@ -668,19 +647,13 @@ function limpiarTelefono(valor) {
 
 function normalizarTelefono(valor) {
   let limpio = limpiarTelefono(valor).trim();
-
   if (!limpio) return "";
-
-  if (limpio.includes("+")) {
-    limpio = "+" + limpio.replace(/\+/g, "");
-  }
-
+  if (limpio.includes("+")) limpio = "+" + limpio.replace(/\+/g, "");
   return limpio;
 }
 
 function telefonoValido(phone) {
   const valor = normalizarTelefono(phone);
-
   if (!valor) return false;
 
   if (/^(809|829|849)\d{7}$/.test(valor)) return true;
@@ -705,24 +678,17 @@ function configurarInputTelefono() {
 
   telefonoInput.addEventListener("input", () => {
     let valor = telefonoInput.value.replace(/[^\d+]/g, "");
-
-    if (valor.includes("+")) {
-      valor = "+" + valor.replace(/\+/g, "");
-    }
-
+    if (valor.includes("+")) valor = "+" + valor.replace(/\+/g, "");
     telefonoInput.value = valor.slice(0, 16);
     updateSummary();
   });
 
   telefonoInput.addEventListener("blur", () => {
     const valor = telefonoInput.value.trim();
-
     if (!valor) return;
 
     if (!telefonoValido(valor)) {
-      telefonoInput.setCustomValidity(
-        "Ingresa un número válido. Ejemplo: 8493767710, 3055551234 o +34612345678"
-      );
+      telefonoInput.setCustomValidity("Ingresa un número válido. Ejemplo: 8493767710, 3055551234 o +34612345678");
     } else {
       telefonoInput.setCustomValidity("");
     }
@@ -776,9 +742,7 @@ function renderHours() {
     info.style.lineHeight = "1.6";
 
     const detail = timeBlocks
-      .map(block => {
-        return `${formatStatusTime(block.start)} - ${formatStatusTime(block.end)}${block.reason ? ` (${block.reason})` : ""}`;
-      })
+      .map(block => `${formatStatusTime(block.start)} - ${formatStatusTime(block.end)}${block.reason ? ` (${block.reason})` : ""}`)
       .join(" | ");
 
     info.textContent = `Bloques cerrados para esta fecha: ${detail}`;
@@ -793,7 +757,7 @@ function renderHours() {
     info.style.color = "#93a3bd";
     info.style.gridColumn = "1 / -1";
     info.style.marginBottom = "8px";
-    info.textContent = "Corte de niño usa media hora.";
+    info.textContent = "Corte de nino usa media hora.";
     hoursGrid.appendChild(info);
   }
 
@@ -805,13 +769,7 @@ function renderHours() {
     btn.classList.add("hour-btn");
     btn.textContent = slot;
 
-    const available = isSlotAvailable(
-      selectedDate,
-      selectedBarber,
-      slot,
-      selectedService,
-      appointments
-    );
+    const available = isSlotAvailable(selectedDate, selectedBarber, slot, selectedService, appointments);
 
     if (!available) {
       btn.classList.add("disabled");
@@ -819,18 +777,10 @@ function renderHours() {
       btn.title = "Hora no disponible";
     } else {
       availableCount++;
-
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".hour-btn").forEach(button => {
-          button.classList.remove("active");
-        });
-
+        document.querySelectorAll(".hour-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-
-        if (horaInput) {
-          horaInput.value = slot;
-        }
-
+        if (horaInput) horaInput.value = slot;
         updateSummary();
       });
     }
@@ -871,7 +821,7 @@ function updateSummary() {
     <p><strong>Nombre en público:</strong> ${escapeHTML(nombrePublico)}</p>
     <p><strong>Teléfono:</strong> ${escapeHTML(telefono)}</p>
     <p><strong>Servicio:</strong> ${escapeHTML(servicio)}</p>
-    <p><strong>Precio:</strong> ${precio ? `RD$${escapeHTML(String(precio))}` : "-"}</p>
+    <p><strong>Precio:</strong> ${escapeHTML(precio ? `RD$${precio}` : "-")}</p>
     <p><strong>Barbero:</strong> ${escapeHTML(barbero)}</p>
     <p><strong>Fecha:</strong> ${escapeHTML(fecha)}</p>
     <p><strong>Hora:</strong> ${escapeHTML(hora)}</p>
@@ -883,8 +833,6 @@ function updateSummary() {
 }
 
 function renderAppointments() {
-  if (!appointmentsList) return;
-
   const publicStatTotal = document.getElementById("publicStatTotal");
   const publicStatApproved = document.getElementById("publicStatApproved");
   const publicStatPending = document.getElementById("publicStatPending");
@@ -892,16 +840,13 @@ function renderAppointments() {
 
   const publicAppointments = appointments.filter(app => {
     if (app.status === "cancelled") return false;
-
     const agendaVisibleDate = app.agendaDesde || app.fecha;
-
     return agendaVisibleDate <= todayISO;
   });
 
   const orderedAppointments = [...publicAppointments].sort((a, b) => {
     const aValue = `${a.fecha} ${to24Hour(a.hora)}`;
     const bValue = `${b.fecha} ${to24Hour(b.hora)}`;
-
     return aValue.localeCompare(bValue);
   });
 
@@ -911,6 +856,8 @@ function renderAppointments() {
   if (publicStatTotal) publicStatTotal.textContent = orderedAppointments.length;
   if (publicStatApproved) publicStatApproved.textContent = approvedCount;
   if (publicStatPending) publicStatPending.textContent = pendingCount;
+
+  if (!appointmentsList) return;
 
   appointmentsList.innerHTML = "";
 
@@ -933,7 +880,7 @@ function renderAppointments() {
         ? '<span class="public-status approved">Aprobada</span>'
         : '<span class="public-status pending">Pendiente</span>';
 
-    const publicName = app.anonimo === true ? "Anónimo" : app.nombre || "Cliente";
+    const publicName = app.anonimo === true ? "Anónimo" : (app.nombre || "Cliente");
     const price = app.precio || getServicePrice(app.servicio);
 
     item.innerHTML = `
@@ -986,12 +933,12 @@ function getShopStatus() {
   const todayISO = getTodayISO();
   const override = getDailyOverride(todayISO);
   const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentMinutes = (now.getHours() * 60) + now.getMinutes();
 
   if (!shopIsOpen && !override?.forceOpen) {
     return {
       type: "closed",
-      text: "Cerrado por el momento, agenda para otra hora o día",
+      text: "Cerrado por el momento, agenda para otra hora o dia",
       showBanner: true
     };
   }
@@ -999,13 +946,12 @@ function getShopStatus() {
   if (override?.forceClosed === true) {
     return {
       type: "closed",
-      text: "Cerrado por el momento, agenda para otra hora o día",
+      text: "Cerrado por el momento, agenda para otra hora o dia",
       showBanner: true
     };
   }
 
   const activeBlock = getActiveCustomClosureForNow(todayISO);
-
   if (activeBlock) {
     return {
       type: "closed",
@@ -1018,12 +964,11 @@ function getShopStatus() {
 
   if (!config) {
     const nextOpen = getNextOpenInfoFromDate(now);
-
     return {
       type: "closed",
       text: nextOpen
         ? `Cerrado por hoy. Abrimos ${nextOpen.dayName} a las ${nextOpen.open}`
-        : "Cerrado por el momento, agenda para otra hora o día",
+        : "Cerrado por el momento, agenda para otra hora o dia",
       showBanner: true
     };
   }
@@ -1041,18 +986,16 @@ function getShopStatus() {
 
   if (currentMinutes >= closeMinutes) {
     const nextOpen = getNextOpenInfoFromDate(now);
-
     return {
       type: "closed",
       text: nextOpen
         ? `Cerrado por hoy. Abrimos ${nextOpen.dayName} a las ${nextOpen.open}`
-        : "Cerrado por el momento, agenda para otra hora o día",
+        : "Cerrado por el momento, agenda para otra hora o dia",
       showBanner: true
     };
   }
 
   const currentBreak = getCurrentBreak(config);
-
   if (currentBreak) {
     return {
       type: "break",
@@ -1089,11 +1032,13 @@ function updateShopStatusBadge() {
 function showApproveButtons() {
   if (btnAprobarMenu) btnAprobarMenu.style.display = "inline-flex";
   if (btnAprobarHero) btnAprobarHero.style.display = "inline-flex";
+  if (btnAprobarMobile) btnAprobarMobile.style.display = "inline-flex";
 }
 
 function hideApproveButtons() {
   if (btnAprobarMenu) btnAprobarMenu.style.display = "none";
   if (btnAprobarHero) btnAprobarHero.style.display = "none";
+  if (btnAprobarMobile) btnAprobarMobile.style.display = "none";
 }
 
 function goToApprovePage() {
@@ -1114,6 +1059,13 @@ function bindHiddenApproveButtons() {
       goToApprovePage();
     });
   }
+
+  if (btnAprobarMobile) {
+    btnAprobarMobile.addEventListener("click", function (e) {
+      e.preventDefault();
+      goToApprovePage();
+    });
+  }
 }
 
 function bindSecretShortcut() {
@@ -1125,29 +1077,18 @@ function bindSecretShortcut() {
 
   function resetTaps() {
     tapCount = 0;
-
-    if (tapTimer) {
-      clearTimeout(tapTimer);
-    }
+    if (tapTimer) clearTimeout(tapTimer);
   }
 
   function registerTap(e) {
     const now = Date.now();
-
     if (now - lastTriggerTime < 350) return;
-
     lastTriggerTime = now;
 
-    if (e) {
-      e.preventDefault();
-    }
-
+    if (e) e.preventDefault();
     tapCount++;
 
-    if (tapTimer) {
-      clearTimeout(tapTimer);
-    }
-
+    if (tapTimer) clearTimeout(tapTimer);
     tapTimer = setTimeout(resetTaps, 2000);
 
     if (tapCount >= 5) {
@@ -1182,18 +1123,13 @@ async function sendAppointmentEmail(appointment, appointmentId) {
     approval_link: approvalLink
   };
 
-  return emailjs.send(
-    EMAILJS_SERVICE_ID,
-    EMAILJS_TEMPLATE_ID,
-    templateParams
-  );
+  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
 }
 
 function isAppointmentPast(app) {
   if (!app?.fecha || !app?.hora) return false;
 
   const dateTime = new Date(`${app.fecha}T${to24Hour(app.hora)}:00`);
-
   if (Number.isNaN(dateTime.getTime())) return false;
 
   return dateTime.getTime() < Date.now();
@@ -1217,41 +1153,6 @@ async function cleanupPastAppointments() {
     }
   } catch (error) {
     console.error("Error eliminando citas pasadas:", error);
-  }
-}
-
-function saveClientAppointmentLocally(appointmentId, clientToken) {
-  try {
-    localStorage.setItem("lapinta_client_appointment_id", appointmentId);
-    localStorage.setItem("lapinta_client_token", clientToken);
-
-    const savedAppointmentsRaw = localStorage.getItem("lapinta_client_appointments");
-    let savedAppointments = [];
-
-    try {
-      savedAppointments = JSON.parse(savedAppointmentsRaw) || [];
-    } catch (parseError) {
-      savedAppointments = [];
-    }
-
-    const alreadyExists = savedAppointments.some(item => {
-      return String(item.id) === String(appointmentId) &&
-             String(item.token) === String(clientToken);
-    });
-
-    if (!alreadyExists) {
-      savedAppointments.push({
-        id: appointmentId,
-        token: clientToken
-      });
-
-      localStorage.setItem(
-        "lapinta_client_appointments",
-        JSON.stringify(savedAppointments)
-      );
-    }
-  } catch (storageError) {
-    console.warn("La cita se guardó, pero no se pudo guardar en localStorage:", storageError);
   }
 }
 
@@ -1295,15 +1196,15 @@ if (bookingForm) {
     const selectedBarber = barberoInput?.value || "";
     const selectedHour = horaInput?.value || "";
 
-    if (!selectedService || !selectedDate || !selectedBarber) {
-      alert("Completa todos los campos requeridos.");
-      return;
-    }
-
     const mostrarEnAgendaDosDiasAntes = necesitaPublicarseDosDiasAntes(selectedDate);
     const agendaDesde = mostrarEnAgendaDosDiasAntes
       ? restarDiasAFecha(selectedDate, 2)
       : selectedDate;
+
+    if (!selectedService || !selectedDate || !selectedBarber) {
+      alert("Completa todos los campos requeridos.");
+      return;
+    }
 
     if (!isSlotAvailable(selectedDate, selectedBarber, selectedHour, selectedService, appointments)) {
       alert("Esa hora ya no está disponible. Por favor elige otra.");
@@ -1312,7 +1213,6 @@ if (bookingForm) {
     }
 
     const config = getWorkingConfigByDate(selectedDate);
-
     if (!config) {
       alert("Ese día no está disponible.");
       return;
@@ -1331,9 +1231,7 @@ if (bookingForm) {
     const reservedSlots = [];
 
     for (let i = 0; i < neededBlocks; i++) {
-      if (slots[startIndex + i]) {
-        reservedSlots.push(slots[startIndex + i]);
-      }
+      if (slots[startIndex + i]) reservedSlots.push(slots[startIndex + i]);
     }
 
     const clientToken = generateClientToken();
@@ -1369,12 +1267,11 @@ if (bookingForm) {
       }
 
       const newRef = appointmentsRef.push();
-
       await newRef.set(newAppointment);
 
       const appointmentId = newRef.key;
 
-      saveClientAppointmentLocally(appointmentId, clientToken);
+      rememberClientAppointment(appointmentId, clientToken);
 
       try {
         await sendAppointmentEmail(newAppointment, appointmentId);
@@ -1394,29 +1291,26 @@ if (bookingForm) {
             `✅ La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
           );
         } else {
-          alert("✅ La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar.");
+          alert(
+            "✅ La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar: " +
+            (emailError?.text || emailError?.message || "Error desconocido")
+          );
         }
       }
 
-      try {
-        bookingForm.reset();
+      bookingForm.reset();
+      if (horaInput) horaInput.value = "";
+      if (metodoEfectivoInput) metodoEfectivoInput.checked = true;
+      if (cuentaBanreservasInput) cuentaBanreservasInput.checked = true;
 
-        if (horaInput) horaInput.value = "";
-        if (metodoEfectivoInput) metodoEfectivoInput.checked = true;
-        if (cuentaBanreservasInput) cuentaBanreservasInput.checked = true;
-        if (servicioInput) servicioInput.value = "";
-
-        updatePaymentMethodUI();
-        updateSummary();
-        renderHours();
-      } catch (uiError) {
-        console.warn("La cita se guardó, pero hubo un error limpiando el formulario:", uiError);
-      }
+      updatePaymentMethodUI();
+      updateSummary();
+      renderHours();
 
       window.location.href = "ver-citas.html";
     } catch (firebaseError) {
-      console.error("Error real guardando cita en Firebase:", firebaseError);
-      alert("No se pudo guardar la cita en Firebase. Revisa las rules o los datos enviados.");
+      console.error("Error guardando cita:", firebaseError);
+      alert("No se pudo guardar la cita en Firebase.");
     } finally {
       if (submitButton) {
         submitButton.disabled = false;
@@ -1429,15 +1323,9 @@ if (bookingForm) {
 function listenAppointments() {
   appointmentsRef.on("value", snapshot => {
     const data = snapshot.val() || {};
+    appointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
 
-    appointments = Object.entries(data).map(([id, app]) => {
-      return normalizeAppointment(id, app);
-    });
-
-    if (appointmentsList) {
-      renderAppointments();
-    }
-
+    if (appointmentsList) renderAppointments();
     renderHours();
     updateSummary();
   });
@@ -1446,7 +1334,6 @@ function listenAppointments() {
 function listenShopStatus() {
   shopStatusRef.on("value", snapshot => {
     const data = snapshot.val() || {};
-
     shopIsOpen = data.isOpen !== false;
     sundayOpen = data.sundayOpen === true;
     tuesdayForcedOpen = data.tuesdayOpen === true;
@@ -1461,7 +1348,6 @@ function listenShopStatus() {
 function listenCustomClosures() {
   customClosuresRef.on("value", snapshot => {
     customClosures = snapshot.val() || {};
-
     renderHours();
     updateShopStatusBadge();
     updateSummary();
@@ -1472,9 +1358,7 @@ function populateServiceOptions() {
   if (!servicioInput) return;
 
   const currentValue = servicioInput.value || requestedServiceFromURL;
-  const services = Object.values(servicesData || {}).filter(service => {
-    return service && service.nombre;
-  });
+  const services = Object.values(servicesData || {}).filter(service => service && service.nombre);
 
   servicioInput.innerHTML = '<option value="">Selecciona un servicio</option>';
 
@@ -1499,24 +1383,10 @@ function populateServiceOptions() {
 function listenServices() {
   servicesRef.on("value", snapshot => {
     servicesData = snapshot.val() || {};
-
     populateServiceOptions();
     updateSummary();
     renderHours();
-
-    if (appointmentsList) {
-      renderAppointments();
-    }
-  });
-}
-
-function listenDailyOverrides() {
-  dailyOverridesRef.on("value", snapshot => {
-    dailyOverrides = snapshot.val() || {};
-
-    updateShopStatusBadge();
-    renderHours();
-    updateSummary();
+    if (appointmentsList) renderAppointments();
   });
 }
 
@@ -1567,13 +1437,9 @@ document.querySelectorAll(".select-service-btn").forEach(btn => {
     if (!servicioInput) return;
 
     e.preventDefault();
-
     servicioInput.value = this.getAttribute("data-service") || "";
 
-    if (horaInput) {
-      horaInput.value = "";
-    }
-
+    if (horaInput) horaInput.value = "";
     renderHours();
     updateSummary();
 
@@ -1588,26 +1454,26 @@ document.querySelectorAll(".select-service-btn").forEach(btn => {
 
 fechaInput?.addEventListener("change", () => {
   if (horaInput) horaInput.value = "";
-
   renderHours();
   updateSummary();
 });
 
 barberoInput?.addEventListener("change", () => {
   if (horaInput) horaInput.value = "";
-
   renderHours();
   updateSummary();
 });
 
 servicioInput?.addEventListener("change", () => {
   if (horaInput) horaInput.value = "";
-
   renderHours();
   updateSummary();
 });
 
-nombreInput?.addEventListener("input", updateSummary);
+[nombreInput].forEach(input => {
+  input?.addEventListener("input", updateSummary);
+});
+
 anonimoInput?.addEventListener("change", updateSummary);
 
 metodoEfectivoInput?.addEventListener("change", () => {
@@ -1644,12 +1510,13 @@ cleanupPastAppointments();
 
 setInterval(() => {
   updateShopStatusBadge();
-  cleanupPastAppointments();
 
   const selectedDate = fechaInput?.value || "";
   const selectedBarber = barberoInput?.value || "";
   const selectedService = servicioInput?.value || "";
   const selectedHour = horaInput?.value || "";
+
+  cleanupPastAppointments();
 
   if (!selectedDate || !selectedBarber || !selectedService) return;
 
@@ -1660,10 +1527,7 @@ setInterval(() => {
       selectedHour &&
       !isSlotAvailable(selectedDate, selectedBarber, selectedHour, selectedService, appointments)
     ) {
-      if (horaInput) {
-        horaInput.value = "";
-      }
-
+      if (horaInput) horaInput.value = "";
       updateSummary();
     }
   }
