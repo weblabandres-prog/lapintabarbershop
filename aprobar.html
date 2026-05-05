@@ -754,6 +754,31 @@
       return "Pendiente";
     }
 
+    function formatDateSafe(dateString) {
+      if (!dateString) return "-";
+
+      const parts = String(dateString).split("-");
+      if (parts.length !== 3) return dateString;
+
+      const [year, month, day] = parts;
+      return `${day}/${month}/${year}`;
+    }
+
+    function formatStatusTime(time24or12) {
+      if (!time24or12) return "-";
+      if (/AM|PM/i.test(time24or12)) return time24or12;
+
+      const [hourStr, minute = "00"] = String(time24or12).split(":");
+      let hour = parseInt(hourStr, 10);
+      if (!Number.isFinite(hour)) return time24or12;
+
+      const suffix = hour >= 12 ? "PM" : "AM";
+      if (hour === 0) hour = 12;
+      else if (hour > 12) hour -= 12;
+
+      return `${hour}:${minute} ${suffix}`;
+    }
+
     function fillAppointmentData(data) {
       const nombreReal = data.nombre || "-";
       const nombreVisible = data.anonimo ? "Anónimo" : nombreReal;
@@ -763,19 +788,19 @@
       document.getElementById("cliente_telefono").textContent = data.telefono || "-";
       document.getElementById("servicio").textContent = data.servicio || "-";
       document.getElementById("barbero").textContent = data.barbero || "-";
-      document.getElementById("fecha").textContent = data.fecha || "-";
-      document.getElementById("hora").textContent = data.hora || "-";
+      document.getElementById("fecha").textContent = formatDateSafe(data.fecha);
+      document.getElementById("hora").textContent = formatStatusTime(data.hora);
       document.getElementById("duracion").textContent = data.duration ? `${data.duration} min` : "-";
       document.getElementById("metodo_pago").textContent = data.metodoPago || "No especificado";
       document.getElementById("estado_cita").textContent = getStatusLabel(data.status);
     }
 
     function buildWhatsAppApprovalMessage(data) {
-      const cliente = data.anonimo ? "cliente" : (data.nombre || "cliente");
+      const cliente = data.nombre || "cliente";
       const servicio = data.servicio || "servicio";
       const barbero = data.barbero || "barbero";
-      const fecha = data.fecha || "fecha no definida";
-      const hora = data.hora || "hora no definida";
+      const fecha = data.fecha ? formatDateSafe(data.fecha) : "fecha no definida";
+      const hora = data.hora ? formatStatusTime(data.hora) : "hora no definida";
 
       return `Hola ${cliente}, tu cita en La Pinta Barber fue aprobada ✅
 
@@ -790,11 +815,11 @@ Te esperamos. Gracias por elegir La Pinta Barber 💈`;
     }
 
     function buildWhatsAppCancelMessage(data) {
-      const cliente = data.anonimo ? "cliente" : (data.nombre || "cliente");
+      const cliente = data.nombre || "cliente";
       const servicio = data.servicio || "servicio";
       const barbero = data.barbero || "barbero";
-      const fecha = data.fecha || "fecha no definida";
-      const hora = data.hora || "hora no definida";
+      const fecha = data.fecha ? formatDateSafe(data.fecha) : "fecha no definida";
+      const hora = data.hora ? formatStatusTime(data.hora) : "hora no definida";
 
       return `Hola ${cliente}, tu cita en La Pinta Barber fue cancelada ❌
 
@@ -806,6 +831,10 @@ Hora: ${hora}
 Si deseas, puedes escribirnos para agendar una nueva cita.`;
     }
 
+    function isMobileDevice() {
+      return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+    }
+
     function redirectToWhatsApp(data, type = "approved") {
       const phone = normalizePhoneForWhatsApp(data.telefono);
       if (!phone) return false;
@@ -814,8 +843,40 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
         ? buildWhatsAppCancelMessage(data)
         : buildWhatsAppApprovalMessage(data);
 
-      const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-      window.location.href = waUrl;
+      const encodedMessage = encodeURIComponent(message);
+      const businessAppUrl = `whatsapp-business://send?phone=${phone}&text=${encodedMessage}`;
+      const regularAppUrl = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
+      const webUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMessage}`;
+
+      if (!isMobileDevice()) {
+        window.open(webUrl, "_blank");
+        return true;
+      }
+
+      let pageHidden = false;
+      const handleVisibility = () => {
+        if (document.visibilityState === "hidden") {
+          pageHidden = true;
+        }
+      };
+
+      document.addEventListener("visibilitychange", handleVisibility, { once: false });
+
+      window.location.href = businessAppUrl;
+
+      setTimeout(() => {
+        if (!pageHidden) {
+          window.location.href = regularAppUrl;
+        }
+      }, 700);
+
+      setTimeout(() => {
+        if (!pageHidden) {
+          window.location.href = webUrl;
+        }
+        document.removeEventListener("visibilitychange", handleVisibility);
+      }, 1600);
+
       return true;
     }
 
@@ -832,8 +893,9 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
     }
 
     function setApprovedButtons() {
-      acceptBtn.disabled = true;
-      acceptBtn.textContent = "Cita ya aprobada";
+      const phone = normalizePhoneForWhatsApp(currentAppointment?.telefono);
+      acceptBtn.disabled = !phone;
+      acceptBtn.textContent = phone ? "Abrir WhatsApp Business" : "Cita ya aprobada";
       cancelBtn.disabled = true;
       cancelBtn.textContent = "No cancelar";
     }
@@ -939,7 +1001,8 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
 
         await appointmentsRef.child(appointmentId).update({
           status: "approved",
-          approvedAt: approvedAt
+          approvedAt: approvedAt,
+          updatedAt: approvedAt
         });
 
         currentAppointment = {
@@ -1016,7 +1079,8 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
 
         await appointmentsRef.child(appointmentId).update({
           status: "cancelled",
-          cancelledAt: cancelledAt
+          cancelledAt: cancelledAt,
+          updatedAt: cancelledAt
         });
 
         currentAppointment = {
@@ -1046,7 +1110,19 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
       }
     }
 
-    acceptBtn.addEventListener("click", approveAppointment);
+    acceptBtn.addEventListener("click", () => {
+      if (currentAppointment?.status === "approved") {
+        const opened = redirectToWhatsApp(currentAppointment, "approved");
+
+        if (!opened) {
+          setStatus("La cita ya fue aprobada, pero el numero no es valido para WhatsApp.", "warning");
+        }
+
+        return;
+      }
+
+      approveAppointment();
+    });
     cancelBtn.addEventListener("click", cancelAppointment);
 
     loadAppointment();
