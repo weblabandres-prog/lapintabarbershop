@@ -835,21 +835,58 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
       return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
     }
 
-    function redirectToWhatsApp(data, type = "approved") {
+    function isIOSDevice() {
+      return /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+    }
+
+    function isAndroidDevice() {
+      return /Android/i.test(navigator.userAgent || "");
+    }
+
+    function isInAppBrowser() {
+      const userAgent = navigator.userAgent || "";
+      return /GSA|FBAN|FBAV|Instagram|Line|MicroMessenger|Twitter|LinkedInApp/i.test(userAgent);
+    }
+
+    function getWhatsAppLinks(data, type = "approved") {
       const phone = normalizePhoneForWhatsApp(data.telefono);
-      if (!phone) return false;
+      if (!phone) return null;
 
       const message = type === "cancelled"
         ? buildWhatsAppCancelMessage(data)
         : buildWhatsAppApprovalMessage(data);
 
       const encodedMessage = encodeURIComponent(message);
-      const businessAppUrl = `whatsapp-business://send?phone=${phone}&text=${encodedMessage}`;
       const regularAppUrl = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
+      const businessAppUrl = `whatsapp-business://send?phone=${phone}&text=${encodedMessage}`;
       const webUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMessage}`;
+
+      return {
+        phone,
+        regularAppUrl,
+        businessAppUrl,
+        webUrl
+      };
+    }
+
+    function redirectToWhatsApp(data, type = "approved") {
+      const links = getWhatsAppLinks(data, type);
+      if (!links) return false;
+
+      const { businessAppUrl, regularAppUrl, webUrl } = links;
 
       if (!isMobileDevice()) {
         window.open(webUrl, "_blank");
+        return true;
+      }
+
+      if (isIOSDevice()) {
+        window.location.href = webUrl;
+        return true;
+      }
+
+      if (!isAndroidDevice()) {
+        window.location.href = webUrl;
         return true;
       }
 
@@ -895,14 +932,15 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
     function setApprovedButtons() {
       const phone = normalizePhoneForWhatsApp(currentAppointment?.telefono);
       acceptBtn.disabled = !phone;
-      acceptBtn.textContent = phone ? "Abrir WhatsApp Business" : "Cita ya aprobada";
+      acceptBtn.textContent = phone ? (isIOSDevice() ? "Abrir WhatsApp" : "Abrir WhatsApp Business") : "Cita ya aprobada";
       cancelBtn.disabled = true;
       cancelBtn.textContent = "No cancelar";
     }
 
     function setCancelledButtons() {
-      acceptBtn.disabled = true;
-      acceptBtn.textContent = "No aprobar";
+      const phone = normalizePhoneForWhatsApp(currentAppointment?.telefono);
+      acceptBtn.disabled = !phone;
+      acceptBtn.textContent = phone ? (isIOSDevice() ? "Abrir WhatsApp" : "Abrir WhatsApp Business") : "No aprobar";
       cancelBtn.disabled = true;
       cancelBtn.textContent = "Cita cancelada";
     }
@@ -1014,17 +1052,18 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
 
         fillAppointmentData(currentAppointment);
         setApprovedButtons();
-        setStatus("✅ Cita aprobada correctamente. Redirigiendo a WhatsApp...", "success");
+        setStatus(
+          isIOSDevice() || isInAppBrowser()
+            ? "✅ Cita aprobada correctamente. Toca el botón para abrir WhatsApp."
+            : "✅ Cita aprobada correctamente. Toca el botón para abrir WhatsApp.",
+          "success"
+        );
 
         const phone = normalizePhoneForWhatsApp(currentAppointment.telefono);
         if (!phone) {
           setStatus("✅ Cita aprobada correctamente, pero el número no es válido para WhatsApp.", "warning");
           return;
         }
-
-        setTimeout(() => {
-          redirectToWhatsApp(currentAppointment, "approved");
-        }, 500);
       } catch (error) {
         console.error("Error aprobando cita:", error);
         setPendingButtons();
@@ -1092,17 +1131,18 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
 
         fillAppointmentData(currentAppointment);
         setCancelledButtons();
-        setStatus("❌ Cita cancelada correctamente. Redirigiendo a WhatsApp...", "warning");
+        setStatus(
+          isIOSDevice() || isInAppBrowser()
+            ? "❌ Cita cancelada correctamente. Toca el botón para abrir WhatsApp."
+            : "❌ Cita cancelada correctamente. Toca el botón para abrir WhatsApp.",
+          "warning"
+        );
 
         const phone = normalizePhoneForWhatsApp(currentAppointment.telefono);
         if (!phone) {
           setStatus("❌ Cita cancelada correctamente, pero el número no es válido para WhatsApp.", "warning");
           return;
         }
-
-        setTimeout(() => {
-          redirectToWhatsApp(currentAppointment, "cancelled");
-        }, 500);
       } catch (error) {
         console.error("Error cancelando cita:", error);
         setPendingButtons();
@@ -1111,11 +1151,12 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
     }
 
     acceptBtn.addEventListener("click", () => {
-      if (currentAppointment?.status === "approved") {
-        const opened = redirectToWhatsApp(currentAppointment, "approved");
+      if (currentAppointment?.status === "approved" || currentAppointment?.status === "cancelled") {
+        const type = currentAppointment.status === "cancelled" ? "cancelled" : "approved";
+        const opened = redirectToWhatsApp(currentAppointment, type);
 
         if (!opened) {
-          setStatus("La cita ya fue aprobada, pero el numero no es valido para WhatsApp.", "warning");
+          setStatus("La cita ya fue procesada, pero el número no es válido para WhatsApp.", "warning");
         }
 
         return;
