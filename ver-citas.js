@@ -128,6 +128,9 @@ function normalizeAppointment(id, app) {
     anonimo: Boolean(app?.anonimo),
     status: normalizeStatus(app?.status),
     clientToken: app?.clientToken || "",
+    approveToken: app?.approveToken || "",
+    approvedAt: app?.approvedAt || "",
+    cancelledAt: app?.cancelledAt || "",
     createdAt: app?.createdAt || "",
     updatedAt: app?.updatedAt || ""
   };
@@ -298,12 +301,31 @@ function isMine(app) {
   });
 }
 
-function canModify(app) {
+function canEditAppointment(app) {
   if (!isMine(app)) return false;
-  if (app.status !== "pending") return false;
+  if (app.status === "cancelled") return false;
   if (isPastAppointment(app.fecha, app.hora)) return false;
 
   return true;
+}
+
+function canCancelAppointment(app) {
+  if (!isMine(app)) return false;
+  if (app.status === "cancelled") return false;
+  if (isPastAppointment(app.fecha, app.hora)) return false;
+
+  return true;
+}
+
+function didAppointmentScheduleChange(originalAppointment, nextAppointment) {
+  if (!originalAppointment || !nextAppointment) return false;
+
+  const previousDate = String(originalAppointment.fecha || "");
+  const nextDate = String(nextAppointment.fecha || "");
+  const previousTime = formatTimeToInput(originalAppointment.hora || "");
+  const nextTime = formatTimeToInput(nextAppointment.hora || "");
+
+  return previousDate !== nextDate || previousTime !== nextTime;
 }
 
 function formatDateSafe(dateString) {
@@ -319,10 +341,16 @@ function formatDateSafe(dateString) {
 function buildWhatsAppNotificationMessage(type, appointment, previousAppointment = null) {
   const previousHour = previousAppointment?.hora || appointment?.hora || "Sin hora";
   const newHour = appointment?.hora || "Sin hora";
+  const previousDate = previousAppointment?.fecha || appointment?.fecha || "";
+  const newDate = appointment?.fecha || "";
+  const scheduleChanged = didAppointmentScheduleChange(previousAppointment, appointment);
+  const requiresReapproval = previousAppointment?.status === "approved" &&
+    appointment?.status === "pending" &&
+    scheduleChanged;
 
   if (type === "cancel") {
     return [
-      "Cancelé mi cita, será en otro momento.",
+      "Cancele mi cita, sera en otro momento.",
       "",
       `Nombre: ${appointment?.nombre || "Sin nombre"}`,
       `Servicio: ${appointment?.servicio || "Sin servicio"}`,
@@ -332,20 +360,31 @@ function buildWhatsAppNotificationMessage(type, appointment, previousAppointment
     ].join("\n");
   }
 
-  const actionText = `Soy la cita de las ${previousHour} y cambié para esta hora nueva: ${newHour}.`;
+  let headerText = "Hola, actualizaron los datos de una cita.";
+  let actionText = `La cita sigue para las ${newHour}.`;
+
+  if (scheduleChanged) {
+    actionText = `La cita se movio de ${formatDateSafe(previousDate)} a las ${previousHour} para ${formatDateSafe(newDate)} a las ${newHour}.`;
+  }
+
+  if (requiresReapproval) {
+    headerText = "Hola, una cita aprobada fue reprogramada y necesita nueva aprobacion.";
+  } else if (scheduleChanged) {
+    headerText = "Hola, una cita fue reprogramada.";
+  }
 
   return [
-    "Hola, su cambio fue aceptado.",
+    headerText,
     actionText,
     "",
     `Nombre: ${appointment?.nombre || "Sin nombre"}`,
     `Servicio: ${appointment?.servicio || "Sin servicio"}`,
     `Fecha: ${formatDateSafe(appointment?.fecha)}`,
     `Hora: ${appointment?.hora || "Sin hora"}`,
-    `Barbero: ${appointment?.barbero || "No definido"}`
+    `Barbero: ${appointment?.barbero || "No definido"}`,
+    `Estado actual: ${getStatusLabel(appointment?.status)}`
   ].join("\n");
 }
-
 function openWhatsAppNotification(type, appointment, previousAppointment = null) {
   const message = buildWhatsAppNotificationMessage(type, appointment, previousAppointment);
   const url = `https://wa.me/${WHATSAPP_NOTIFICATION_PHONE}?text=${encodeURIComponent(message)}`;
@@ -648,14 +687,14 @@ function groupAppointmentsByDate(appointments) {
 }
 
 function getActionsHTML(app) {
-  if (canModify(app)) {
+  if (canEditAppointment(app) || canCancelAppointment(app)) {
     return `
       <div class="client-actions-wrap">
-        <button type="button" class="client-action-btn edit-client-btn" data-id="${escapeHTML(app.id)}">
+        <button type="button" class="client-action-btn edit-client-btn" data-id="${escapeHTML(app.id)}"${canEditAppointment(app) ? "" : " disabled"}>
           Editar
         </button>
 
-        <button type="button" class="client-action-btn cancel-client-btn" data-id="${escapeHTML(app.id)}">
+        <button type="button" class="client-action-btn cancel-client-btn" data-id="${escapeHTML(app.id)}"${canCancelAppointment(app) ? "" : " disabled"}>
           Cancelar
         </button>
       </div>
@@ -869,7 +908,7 @@ function openEditModal(id) {
     return;
   }
 
-  if (!canModify(app)) {
+  if (!canEditAppointment(app)) {
     alert("No puedes modificar esta cita.");
     return;
   }
@@ -914,7 +953,7 @@ async function saveEditAppointment(event) {
     return;
   }
 
-  if (!canModify(app)) {
+  if (!canEditAppointment(app)) {
     alert("No puedes modificar esta cita.");
     return;
   }
@@ -942,6 +981,12 @@ async function saveEditAppointment(event) {
   const duration = getServiceDuration(servicio, app.duration || 60);
   const precio = getServicePrice(servicio, app.precio || 0);
   const slots = buildReservedSlots(horaInput, duration);
+  const scheduleChanged = didAppointmentScheduleChange(app, {
+    fecha,
+    hora
+  });
+  const shouldRequireReapproval = app.status === "approved" && scheduleChanged;
+  const nextStatus = shouldRequireReapproval ? "pending" : app.status;
 
   if (!slots.length) {
     alert("Selecciona una hora válida.");
@@ -965,18 +1010,30 @@ async function saveEditAppointment(event) {
     duration,
     precio,
     slots,
-    status: "pending",
+    status: nextStatus,
     updatedAt: new Date().toISOString()
   };
+
+  if (shouldRequireReapproval) {
+    updatedData.approvedAt = null;
+  }
 
   try {
     await appointmentsRef.child(id).update(updatedData);
     closeEditModal();
-    openWhatsAppNotification("edit", {
+    const finalAppointment = {
       ...app,
       ...updatedData
-    }, app);
-    alert("Tu cita fue actualizada correctamente.");
+    };
+    openWhatsAppNotification("edit", finalAppointment, app);
+
+    if (shouldRequireReapproval) {
+      alert("Tu cita fue actualizada y quedó pendiente de nueva aprobación porque cambiaste la fecha o la hora.");
+    } else if (app.status === "approved") {
+      alert("Tu cita fue actualizada y mantuvo su aprobación.");
+    } else {
+      alert("Tu cita fue actualizada correctamente.");
+    }
   } catch (error) {
     console.error(error);
     alert("No se pudo actualizar la cita.");
@@ -991,7 +1048,7 @@ async function cancelMyAppointment(id) {
     return;
   }
 
-  if (!canModify(app)) {
+  if (!canCancelAppointment(app)) {
     alert("No puedes cancelar esta cita.");
     return;
   }
