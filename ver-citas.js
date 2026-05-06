@@ -691,38 +691,29 @@ function getActionsHTML(app) {
     return `
       <div class="client-actions-wrap">
         <button type="button" class="client-action-btn edit-client-btn" data-id="${escapeHTML(app.id)}"${canEditAppointment(app) ? "" : " disabled"}>
-          <span class="action-text-desktop">Editar</span>
-          <span class="action-text-mobile">Edit</span>
+          Editar
         </button>
 
         <button type="button" class="client-action-btn cancel-client-btn" data-id="${escapeHTML(app.id)}"${canCancelAppointment(app) ? "" : " disabled"}>
-          <span class="action-text-desktop">Cancelar</span>
-          <span class="action-text-mobile">Canc</span>
+          Cancelar
         </button>
       </div>
     `;
   }
 
   if (isMine(app) && app.status === "approved") {
-    return `<span class="client-note"><span class="action-text-desktop">Tu cita aprobada</span><span class="action-text-mobile">Aprob</span></span>`;
+    return `<span class="client-note">Tu cita aprobada</span>`;
   }
 
   if (isMine(app) && app.status === "cancelled") {
-    return `<span class="client-note"><span class="action-text-desktop">Tu cita cancelada</span><span class="action-text-mobile">Cancel</span></span>`;
+    return `<span class="client-note">Tu cita cancelada</span>`;
   }
 
   if (isMine(app) && isPastAppointment(app.fecha, app.hora)) {
-    return `<span class="client-note"><span class="action-text-desktop">Tu cita ya pasó</span><span class="action-text-mobile">Pasó</span></span>`;
+    return `<span class="client-note">Tu cita ya pasó</span>`;
   }
 
-  return `<span class="client-note"><span class="action-text-desktop">Solo ver</span><span class="action-text-mobile">Ver</span></span>`;
-}
-
-function getMobileBarberLabel(barber) {
-  const value = String(barber || "").trim();
-  if (!value) return "";
-  const words = value.split(/\s+/).filter(Boolean);
-  return words[0] || value;
+  return `<span class="client-note">Solo ver</span>`;
 }
 
 function renderGroupedAppointments(groupedAppointments) {
@@ -754,12 +745,12 @@ function renderGroupedAppointments(groupedAppointments) {
           <table class="appointments-table">
             <thead>
               <tr>
-                <th><span class="responsive-full">Cliente</span><span class="responsive-short">Clte.</span></th>
-                <th><span class="responsive-full">Servicio</span><span class="responsive-short">Serv.</span></th>
-                <th><span class="responsive-full">Barbero</span><span class="responsive-short">Barb.</span></th>
+                <th>Cliente</th>
+                <th>Servicio</th>
+                <th>Barbero</th>
                 <th>Hora</th>
-                <th><span class="responsive-full">Estado</span><span class="responsive-short">Est.</span></th>
-                <th><span class="responsive-full">Acción</span><span class="responsive-short">Acc.</span></th>
+                <th>Estado</th>
+                <th>Acción</th>
               </tr>
             </thead>
 
@@ -777,20 +768,14 @@ function renderGroupedAppointments(groupedAppointments) {
                     <span class="service-name">${escapeHTML(app.servicio)}</span>
                   </td>
 
-                  <td>
-                    <span class="barber-name">
-                      <span class="responsive-full">${escapeHTML(app.barbero)}</span>
-                      <span class="responsive-short">${escapeHTML(getMobileBarberLabel(app.barbero))}</span>
-                    </span>
-                  </td>
+                  <td>${escapeHTML(app.barbero)}</td>
                   <td>${escapeHTML(app.hora)}</td>
 
-                   <td>
-                     <span class="status-pill status-${escapeHTML(app.status)}">
-                      <span class="responsive-full">${escapeHTML(getStatusLabel(app.status))}</span>
-                      <span class="responsive-short">${escapeHTML(app.status === "approved" ? "OK" : app.status === "cancelled" ? "No" : "Pend")}</span>
-                     </span>
-                   </td>
+                  <td>
+                    <span class="status-pill status-${escapeHTML(app.status)}">
+                      ${escapeHTML(getStatusLabel(app.status))}
+                    </span>
+                  </td>
 
                   <td>
                     ${getActionsHTML(app)}
@@ -799,6 +784,54 @@ function renderGroupedAppointments(groupedAppointments) {
               `).join("")}
             </tbody>
           </table>
+        </div>
+
+        <div class="mobile-table-list">
+          ${items.map(app => {
+            let mobileStatusClass = "mobile-status-pending";
+            if (app.status === "approved") mobileStatusClass = "mobile-status-approved";
+            if (app.status === "cancelled") mobileStatusClass = "mobile-status-cancelled";
+
+            return `
+              <article class="mobile-row-card">
+                <h4 class="mobile-service-title">
+                  ${escapeHTML(app.servicio)}
+                  ${isMine(app) ? `<small class="mine-badge mobile-mine-badge">Mi cita</small>` : ""}
+                </h4>
+
+                <div class="mobile-status-pill ${mobileStatusClass}">
+                  ${escapeHTML(getStatusLabel(app.status))}
+                </div>
+
+                <div class="mobile-fields">
+                  <div class="mobile-field-box">
+                    <span class="mobile-field-label">Cliente</span>
+                    <span class="mobile-field-value">${escapeHTML(app.anonimo ? "Anónimo" : app.nombre)}</span>
+                  </div>
+
+                  <div class="mobile-field-box">
+                    <span class="mobile-field-label">Barbero</span>
+                    <span class="mobile-field-value">${escapeHTML(app.barbero)}</span>
+                  </div>
+
+                  <div class="mobile-field-box">
+                    <span class="mobile-field-label">Hora</span>
+                    <span class="mobile-field-value">${escapeHTML(app.hora)}</span>
+                  </div>
+
+                  <div class="mobile-field-box">
+                    <span class="mobile-field-label">Estado</span>
+                    <span class="mobile-field-value">${escapeHTML(getStatusLabel(app.status))}</span>
+                  </div>
+
+                  <div class="mobile-field-box">
+                    <span class="mobile-field-label">Acción</span>
+                    <span class="mobile-field-value">${getActionsHTML(app)}</span>
+                  </div>
+                </div>
+              </article>
+            `;
+          }).join("")}
         </div>
       </div>
     `;
@@ -1061,18 +1094,17 @@ function createEditModal() {
         white-space: nowrap;
       }
 
-      .action-text-mobile {
-        display: none;
+      .mobile-mine-badge {
+        margin-left: 0;
+        margin-top: 8px;
+        width: fit-content;
       }
 
       .client-note {
         color: #8ea2bf;
         font-weight: 800;
         font-size: 0.85rem;
-        line-height: 1.2;
         white-space: nowrap;
-        overflow-wrap: normal;
-        word-break: keep-all;
       }
 
       .client-actions-wrap {
@@ -1223,20 +1255,6 @@ function createEditModal() {
       }
 
       @media (max-width: 640px) {
-        .mine-badge {
-          margin-left: 4px;
-          padding: 3px 6px;
-          font-size: 0.56rem;
-        }
-
-        .action-text-desktop {
-          display: none;
-        }
-
-        .action-text-mobile {
-          display: inline;
-        }
-
         .client-edit-grid {
           grid-template-columns: 1fr;
         }
@@ -1248,27 +1266,12 @@ function createEditModal() {
 
         .client-action-btn {
           width: 100%;
-          min-height: 34px;
-          padding: 6px 4px;
-          font-size: 0.58rem;
-          line-height: 1;
-          white-space: nowrap;
-          overflow-wrap: normal;
-          word-break: keep-all;
         }
 
         .client-actions-wrap {
           display: grid;
           grid-template-columns: 1fr;
           width: 100%;
-          gap: 4px;
-        }
-
-        .client-note {
-          display: inline-block;
-          width: 100%;
-          font-size: 0.58rem;
-          text-align: center;
         }
       }
     </style>
