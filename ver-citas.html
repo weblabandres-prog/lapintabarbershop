@@ -588,108 +588,18 @@
       border-color: rgba(229, 57, 53, 0.22);
     }
 
-    .mobile-table-list {
-      display: none;
-    }
-
-    .mobile-row-card {
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      background: linear-gradient(180deg, rgba(20, 29, 43, 0.96), rgba(14, 21, 32, 0.98));
-      padding: 16px;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
-    }
-
-    .mobile-card-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-
-    .mobile-card-name-wrap {
-      min-width: 0;
-      flex: 1;
-    }
-
-    .mobile-card-label {
-      display: block;
-      margin-bottom: 8px;
-      color: #8ea4c1;
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-weight: 800;
-    }
-
-    .mobile-card-name {
-      font-size: 1.08rem;
-      font-weight: 800;
-      line-height: 1.2;
-      color: #fff;
-      word-break: break-word;
-    }
-
-    .mobile-card-badge {
-      display: inline-flex;
-      width: fit-content;
-      margin-left: 0;
-      margin-top: 10px;
-    }
-
-    .mobile-card-time-wrap {
-      flex-shrink: 0;
-      text-align: right;
-    }
-
-    .mobile-card-time {
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: #fff;
-      white-space: nowrap;
-    }
-
-    .mobile-card-meta {
-      display: grid;
-      gap: 12px;
-    }
-
+    .mobile-table-list,
+    .mobile-row-card,
+    .mobile-card-top,
+    .mobile-card-name-wrap,
+    .mobile-card-label,
+    .mobile-card-name,
+    .mobile-card-badge,
+    .mobile-card-time-wrap,
+    .mobile-card-time,
+    .mobile-card-meta,
     .mobile-card-block {
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .mobile-card-status .status-pill {
-      width: 100%;
-      min-width: 0;
-      padding: 9px 10px;
-      font-size: 0.72rem;
-      letter-spacing: 0.04em;
-    }
-
-    .mobile-card-actions .client-actions-wrap {
-      display: grid;
-      gap: 8px;
-      width: 100%;
-    }
-
-    .mobile-card-actions .client-action-btn {
-      width: 100%;
-      min-height: 40px;
-      padding: 9px 12px;
-      font-size: 0.82rem;
-    }
-
-    .mobile-card-actions .client-note {
-      display: block;
-      color: #8ea2bf;
-      font-size: 0.92rem;
-      font-weight: 800;
-      line-height: 1.25;
-      white-space: normal;
+      display: none !important;
     }
 
     .empty-state {
@@ -817,28 +727,67 @@
       }
 
       .table-shell {
-        display: none;
+        display: block;
+        margin-inline: 0;
+        border-radius: 20px;
+        overflow-x: hidden;
       }
 
-      .mobile-table-list {
-        display: grid !important;
-        gap: 14px;
+      .appointments-table {
+        min-width: 100%;
+        table-layout: fixed;
       }
 
-      .mobile-row-card {
-        display: block !important;
+      .appointments-table thead th,
+      .appointments-table tbody td {
+        padding: 12px 8px;
       }
 
-      .mobile-card-top {
-        gap: 12px;
+      .appointments-table thead th {
+        font-size: 0.68rem;
+        letter-spacing: 0.04em;
       }
 
-      .mobile-card-name {
-        font-size: 1rem;
+      .appointments-table tbody td {
+        font-size: 0.88rem;
       }
 
-      .mobile-card-time {
-        font-size: 1rem;
+      .appointments-table thead th:nth-child(1),
+      .appointments-table tbody td:nth-child(1) {
+        width: 39%;
+      }
+
+      .appointments-table thead th:nth-child(2),
+      .appointments-table tbody td:nth-child(2) {
+        width: 15%;
+        text-align: center;
+      }
+
+      .appointments-table thead th:nth-child(3),
+      .appointments-table tbody td:nth-child(3) {
+        width: 18%;
+        text-align: center;
+      }
+
+      .appointments-table thead th:nth-child(4),
+      .appointments-table tbody td:nth-child(4) {
+        width: 28%;
+        text-align: center;
+      }
+
+      .client-name {
+        display: block;
+        font-size: 0.94rem;
+        line-height: 1.22;
+        word-break: break-word;
+      }
+
+      .status-pill {
+        min-width: 0;
+        width: 100%;
+        padding: 7px 6px;
+        font-size: 0.64rem;
+        letter-spacing: 0.02em;
       }
 
       .footer-content {
@@ -1002,7 +951,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="ver-citas.js?v=public-mobile-cards-20260506"></script>
+  <script src="ver-citas.js?v=public-mobile-table-optimized-20260506"></script>
 
   <script>
     const menuToggle = document.getElementById("menuToggle");

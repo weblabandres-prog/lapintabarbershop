@@ -575,6 +575,15 @@ function getStatusLabel(status) {
   return "Pendiente";
 }
 
+function getDisplayStatusLabel(status) {
+  const compactMobile = typeof window !== "undefined" && window.innerWidth <= 640;
+  if (!compactMobile) return getStatusLabel(status);
+
+  if (status === "approved") return "OK";
+  if (status === "cancelled") return "No";
+  return "Pend.";
+}
+
 function getRelativeDateLabel(dateString) {
   const today = new Date();
   const todayClean = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -687,33 +696,38 @@ function groupAppointmentsByDate(appointments) {
 }
 
 function getActionsHTML(app) {
+  const compactMobile = typeof window !== "undefined" && window.innerWidth <= 640;
+  const editLabel = compactMobile ? "Edit." : "Editar";
+  const cancelLabel = compactMobile ? "Canc." : "Cancelar";
+  const viewLabel = compactMobile ? "Ver" : "Solo ver";
+
   if (canEditAppointment(app) || canCancelAppointment(app)) {
     return `
       <div class="client-actions-wrap">
         <button type="button" class="client-action-btn edit-client-btn" data-id="${escapeHTML(app.id)}"${canEditAppointment(app) ? "" : " disabled"}>
-          Editar
+          ${editLabel}
         </button>
 
         <button type="button" class="client-action-btn cancel-client-btn" data-id="${escapeHTML(app.id)}"${canCancelAppointment(app) ? "" : " disabled"}>
-          Cancelar
+          ${cancelLabel}
         </button>
       </div>
     `;
   }
 
   if (isMine(app) && app.status === "approved") {
-    return `<span class="client-note">Tu cita aprobada</span>`;
+    return `<span class="client-note">${viewLabel}</span>`;
   }
 
   if (isMine(app) && app.status === "cancelled") {
-    return `<span class="client-note">Tu cita cancelada</span>`;
+    return `<span class="client-note">${viewLabel}</span>`;
   }
 
   if (isMine(app) && isPastAppointment(app.fecha, app.hora)) {
-    return `<span class="client-note">Tu cita ya pasó</span>`;
+    return `<span class="client-note">${viewLabel}</span>`;
   }
 
-  return `<span class="client-note">Solo ver</span>`;
+  return `<span class="client-note">${viewLabel}</span>`;
 }
 
 function renderGroupedAppointments(groupedAppointments) {
@@ -766,7 +780,7 @@ function renderGroupedAppointments(groupedAppointments) {
 
                   <td>
                     <span class="status-pill status-${escapeHTML(app.status)}">
-                      ${escapeHTML(getStatusLabel(app.status))}
+                      ${escapeHTML(getDisplayStatusLabel(app.status))}
                     </span>
                   </td>
 
