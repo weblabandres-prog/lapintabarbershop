@@ -742,45 +742,49 @@
       .appointments-table tbody td {
         font-size: 0.76rem;
         line-height: 1.18;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        overflow-wrap: normal;
+        word-break: normal;
+        vertical-align: top;
       }
 
       .appointments-table thead th:nth-child(1),
       .appointments-table tbody td:nth-child(1) {
-        width: 22%;
+        width: 20%;
       }
 
       .appointments-table thead th:nth-child(2),
       .appointments-table tbody td:nth-child(2) {
-        width: 20%;
+        width: 24%;
       }
 
       .appointments-table thead th:nth-child(3),
       .appointments-table tbody td:nth-child(3) {
-        width: 20%;
+        width: 16%;
       }
 
       .appointments-table thead th:nth-child(4),
       .appointments-table tbody td:nth-child(4) {
-        width: 13%;
+        width: 12%;
       }
 
       .appointments-table thead th:nth-child(5),
       .appointments-table tbody td:nth-child(5) {
-        width: 15%;
+        width: 14%;
       }
 
       .appointments-table thead th:nth-child(6),
       .appointments-table tbody td:nth-child(6) {
-        width: 10%;
+        width: 14%;
       }
 
       .client-name,
-      .service-name {
+      .service-name,
+      .barber-name {
         display: block;
         font-size: 0.76rem;
         line-height: 1.18;
+        overflow-wrap: anywhere;
+        word-break: break-word;
       }
 
       .status-pill {
@@ -790,6 +794,9 @@
         font-size: 0.58rem;
         letter-spacing: 0.03em;
         text-align: center;
+        white-space: nowrap;
+        overflow-wrap: normal;
+        word-break: keep-all;
       }
 
       .responsive-full {

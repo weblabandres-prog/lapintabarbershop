@@ -692,23 +692,23 @@ function getActionsHTML(app) {
       <div class="client-actions-wrap">
         <button type="button" class="client-action-btn edit-client-btn" data-id="${escapeHTML(app.id)}"${canEditAppointment(app) ? "" : " disabled"}>
           <span class="action-text-desktop">Editar</span>
-          <span class="action-text-mobile">Edit.</span>
+          <span class="action-text-mobile">Edit</span>
         </button>
 
         <button type="button" class="client-action-btn cancel-client-btn" data-id="${escapeHTML(app.id)}"${canCancelAppointment(app) ? "" : " disabled"}>
           <span class="action-text-desktop">Cancelar</span>
-          <span class="action-text-mobile">Canc.</span>
+          <span class="action-text-mobile">Canc</span>
         </button>
       </div>
     `;
   }
 
   if (isMine(app) && app.status === "approved") {
-    return `<span class="client-note"><span class="action-text-desktop">Tu cita aprobada</span><span class="action-text-mobile">Aprob.</span></span>`;
+    return `<span class="client-note"><span class="action-text-desktop">Tu cita aprobada</span><span class="action-text-mobile">Aprob</span></span>`;
   }
 
   if (isMine(app) && app.status === "cancelled") {
-    return `<span class="client-note"><span class="action-text-desktop">Tu cita cancelada</span><span class="action-text-mobile">Cancel.</span></span>`;
+    return `<span class="client-note"><span class="action-text-desktop">Tu cita cancelada</span><span class="action-text-mobile">Cancel</span></span>`;
   }
 
   if (isMine(app) && isPastAppointment(app.fecha, app.hora)) {
@@ -716,6 +716,13 @@ function getActionsHTML(app) {
   }
 
   return `<span class="client-note"><span class="action-text-desktop">Solo ver</span><span class="action-text-mobile">Ver</span></span>`;
+}
+
+function getMobileBarberLabel(barber) {
+  const value = String(barber || "").trim();
+  if (!value) return "";
+  const words = value.split(/\s+/).filter(Boolean);
+  return words[0] || value;
 }
 
 function renderGroupedAppointments(groupedAppointments) {
@@ -770,13 +777,18 @@ function renderGroupedAppointments(groupedAppointments) {
                     <span class="service-name">${escapeHTML(app.servicio)}</span>
                   </td>
 
-                  <td>${escapeHTML(app.barbero)}</td>
+                  <td>
+                    <span class="barber-name">
+                      <span class="responsive-full">${escapeHTML(app.barbero)}</span>
+                      <span class="responsive-short">${escapeHTML(getMobileBarberLabel(app.barbero))}</span>
+                    </span>
+                  </td>
                   <td>${escapeHTML(app.hora)}</td>
 
                    <td>
                      <span class="status-pill status-${escapeHTML(app.status)}">
                       <span class="responsive-full">${escapeHTML(getStatusLabel(app.status))}</span>
-                      <span class="responsive-short">${escapeHTML(app.status === "approved" ? "Aprob." : app.status === "cancelled" ? "Canc." : "Pend.")}</span>
+                      <span class="responsive-short">${escapeHTML(app.status === "approved" ? "OK" : app.status === "cancelled" ? "No" : "Pend")}</span>
                      </span>
                    </td>
 
@@ -1058,6 +1070,9 @@ function createEditModal() {
         font-weight: 800;
         font-size: 0.85rem;
         line-height: 1.2;
+        white-space: nowrap;
+        overflow-wrap: normal;
+        word-break: keep-all;
       }
 
       .client-actions-wrap {
@@ -1235,20 +1250,24 @@ function createEditModal() {
           width: 100%;
           min-height: 34px;
           padding: 6px 4px;
-          font-size: 0.62rem;
+          font-size: 0.58rem;
+          line-height: 1;
+          white-space: nowrap;
+          overflow-wrap: normal;
+          word-break: keep-all;
         }
 
         .client-actions-wrap {
           display: grid;
           grid-template-columns: 1fr;
           width: 100%;
-          gap: 6px;
+          gap: 4px;
         }
 
         .client-note {
           display: inline-block;
           width: 100%;
-          font-size: 0.64rem;
+          font-size: 0.58rem;
           text-align: center;
         }
       }
