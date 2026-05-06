@@ -1200,6 +1200,38 @@ function createEditModal() {
       }
 
       @media (max-width: 640px) {
+        .appointments-table .mine-badge {
+          display: inline-flex;
+          width: fit-content;
+          margin-left: 0;
+          margin-top: 6px;
+          padding: 4px 8px;
+          font-size: 0.64rem;
+        }
+
+        .appointments-table .client-note {
+          display: block;
+          font-size: 0.72rem;
+          line-height: 1.2;
+          white-space: normal;
+          word-break: break-word;
+        }
+
+        .appointments-table .client-actions-wrap {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 6px;
+          width: 100%;
+        }
+
+        .appointments-table .client-action-btn {
+          min-height: 34px;
+          width: 100%;
+          padding: 7px 6px;
+          font-size: 0.7rem;
+          line-height: 1.1;
+        }
+
         .client-edit-grid {
           grid-template-columns: 1fr;
         }

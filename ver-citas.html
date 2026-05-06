@@ -724,8 +724,63 @@
       }
 
       .table-shell {
-        margin-inline: -6px;
+        margin-inline: 0;
         border-radius: 20px;
+        overflow-x: hidden;
+      }
+
+      .appointments-table {
+        min-width: 100%;
+        table-layout: fixed;
+      }
+
+      .appointments-table thead th,
+      .appointments-table tbody td {
+        padding: 12px 10px;
+      }
+
+      .appointments-table thead th {
+        font-size: 0.72rem;
+        letter-spacing: 0.05em;
+      }
+
+      .appointments-table tbody td {
+        font-size: 0.9rem;
+      }
+
+      .appointments-table thead th:nth-child(1),
+      .appointments-table tbody td:nth-child(1) {
+        width: 41%;
+      }
+
+      .appointments-table thead th:nth-child(2),
+      .appointments-table tbody td:nth-child(2) {
+        width: 19%;
+      }
+
+      .appointments-table thead th:nth-child(3),
+      .appointments-table tbody td:nth-child(3) {
+        width: 22%;
+      }
+
+      .appointments-table thead th:nth-child(4),
+      .appointments-table tbody td:nth-child(4) {
+        width: 18%;
+      }
+
+      .client-name {
+        display: block;
+        font-size: 0.94rem;
+        line-height: 1.25;
+        word-break: break-word;
+      }
+
+      .status-pill {
+        min-width: 0;
+        width: 100%;
+        padding: 8px 6px;
+        font-size: 0.66rem;
+        letter-spacing: 0.03em;
       }
 
       .footer-content {
@@ -889,7 +944,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="ver-citas.js?v=public-hide-barber-service-20260506"></script>
+  <script src="ver-citas.js?v=public-no-scroll-mobile-20260506"></script>
 
   <script>
     const menuToggle = document.getElementById("menuToggle");
