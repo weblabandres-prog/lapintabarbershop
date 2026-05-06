@@ -678,9 +678,6 @@
     </section>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyD4WCEUcsgfjK_LgNkY5rexqvPMxQ-RdEE",
@@ -693,13 +690,6 @@
       measurementId: "G-QHN4PX48D4"
     };
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-
-    const db = firebase.database();
-    const appointmentsRef = db.ref("appointments");
-
     const params = new URLSearchParams(window.location.search);
     const appointmentId = params.get("id");
     const token = params.get("token");
@@ -711,6 +701,7 @@
     const cancelBtn = document.getElementById("cancelBtn");
 
     let currentAppointment = null;
+    let bootResolved = false;
 
     function setStatus(message, type = "loading") {
       statusBox.className = "status-box";
@@ -726,6 +717,58 @@
       }
 
       statusBox.textContent = message;
+    }
+
+    function resolveBootState() {
+      bootResolved = true;
+    }
+
+    function showLoadFailure(message) {
+      resolveBootState();
+      setStatus(message, "error");
+      infoTable.classList.remove("hidden");
+      actionsBox.classList.remove("hidden");
+      acceptBtn.disabled = true;
+      cancelBtn.disabled = true;
+      acceptBtn.textContent = "Abrir en Safari o Chrome";
+      cancelBtn.textContent = "Enlace no disponible";
+    }
+
+    function getAppointmentApiUrl(id) {
+      const baseUrl = String(firebaseConfig.databaseURL || "").replace(/\/$/, "");
+      return `${baseUrl}/appointments/${encodeURIComponent(id)}.json`;
+    }
+
+    async function readAppointment(id) {
+      const response = await fetch(getAppointmentApiUrl(id), {
+        method: "GET",
+        cache: "no-store",
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudo consultar la cita.");
+      }
+
+      return response.json();
+    }
+
+    async function patchAppointment(id, payload) {
+      const response = await fetch(getAppointmentApiUrl(id), {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudo actualizar la cita.");
+      }
+
+      return response.json();
     }
 
     function normalizePhoneForWhatsApp(phone) {
@@ -950,22 +993,23 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
 
     async function loadAppointment() {
       if (!appointmentId || !token) {
-        setStatus("Enlace inválido. Faltan datos para localizar la cita.", "error");
+        resolveBootState();
+        setStatus("Enlace invalido. Faltan datos para localizar la cita.", "error");
         return;
       }
 
       try {
-        const snapshot = await appointmentsRef.child(appointmentId).once("value");
+        const appointment = await readAppointment(appointmentId);
 
-        if (!snapshot.exists()) {
+        if (!appointment) {
+          resolveBootState();
           setStatus("La cita no existe o fue eliminada.", "error");
           return;
         }
 
-        const appointment = snapshot.val();
-
         if (!appointment.approveToken || appointment.approveToken !== token) {
-          setStatus("Token inválido. Este enlace no es válido para gestionar la cita.", "error");
+          resolveBootState();
+          setStatus("Token invalido. Este enlace no es valido para gestionar la cita.", "error");
           return;
         }
 
@@ -979,22 +1023,26 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
         actionsBox.classList.remove("hidden");
 
         if (appointment.status === "approved") {
+          resolveBootState();
           setApprovedButtons();
           setStatus("Esta cita ya fue aprobada anteriormente.", "success");
           return;
         }
 
         if (appointment.status === "cancelled") {
+          resolveBootState();
           setCancelledButtons();
           setStatus("Esta cita ya fue cancelada.", "warning");
           return;
         }
 
+        resolveBootState();
         setPendingButtons();
         setStatus("Cita encontrada. Puedes aprobarla o cancelarla.", "loading");
       } catch (error) {
+        resolveBootState();
         console.error("Error cargando cita:", error);
-        setStatus("Ocurrió un error al cargar la cita: " + error.message, "error");
+        setStatus("Ocurrio un error al cargar la cita: " + error.message, "error");
       }
     }
 
@@ -1008,17 +1056,15 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
       acceptBtn.textContent = "Procesando...";
 
       try {
-        const snapshot = await appointmentsRef.child(appointmentId).once("value");
+        const appointment = await readAppointment(appointmentId);
 
-        if (!snapshot.exists()) {
+        if (!appointment) {
           setStatus("La cita ya no existe.", "error");
           return;
         }
 
-        const appointment = snapshot.val();
-
         if (!appointment.approveToken || appointment.approveToken !== token) {
-          setStatus("Token inválido. No se puede aprobar esta cita.", "error");
+          setStatus("Token invalido. No se puede aprobar esta cita.", "error");
           return;
         }
 
@@ -1040,7 +1086,7 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
 
         const approvedAt = new Date().toISOString();
 
-        await appointmentsRef.child(appointmentId).update({
+        await patchAppointment(appointmentId, {
           status: "approved",
           approvedAt: approvedAt,
           updatedAt: approvedAt
@@ -1087,17 +1133,15 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
       cancelBtn.textContent = "Procesando...";
 
       try {
-        const snapshot = await appointmentsRef.child(appointmentId).once("value");
+        const appointment = await readAppointment(appointmentId);
 
-        if (!snapshot.exists()) {
+        if (!appointment) {
           setStatus("La cita ya no existe.", "error");
           return;
         }
 
-        const appointment = snapshot.val();
-
         if (!appointment.approveToken || appointment.approveToken !== token) {
-          setStatus("Token inválido. No se puede cancelar esta cita.", "error");
+          setStatus("Token invalido. No se puede cancelar esta cita.", "error");
           return;
         }
 
@@ -1119,7 +1163,7 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
 
         const cancelledAt = new Date().toISOString();
 
-        await appointmentsRef.child(appointmentId).update({
+        await patchAppointment(appointmentId, {
           status: "cancelled",
           cancelledAt: cancelledAt,
           updatedAt: cancelledAt
@@ -1168,6 +1212,24 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
       approveAppointment();
     });
     cancelBtn.addEventListener("click", cancelAppointment);
+
+    window.addEventListener("error", () => {
+      if (!bootResolved) {
+        showLoadFailure("No se pudo cargar la validacion de la cita en este navegador. Abre el enlace desde Safari o Chrome.");
+      }
+    });
+
+    window.addEventListener("unhandledrejection", () => {
+      if (!bootResolved) {
+        showLoadFailure("No se pudo cargar la validacion de la cita en este navegador. Abre el enlace desde Safari o Chrome.");
+      }
+    });
+
+    setTimeout(() => {
+      if (!bootResolved) {
+        showLoadFailure("La pagina tardo demasiado en responder. Abre el enlace desde Safari o Chrome e intentalo otra vez.");
+      }
+    }, 5000);
 
     loadAppointment();
   </script>
