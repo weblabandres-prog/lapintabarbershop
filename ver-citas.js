@@ -691,29 +691,31 @@ function getActionsHTML(app) {
     return `
       <div class="client-actions-wrap">
         <button type="button" class="client-action-btn edit-client-btn" data-id="${escapeHTML(app.id)}"${canEditAppointment(app) ? "" : " disabled"}>
-          Editar
+          <span class="action-text-desktop">Editar</span>
+          <span class="action-text-mobile">Edit.</span>
         </button>
 
         <button type="button" class="client-action-btn cancel-client-btn" data-id="${escapeHTML(app.id)}"${canCancelAppointment(app) ? "" : " disabled"}>
-          Cancelar
+          <span class="action-text-desktop">Cancelar</span>
+          <span class="action-text-mobile">Canc.</span>
         </button>
       </div>
     `;
   }
 
   if (isMine(app) && app.status === "approved") {
-    return `<span class="client-note">Tu cita aprobada</span>`;
+    return `<span class="client-note"><span class="action-text-desktop">Tu cita aprobada</span><span class="action-text-mobile">Aprob.</span></span>`;
   }
 
   if (isMine(app) && app.status === "cancelled") {
-    return `<span class="client-note">Tu cita cancelada</span>`;
+    return `<span class="client-note"><span class="action-text-desktop">Tu cita cancelada</span><span class="action-text-mobile">Cancel.</span></span>`;
   }
 
   if (isMine(app) && isPastAppointment(app.fecha, app.hora)) {
-    return `<span class="client-note">Tu cita ya pasó</span>`;
+    return `<span class="client-note"><span class="action-text-desktop">Tu cita ya pasó</span><span class="action-text-mobile">Pasó</span></span>`;
   }
 
-  return `<span class="client-note">Solo ver</span>`;
+  return `<span class="client-note"><span class="action-text-desktop">Solo ver</span><span class="action-text-mobile">Ver</span></span>`;
 }
 
 function renderGroupedAppointments(groupedAppointments) {
@@ -745,12 +747,12 @@ function renderGroupedAppointments(groupedAppointments) {
           <table class="appointments-table">
             <thead>
               <tr>
-                <th>Cliente</th>
-                <th>Servicio</th>
-                <th>Barbero</th>
+                <th><span class="responsive-full">Cliente</span><span class="responsive-short">Clte.</span></th>
+                <th><span class="responsive-full">Servicio</span><span class="responsive-short">Serv.</span></th>
+                <th><span class="responsive-full">Barbero</span><span class="responsive-short">Barb.</span></th>
                 <th>Hora</th>
-                <th>Estado</th>
-                <th>Acción</th>
+                <th><span class="responsive-full">Estado</span><span class="responsive-short">Est.</span></th>
+                <th><span class="responsive-full">Acción</span><span class="responsive-short">Acc.</span></th>
               </tr>
             </thead>
 
@@ -771,11 +773,12 @@ function renderGroupedAppointments(groupedAppointments) {
                   <td>${escapeHTML(app.barbero)}</td>
                   <td>${escapeHTML(app.hora)}</td>
 
-                  <td>
-                    <span class="status-pill status-${escapeHTML(app.status)}">
-                      ${escapeHTML(getStatusLabel(app.status))}
-                    </span>
-                  </td>
+                   <td>
+                     <span class="status-pill status-${escapeHTML(app.status)}">
+                      <span class="responsive-full">${escapeHTML(getStatusLabel(app.status))}</span>
+                      <span class="responsive-short">${escapeHTML(app.status === "approved" ? "Aprob." : app.status === "cancelled" ? "Canc." : "Pend.")}</span>
+                     </span>
+                   </td>
 
                   <td>
                     ${getActionsHTML(app)}
@@ -1046,17 +1049,15 @@ function createEditModal() {
         white-space: nowrap;
       }
 
-      .mobile-mine-badge {
-        margin-left: 0;
-        margin-top: 8px;
-        width: fit-content;
+      .action-text-mobile {
+        display: none;
       }
 
       .client-note {
         color: #8ea2bf;
         font-weight: 800;
         font-size: 0.85rem;
-        white-space: nowrap;
+        line-height: 1.2;
       }
 
       .client-actions-wrap {
@@ -1207,6 +1208,20 @@ function createEditModal() {
       }
 
       @media (max-width: 640px) {
+        .mine-badge {
+          margin-left: 4px;
+          padding: 3px 6px;
+          font-size: 0.56rem;
+        }
+
+        .action-text-desktop {
+          display: none;
+        }
+
+        .action-text-mobile {
+          display: inline;
+        }
+
         .client-edit-grid {
           grid-template-columns: 1fr;
         }
@@ -1218,12 +1233,23 @@ function createEditModal() {
 
         .client-action-btn {
           width: 100%;
+          min-height: 34px;
+          padding: 6px 4px;
+          font-size: 0.62rem;
         }
 
         .client-actions-wrap {
           display: grid;
           grid-template-columns: 1fr;
           width: 100%;
+          gap: 6px;
+        }
+
+        .client-note {
+          display: inline-block;
+          width: 100%;
+          font-size: 0.64rem;
+          text-align: center;
         }
       }
     </style>
