@@ -656,7 +656,6 @@ function getFilteredAppointments() {
           app.nombre,
           publicName,
           app.telefono,
-          app.servicio,
           app.fecha,
           app.hora
         ]
@@ -747,7 +746,6 @@ function renderGroupedAppointments(groupedAppointments) {
             <thead>
               <tr>
                 <th>Cliente</th>
-                <th>Servicio</th>
                 <th>Hora</th>
                 <th>Estado</th>
                 <th>Acción</th>
@@ -762,10 +760,6 @@ function renderGroupedAppointments(groupedAppointments) {
                       ${escapeHTML(app.anonimo ? "Anónimo" : app.nombre)}
                       ${isMine(app) ? `<small class="mine-badge">Mi cita</small>` : ""}
                     </span>
-                  </td>
-
-                  <td>
-                    <span class="service-name">${escapeHTML(app.servicio)}</span>
                   </td>
 
                   <td>${escapeHTML(app.hora)}</td>
