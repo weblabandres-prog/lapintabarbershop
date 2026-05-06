@@ -648,10 +648,10 @@ function updateStats(appointments) {
 }
 
 function getFilteredAppointments() {
-  const search = searchInput.value.trim().toLowerCase();
-  const status = filterStatus.value;
+  const search = searchInput?.value?.trim().toLowerCase() || "";
+  const status = filterStatus?.value || "all";
   const barber = filterBarber?.value || "all";
-  const date = filterDate.value;
+  const date = filterDate?.value || "";
 
   return allAppointments
     .filter(app => {
@@ -865,10 +865,10 @@ function listenServices() {
 }
 
 function clearFilters() {
-  searchInput.value = "";
-  filterStatus.value = "all";
+  if (searchInput) searchInput.value = "";
+  if (filterStatus) filterStatus.value = "all";
   if (filterBarber) filterBarber.value = "all";
-  filterDate.value = "";
+  if (filterDate) filterDate.value = "";
   renderAll();
 }
 
@@ -1383,13 +1383,21 @@ function createEditModal() {
   });
 }
 
-searchInput.addEventListener("input", renderAll);
-filterStatus.addEventListener("change", renderAll);
+if (searchInput) {
+  searchInput.addEventListener("input", renderAll);
+}
+if (filterStatus) {
+  filterStatus.addEventListener("change", renderAll);
+}
 if (filterBarber) {
   filterBarber.addEventListener("change", renderAll);
 }
-filterDate.addEventListener("change", renderAll);
-clearFiltersBtn.addEventListener("click", clearFilters);
+if (filterDate) {
+  filterDate.addEventListener("change", renderAll);
+}
+if (clearFiltersBtn) {
+  clearFiltersBtn.addEventListener("click", clearFilters);
+}
 
 refreshMyAppointmentData();
 createEditModal();
