@@ -785,54 +785,6 @@ function renderGroupedAppointments(groupedAppointments) {
             </tbody>
           </table>
         </div>
-
-        <div class="mobile-table-list">
-          ${items.map(app => {
-            let mobileStatusClass = "mobile-status-pending";
-            if (app.status === "approved") mobileStatusClass = "mobile-status-approved";
-            if (app.status === "cancelled") mobileStatusClass = "mobile-status-cancelled";
-
-            return `
-              <article class="mobile-row-card">
-                <h4 class="mobile-service-title">
-                  ${escapeHTML(app.servicio)}
-                  ${isMine(app) ? `<small class="mine-badge mobile-mine-badge">Mi cita</small>` : ""}
-                </h4>
-
-                <div class="mobile-status-pill ${mobileStatusClass}">
-                  ${escapeHTML(getStatusLabel(app.status))}
-                </div>
-
-                <div class="mobile-fields">
-                  <div class="mobile-field-box">
-                    <span class="mobile-field-label">Cliente</span>
-                    <span class="mobile-field-value">${escapeHTML(app.anonimo ? "Anónimo" : app.nombre)}</span>
-                  </div>
-
-                  <div class="mobile-field-box">
-                    <span class="mobile-field-label">Barbero</span>
-                    <span class="mobile-field-value">${escapeHTML(app.barbero)}</span>
-                  </div>
-
-                  <div class="mobile-field-box">
-                    <span class="mobile-field-label">Hora</span>
-                    <span class="mobile-field-value">${escapeHTML(app.hora)}</span>
-                  </div>
-
-                  <div class="mobile-field-box">
-                    <span class="mobile-field-label">Estado</span>
-                    <span class="mobile-field-value">${escapeHTML(getStatusLabel(app.status))}</span>
-                  </div>
-
-                  <div class="mobile-field-box">
-                    <span class="mobile-field-label">Acción</span>
-                    <span class="mobile-field-value">${getActionsHTML(app)}</span>
-                  </div>
-                </div>
-              </article>
-            `;
-          }).join("")}
-        </div>
       </div>
     `;
   });

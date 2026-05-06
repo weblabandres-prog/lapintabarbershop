@@ -487,7 +487,11 @@
     }
 
     .table-shell {
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(143, 192, 255, 0.38) rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 22px;
       background: linear-gradient(180deg, #0f1722, #0b1320);
@@ -496,7 +500,22 @@
 
     .appointments-table {
       width: 100%;
+      min-width: 980px;
       border-collapse: collapse;
+    }
+
+    .table-shell::-webkit-scrollbar {
+      height: 10px;
+    }
+
+    .table-shell::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+      border-radius: 999px;
+    }
+
+    .table-shell::-webkit-scrollbar-thumb {
+      background: rgba(143, 192, 255, 0.38);
+      border-radius: 999px;
     }
 
     .appointments-table thead th {
@@ -567,92 +586,6 @@
       background: var(--danger-bg);
       color: var(--danger);
       border-color: rgba(229, 57, 53, 0.22);
-    }
-
-    .mobile-table-list {
-      display: none;
-      gap: 16px;
-    }
-
-    .mobile-row-card {
-      background: linear-gradient(180deg, #121c2b, #0f1724);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 20px;
-      box-shadow: 0 14px 35px rgba(0,0,0,0.22);
-    }
-
-    .mobile-service-title {
-      font-size: 1.9rem;
-      font-weight: 800;
-      color: #ffffff;
-      line-height: 1.2;
-      margin-bottom: 16px;
-    }
-
-    .mobile-status-pill {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 54px;
-      border-radius: 999px;
-      font-size: 0.95rem;
-      font-weight: 900;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 18px;
-      border: 1px solid transparent;
-    }
-
-    .mobile-status-approved {
-      background: rgba(62, 207, 142, 0.12);
-      color: #8ff0bc;
-      border-color: rgba(62, 207, 142, 0.25);
-    }
-
-    .mobile-status-pending {
-      background: rgba(245, 158, 11, 0.12);
-      color: #ffc76b;
-      border-color: rgba(245, 158, 11, 0.25);
-    }
-
-    .mobile-status-cancelled {
-      background: rgba(229, 57, 53, 0.12);
-      color: #ff9e99;
-      border-color: rgba(229, 57, 53, 0.25);
-    }
-
-    .mobile-fields {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-
-    .mobile-field-box {
-      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02));
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 16px 18px;
-    }
-
-    .mobile-field-label {
-      display: block;
-      color: #8fb2e7;
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .mobile-field-value {
-      display: block;
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: 800;
-      line-height: 1.35;
-      word-break: break-word;
     }
 
     .empty-state {
@@ -780,20 +713,13 @@
       }
 
       .table-shell {
-        display: none;
-      }
-
-      .mobile-table-list {
-        display: grid;
+        margin-inline: -6px;
+        border-radius: 20px;
       }
 
       .footer-content {
         flex-direction: column;
         text-align: center;
-      }
-
-      .mobile-service-title {
-        font-size: 1rem;
       }
     }
   </style>
