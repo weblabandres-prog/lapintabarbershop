@@ -1307,7 +1307,7 @@ if (bookingForm) {
       updateSummary();
       renderHours();
 
-      window.location.href = "ver-citas.html";
+      window.location.href = "ver-citas.html?v=public-agenda-no-filters-20260506d";
     } catch (firebaseError) {
       console.error("Error guardando cita:", firebaseError);
       alert("No se pudo guardar la cita en Firebase.");

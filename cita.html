@@ -1001,7 +1001,7 @@
       </a>
 
       <div class="topbar-actions">
-        <a href="ver-citas.html" class="back-btn view-cita-btn">Ver mi cita</a>
+        <a href="ver-citas.html?v=public-agenda-no-filters-20260506d" class="back-btn view-cita-btn">Ver mi cita</a>
         <a href="index.html" class="back-btn" aria-label="Volver al inicio">&larr; Volver</a>
       </div>
     </div>
@@ -2537,7 +2537,7 @@
           updateSummary();
           renderHours();
 
-          window.location.href = "ver-citas.html";
+          window.location.href = "ver-citas.html?v=public-agenda-no-filters-20260506d";
         } catch (firebaseError) {
           console.error("Error guardando cita:", firebaseError);
           alert("No se pudo guardar la cita en Firebase.");

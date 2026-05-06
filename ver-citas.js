@@ -19,12 +19,6 @@ const db = firebase.database();
 const appointmentsRef = db.ref("appointments");
 const servicesRef = db.ref("services");
 
-const searchInput = document.getElementById("searchInput");
-const filterStatus = document.getElementById("filterStatus");
-const filterBarber = document.getElementById("filterBarber");
-const filterDate = document.getElementById("filterDate");
-const clearFiltersBtn = document.getElementById("clearFiltersBtn");
-
 const appointmentsView = document.getElementById("appointmentsView");
 const resultsInfo = document.getElementById("resultsInfo");
 
@@ -43,6 +37,50 @@ let servicesData = {};
 let myAppointmentId = localStorage.getItem(STORAGE_APPOINTMENT_ID);
 let myClientToken = localStorage.getItem(STORAGE_CLIENT_TOKEN);
 let myAppointments = [];
+
+function removeLegacyFiltersUI() {
+  if (!document.getElementById("legacy-filters-hide-style")) {
+    const style = document.createElement("style");
+    style.id = "legacy-filters-hide-style";
+    style.textContent = `
+      .filters-section,
+      .filters-box,
+      #searchInput,
+      #filterStatus,
+      #filterBarber,
+      #filterDate,
+      #clearFiltersBtn {
+        display: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  document.querySelectorAll(".filters-section").forEach(section => section.remove());
+
+  [
+    "searchInput",
+    "filterStatus",
+    "filterBarber",
+    "filterDate",
+    "clearFiltersBtn"
+  ].forEach(id => {
+    const element = document.getElementById(id);
+    if (!element) return;
+
+    const removableParent =
+      element.closest(".filters-section") ||
+      element.closest(".filters-box") ||
+      element.closest(".form-group");
+
+    if (removableParent) {
+      removableParent.remove();
+      return;
+    }
+
+    element.remove();
+  });
+}
 
 function refreshMyAppointmentData() {
   myAppointmentId = localStorage.getItem(STORAGE_APPOINTMENT_ID);
@@ -618,28 +656,6 @@ function getRelativeDateSubtext(dateString) {
   return `Fecha: ${formatDateSafe(dateString)}`;
 }
 
-function fillBarberFilter(appointments) {
-  if (!filterBarber) return;
-
-  const currentValue = filterBarber.value;
-
-  const barbers = [...new Set(
-    appointments
-      .map(app => app.barbero)
-      .filter(Boolean)
-  )].sort((a, b) => a.localeCompare(b, "es"));
-
-  filterBarber.innerHTML =
-    `<option value="all">Todos</option>` +
-    barbers.map(barber => `<option value="${escapeHTML(barber)}">${escapeHTML(barber)}</option>`).join("");
-
-  if (barbers.includes(currentValue)) {
-    filterBarber.value = currentValue;
-  } else {
-    filterBarber.value = "all";
-  }
-}
-
 function updateStats(appointments) {
   statTotal.textContent = appointments.length;
   statApproved.textContent = appointments.filter(app => app.status === "approved").length;
@@ -648,35 +664,8 @@ function updateStats(appointments) {
 }
 
 function getFilteredAppointments() {
-  const search = searchInput?.value?.trim().toLowerCase() || "";
-  const status = filterStatus?.value || "all";
-  const barber = filterBarber?.value || "all";
-  const date = filterDate?.value || "";
-
   return allAppointments
-    .filter(app => {
-      if (app.status === "cancelled") return false;
-
-      const publicName = app.anonimo ? "anónimo" : app.nombre;
-
-      const matchesSearch =
-        !search ||
-        [
-          app.nombre,
-          publicName,
-          app.telefono,
-          app.fecha,
-          app.hora
-        ]
-          .map(v => String(v || "").toLowerCase())
-          .some(v => v.includes(search));
-
-      const matchesStatus = status === "all" || app.status === status;
-      const matchesBarber = barber === "all" || app.barbero === barber;
-      const matchesDate = !date || app.fecha === date;
-
-      return matchesSearch && matchesStatus && matchesBarber && matchesDate;
-    })
+    .filter(app => app.status !== "cancelled")
     .sort((a, b) => {
       const aKey = `${a.fecha} ${to24Hour(a.hora)}`;
       const bKey = `${b.fecha} ${to24Hour(b.hora)}`;
@@ -737,7 +726,7 @@ function renderGroupedAppointments(groupedAppointments) {
     appointmentsView.innerHTML = `
       <div class="empty-state">
         <h3>No hay citas para mostrar</h3>
-        <p>No se encontraron citas con los filtros seleccionados.</p>
+        <p>No hay citas disponibles ahora mismo.</p>
       </div>
     `;
     return;
@@ -850,9 +839,7 @@ function listenAppointments() {
   appointmentsRef.on("value", snapshot => {
     const data = snapshot.val() || {};
     allAppointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
-
     updateStats(allAppointments);
-    fillBarberFilter(allAppointments);
     renderAll();
   });
 }
@@ -862,14 +849,6 @@ function listenServices() {
     servicesData = snapshot.val() || {};
     populateEditServiceOptions(document.getElementById("editServicio")?.value || "");
   });
-}
-
-function clearFilters() {
-  if (searchInput) searchInput.value = "";
-  if (filterStatus) filterStatus.value = "all";
-  if (filterBarber) filterBarber.value = "all";
-  if (filterDate) filterDate.value = "";
-  renderAll();
 }
 
 function attachActionEvents() {
@@ -1383,22 +1362,7 @@ function createEditModal() {
   });
 }
 
-if (searchInput) {
-  searchInput.addEventListener("input", renderAll);
-}
-if (filterStatus) {
-  filterStatus.addEventListener("change", renderAll);
-}
-if (filterBarber) {
-  filterBarber.addEventListener("change", renderAll);
-}
-if (filterDate) {
-  filterDate.addEventListener("change", renderAll);
-}
-if (clearFiltersBtn) {
-  clearFiltersBtn.addEventListener("click", clearFilters);
-}
-
+removeLegacyFiltersUI();
 refreshMyAppointmentData();
 createEditModal();
 listenServices();

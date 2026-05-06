@@ -344,6 +344,16 @@
       font-size: 0.92rem;
     }
 
+    .filters-section,
+    .filters-box,
+    #searchInput,
+    #filterStatus,
+    #filterBarber,
+    #filterDate,
+    #clearFiltersBtn {
+      display: none !important;
+    }
+
     .filters-section {
       padding: 10px 0 20px;
     }
@@ -914,7 +924,7 @@
   <script>
     (function loadFreshAppointmentsScript() {
       const script = document.createElement("script");
-      script.src = `ver-citas.js?v=public-mobile-table-optimized-20260506c&t=${Date.now()}`;
+      script.src = `ver-citas.js?v=public-agenda-no-filters-20260506d&t=${Date.now()}`;
       document.body.appendChild(script);
     })();
   </script>
