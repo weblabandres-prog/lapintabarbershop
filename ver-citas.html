@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -588,6 +588,17 @@
       border-color: rgba(229, 57, 53, 0.22);
     }
 
+    .mobile-table-list,
+    .mobile-row-card,
+    .mobile-fields,
+    .mobile-field-box,
+    .mobile-field-label,
+    .mobile-field-value,
+    .mobile-service-title,
+    .mobile-status-pill {
+      display: none !important;
+    }
+
     .empty-state {
       text-align: center;
       padding: 48px 20px;
@@ -885,7 +896,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="ver-citas.js?v=cancelar-retira-agenda-20260504"></script>
+  <script src="ver-citas.js?v=mobile-table-20260506b"></script>
 
   <script>
     const menuToggle = document.getElementById("menuToggle");
@@ -922,3 +933,4 @@
   </script>
 </body>
 </html>
+
