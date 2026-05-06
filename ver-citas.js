@@ -579,7 +579,7 @@ function getDisplayStatusLabel(status) {
   const compactMobile = typeof window !== "undefined" && window.innerWidth <= 640;
   if (!compactMobile) return getStatusLabel(status);
 
-  if (status === "approved") return "OK";
+  if (status === "approved") return "Aprobado";
   if (status === "cancelled") return "No";
   return "Pend.";
 }
