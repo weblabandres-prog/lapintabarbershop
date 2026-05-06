@@ -778,6 +778,39 @@ function renderGroupedAppointments(groupedAppointments) {
             </tbody>
           </table>
         </div>
+
+        <div class="mobile-table-list">
+          ${items.map(app => `
+            <article class="mobile-row-card">
+              <div class="mobile-card-top">
+                <div class="mobile-card-name-wrap">
+                  <span class="mobile-card-label">Cliente</span>
+                  <div class="mobile-card-name">${escapeHTML(app.anonimo ? "AnÃ³nimo" : app.nombre)}</div>
+                  ${isMine(app) ? `<small class="mine-badge mobile-card-badge">Mi cita</small>` : ""}
+                </div>
+
+                <div class="mobile-card-time-wrap">
+                  <span class="mobile-card-label">Hora</span>
+                  <div class="mobile-card-time">${escapeHTML(app.hora)}</div>
+                </div>
+              </div>
+
+              <div class="mobile-card-meta">
+                <div class="mobile-card-block mobile-card-status">
+                  <span class="mobile-card-label">Estado</span>
+                  <span class="status-pill status-${escapeHTML(app.status)}">
+                    ${escapeHTML(getStatusLabel(app.status))}
+                  </span>
+                </div>
+
+                <div class="mobile-card-block mobile-card-actions">
+                  <span class="mobile-card-label">Accion</span>
+                  ${getActionsHTML(app)}
+                </div>
+              </div>
+            </article>
+          `).join("")}
+        </div>
       </div>
     `;
   });
