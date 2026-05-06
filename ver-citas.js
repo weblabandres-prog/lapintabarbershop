@@ -610,6 +610,8 @@ function getRelativeDateSubtext(dateString) {
 }
 
 function fillBarberFilter(appointments) {
+  if (!filterBarber) return;
+
   const currentValue = filterBarber.value;
 
   const barbers = [...new Set(
@@ -639,7 +641,7 @@ function updateStats(appointments) {
 function getFilteredAppointments() {
   const search = searchInput.value.trim().toLowerCase();
   const status = filterStatus.value;
-  const barber = filterBarber.value;
+  const barber = filterBarber?.value || "all";
   const date = filterDate.value;
 
   return allAppointments
@@ -655,7 +657,6 @@ function getFilteredAppointments() {
           publicName,
           app.telefono,
           app.servicio,
-          app.barbero,
           app.fecha,
           app.hora
         ]
@@ -747,7 +748,6 @@ function renderGroupedAppointments(groupedAppointments) {
               <tr>
                 <th>Cliente</th>
                 <th>Servicio</th>
-                <th>Barbero</th>
                 <th>Hora</th>
                 <th>Estado</th>
                 <th>Acción</th>
@@ -768,7 +768,6 @@ function renderGroupedAppointments(groupedAppointments) {
                     <span class="service-name">${escapeHTML(app.servicio)}</span>
                   </td>
 
-                  <td>${escapeHTML(app.barbero)}</td>
                   <td>${escapeHTML(app.hora)}</td>
 
                   <td>
@@ -827,7 +826,7 @@ function listenServices() {
 function clearFilters() {
   searchInput.value = "";
   filterStatus.value = "all";
-  filterBarber.value = "all";
+  if (filterBarber) filterBarber.value = "all";
   filterDate.value = "";
   renderAll();
 }
@@ -1313,7 +1312,9 @@ function createEditModal() {
 
 searchInput.addEventListener("input", renderAll);
 filterStatus.addEventListener("change", renderAll);
-filterBarber.addEventListener("change", renderAll);
+if (filterBarber) {
+  filterBarber.addEventListener("change", renderAll);
+}
 filterDate.addEventListener("change", renderAll);
 clearFiltersBtn.addEventListener("click", clearFilters);
 
