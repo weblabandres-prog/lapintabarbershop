@@ -31,6 +31,7 @@ const STORAGE_APPOINTMENT_ID = "lapinta_client_appointment_id";
 const STORAGE_CLIENT_TOKEN = "lapinta_client_token";
 const STORAGE_CLIENT_APPOINTMENTS = "lapinta_client_appointments";
 const WHATSAPP_NOTIFICATION_PHONE = "18493757710";
+const PUBLIC_AGENDA_MAX_DAYS_AHEAD = 2;
 
 let allAppointments = [];
 let servicesData = {};
@@ -325,7 +326,9 @@ function subtractDays(dateString, days) {
 }
 
 function getAgendaDesde(dateString) {
-  return daysFromToday(dateString) > 15 ? subtractDays(dateString, 2) : dateString;
+  return daysFromToday(dateString) > PUBLIC_AGENDA_MAX_DAYS_AHEAD
+    ? subtractDays(dateString, 2)
+    : dateString;
 }
 function isMine(app) {
   refreshMyAppointmentData();
@@ -663,14 +666,49 @@ function updateStats(appointments) {
   statCancelled.textContent = appointments.filter(app => app.status === "cancelled").length;
 }
 
+function isInsidePublicAgendaWindow(app) {
+  const diffDays = daysFromToday(app.fecha);
+  return diffDays >= 0 && diffDays <= PUBLIC_AGENDA_MAX_DAYS_AHEAD;
+}
+
 function getFilteredAppointments() {
   return allAppointments
     .filter(app => app.status !== "cancelled")
+    .filter(isInsidePublicAgendaWindow)
     .sort((a, b) => {
       const aKey = `${a.fecha} ${to24Hour(a.hora)}`;
       const bKey = `${b.fecha} ${to24Hour(b.hora)}`;
       return aKey.localeCompare(bKey);
     });
+}
+
+function getHiddenMyFutureAppointments() {
+  return allAppointments
+    .filter(app => app.status !== "cancelled")
+    .filter(app => isMine(app))
+    .filter(app => daysFromToday(app.fecha) > PUBLIC_AGENDA_MAX_DAYS_AHEAD)
+    .sort((a, b) => {
+      const aKey = `${a.fecha} ${to24Hour(a.hora)}`;
+      const bKey = `${b.fecha} ${to24Hour(b.hora)}`;
+      return aKey.localeCompare(bKey);
+    });
+}
+
+function getVisibilityNoticeHTML(hiddenAppointments) {
+  if (!hiddenAppointments.length) return "";
+
+  const singleAppointment = hiddenAppointments.length === 1;
+  const title = singleAppointment ? "Tu cita se mostrará dos días antes" : "Tus citas se mostrarán dos días antes";
+  const body = singleAppointment
+    ? `La cita del ${formatDateSafe(hiddenAppointments[0].fecha)} todavía no aparece aquí porque la agenda pública solo muestra hoy, mañana y pasado mañana.`
+    : "Algunas de tus citas todavía no aparecen aquí porque la agenda pública solo muestra hoy, mañana y pasado mañana.";
+
+  return `
+    <div class="visibility-note">
+      <strong>${escapeHTML(title)}</strong>
+      <p>${escapeHTML(body)}</p>
+    </div>
+  `;
 }
 
 function groupAppointmentsByDate(appointments) {
@@ -721,18 +759,21 @@ function getActionsHTML(app) {
 
 function renderGroupedAppointments(groupedAppointments) {
   const dates = Object.keys(groupedAppointments).sort();
+  const hiddenMyAppointments = getHiddenMyFutureAppointments();
+  const visibilityNoticeHTML = getVisibilityNoticeHTML(hiddenMyAppointments);
 
   if (!dates.length) {
     appointmentsView.innerHTML = `
+      ${visibilityNoticeHTML}
       <div class="empty-state">
         <h3>No hay citas para mostrar</h3>
-        <p>No hay citas disponibles ahora mismo.</p>
+        <p>No hay citas visibles fuera de hoy, mañana y pasado mañana.</p>
       </div>
     `;
     return;
   }
 
-  let html = "";
+  let html = visibilityNoticeHTML;
 
   dates.forEach(date => {
     const items = groupedAppointments[date];
@@ -827,10 +868,11 @@ function renderAll() {
 
   const filtered = getFilteredAppointments();
   const grouped = groupAppointmentsByDate(filtered);
+  updateStats(filtered);
 
   resultsInfo.textContent = filtered.length === 1
-    ? "1 cita encontrada"
-    : `${filtered.length} citas encontradas`;
+    ? "1 cita visible"
+    : `${filtered.length} citas visibles`;
 
   renderGroupedAppointments(grouped);
 }
@@ -839,7 +881,6 @@ function listenAppointments() {
   appointmentsRef.on("value", snapshot => {
     const data = snapshot.val() || {};
     allAppointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
-    updateStats(allAppointments);
     renderAll();
   });
 }
@@ -976,7 +1017,7 @@ async function saveEditAppointment(event) {
     barbero,
     fecha,
     agendaDesde: getAgendaDesde(fecha),
-    mostrarEnAgendaDosDiasAntes: daysFromToday(fecha) > 15,
+    mostrarEnAgendaDosDiasAntes: daysFromToday(fecha) > PUBLIC_AGENDA_MAX_DAYS_AHEAD,
     hora,
     duration,
     precio,

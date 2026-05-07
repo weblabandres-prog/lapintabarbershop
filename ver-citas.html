@@ -472,6 +472,28 @@
       font-weight: 700;
     }
 
+    .visibility-note {
+      margin-bottom: 18px;
+      padding: 15px 16px;
+      border-radius: 18px;
+      background: rgba(31, 134, 255, 0.10);
+      border: 1px solid rgba(31, 134, 255, 0.18);
+      color: #d9ecff;
+    }
+
+    .visibility-note strong {
+      display: block;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+      color: var(--white);
+    }
+
+    .visibility-note p {
+      color: #b8c6da;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
     .date-group {
       margin-bottom: 28px;
     }
@@ -896,10 +918,10 @@
     <div class="container">
       <div class="hero-box">
         <span class="section-tag">Reservas en vivo</span>
-        <h1>Ver todas las citas</h1>
+        <h1>Ver próximas citas</h1>
         <p>
-          Consulta las citas guardadas en tiempo real con una vista moderna,
-          organizada por fecha y sin necesidad de desplazarte en teléfono.
+          Consulta las citas públicas de hoy, mañana y pasado mañana
+          con una vista clara, organizada por fecha y cómoda para teléfono.
         </p>
 
         <div class="stats">
@@ -940,7 +962,7 @@
             <p id="resultsInfo">Cargando citas...</p>
           </div>
 
-          <div class="results-badge">Tabla por fecha</div>
+          <div class="results-badge">Hoy, mañana y pasado mañana</div>
         </div>
 
         <div id="appointmentsView"></div>
@@ -965,7 +987,7 @@
   <script>
     (function loadFreshAppointmentsScript() {
       const script = document.createElement("script");
-      script.src = `ver-citas.js?v=public-agenda-compact-stats-20260507f&t=${Date.now()}`;
+      script.src = `ver-citas.js?v=public-agenda-window-20260507g&t=${Date.now()}`;
       document.body.appendChild(script);
     })();
   </script>

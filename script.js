@@ -222,7 +222,7 @@ function diferenciaDiasDesdeHoy(fechaISO) {
 }
 
 function necesitaPublicarseDosDiasAntes(fechaISO) {
-  return diferenciaDiasDesdeHoy(fechaISO) > 15;
+  return diferenciaDiasDesdeHoy(fechaISO) > 2;
 }
 
 function setMinDate() {
@@ -1278,7 +1278,7 @@ if (bookingForm) {
 
         if (mostrarEnAgendaDosDiasAntes) {
           alert(
-            `✅ Cita agendada correctamente. Se envió el correo y la cita quedó pendiente de aprobación. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
+            `✅ Cita agendada correctamente. Se envió el correo y la cita quedó pendiente de aprobación. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y se mostrará dos días antes en la agenda pública.`
           );
         } else {
           alert("✅ Cita agendada correctamente. Se envió el correo y la cita quedó pendiente de aprobación.");
@@ -1288,7 +1288,7 @@ if (bookingForm) {
 
         if (mostrarEnAgendaDosDiasAntes) {
           alert(
-            `✅ La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
+            `✅ La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y se mostrará dos días antes en la agenda pública.`
           );
         } else {
           alert(
@@ -1307,7 +1307,7 @@ if (bookingForm) {
       updateSummary();
       renderHours();
 
-      window.location.href = "ver-citas.html?v=public-agenda-compact-stats-20260507f";
+      window.location.href = "ver-citas.html?v=public-agenda-window-20260507g";
     } catch (firebaseError) {
       console.error("Error guardando cita:", firebaseError);
       alert("No se pudo guardar la cita en Firebase.");
