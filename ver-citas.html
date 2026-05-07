@@ -732,7 +732,29 @@
       }
 
       .stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .stat-card {
+        padding: 16px 14px;
+        border-radius: 18px;
+      }
+
+      .stat-card span {
+        font-size: 0.84rem;
+        margin-bottom: 8px;
+      }
+
+      .stat-card strong {
+        font-size: 1.95rem;
+        margin-bottom: 6px;
+      }
+
+      .stat-card small {
+        font-size: 0.82rem;
+        line-height: 1.35;
       }
 
       .filters-grid {
@@ -806,6 +828,17 @@
       .footer-content {
         flex-direction: column;
         text-align: center;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .stat-card {
+        padding: 14px 13px;
       }
     }
   </style>
