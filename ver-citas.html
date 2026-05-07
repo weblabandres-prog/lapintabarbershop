@@ -733,28 +733,28 @@
 
       .stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-        margin-top: 18px;
+        gap: 10px;
+        margin-top: 14px;
       }
 
       .stat-card {
-        padding: 16px 14px;
-        border-radius: 18px;
+        padding: 13px 12px;
+        border-radius: 16px;
       }
 
       .stat-card span {
-        font-size: 0.84rem;
-        margin-bottom: 8px;
-      }
-
-      .stat-card strong {
-        font-size: 1.95rem;
+        font-size: 0.78rem;
         margin-bottom: 6px;
       }
 
+      .stat-card strong {
+        font-size: 1.7rem;
+        margin-bottom: 4px;
+      }
+
       .stat-card small {
-        font-size: 0.82rem;
-        line-height: 1.35;
+        font-size: 0.74rem;
+        line-height: 1.2;
       }
 
       .filters-grid {
@@ -833,12 +833,20 @@
 
     @media (max-width: 420px) {
       .stats {
-        grid-template-columns: 1fr;
-        gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
       }
 
       .stat-card {
-        padding: 14px 13px;
+        padding: 11px 10px;
+      }
+
+      .stat-card strong {
+        font-size: 1.5rem;
+      }
+
+      .stat-card small {
+        font-size: 0.7rem;
       }
     }
   </style>
@@ -957,7 +965,7 @@
   <script>
     (function loadFreshAppointmentsScript() {
       const script = document.createElement("script");
-      script.src = `ver-citas.js?v=public-agenda-no-filters-20260506d&t=${Date.now()}`;
+      script.src = `ver-citas.js?v=public-agenda-compact-stats-20260507f&t=${Date.now()}`;
       document.body.appendChild(script);
     })();
   </script>
