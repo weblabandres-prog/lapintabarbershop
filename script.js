@@ -1307,7 +1307,7 @@ if (bookingForm) {
       updateSummary();
       renderHours();
 
-      window.location.href = "ver-citas.html?v=public-agenda-window-20260507g";
+      window.location.href = "ver-citas.html?v=public-agenda-window-20260507h";
     } catch (firebaseError) {
       console.error("Error guardando cita:", firebaseError);
       alert("No se pudo guardar la cita en Firebase.");

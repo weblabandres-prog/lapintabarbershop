@@ -308,6 +308,18 @@
       font-size: 1rem;
     }
 
+    .hero-note {
+      margin-top: 14px;
+      max-width: 760px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(31, 134, 255, 0.08);
+      border: 1px solid rgba(31, 134, 255, 0.16);
+      color: #d9ecff;
+      font-size: 0.93rem;
+      line-height: 1.55;
+    }
+
     .stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -753,6 +765,14 @@
         border-radius: 22px;
       }
 
+      .hero-note {
+        margin-top: 12px;
+        padding: 12px 13px;
+        border-radius: 16px;
+        font-size: 0.88rem;
+        line-height: 1.5;
+      }
+
       .stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
@@ -924,6 +944,10 @@
           con una vista clara, organizada por fecha y cómoda para teléfono.
         </p>
 
+        <div class="hero-note">
+          Aquí puedes revisar tu cita en la agenda pública. Solo se muestran las citas de hoy, mañana y pasado mañana. Si tu cita es para más adelante, aparecerá dos días antes.
+        </div>
+
         <div class="stats">
           <article class="stat-card">
             <span>Total</span>
@@ -987,7 +1011,7 @@
   <script>
     (function loadFreshAppointmentsScript() {
       const script = document.createElement("script");
-      script.src = `ver-citas.js?v=public-agenda-window-20260507g&t=${Date.now()}`;
+      script.src = `ver-citas.js?v=public-agenda-window-20260507h&t=${Date.now()}`;
       document.body.appendChild(script);
     })();
   </script>
