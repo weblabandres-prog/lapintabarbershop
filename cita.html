@@ -563,6 +563,19 @@
       color: #111;
     }
 
+    .field-note {
+      color: var(--muted-2);
+      font-size: 0.82rem;
+      line-height: 1.45;
+      margin-top: -2px;
+    }
+
+    .fixed-input {
+      color: rgba(255,255,255,0.88);
+      background: rgba(255,255,255,0.04);
+      cursor: default;
+    }
+
     .hours-wrap {
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--line);
@@ -1132,10 +1145,16 @@
               <div class="form-grid two-cols">
                 <div class="form-group">
                   <label for="barbero">Barbero</label>
-                  <select id="barbero" name="barbero" required>
-                    <option value="">Selecciona</option>
-                    <option value="Chocho la pinta">Chocho la pinta</option>
-                  </select>
+                  <input
+                    type="text"
+                    id="barbero"
+                    name="barbero"
+                    class="fixed-input"
+                    value="Chocho la pinta"
+                    readonly
+                    aria-readonly="true"
+                  />
+                  <small class="field-note">Asignado automáticamente</small>
                 </div>
 
                 <div class="form-group">
@@ -1321,6 +1340,10 @@
     const servicioInput = document.getElementById("servicio");
     const barberoInput = document.getElementById("barbero");
     const anonimoInput = document.getElementById("anonimo");
+
+    if (barberoInput && !barberoInput.value) {
+      barberoInput.value = "Chocho la pinta";
+    }
 
     const metodoEfectivoInput = document.getElementById("metodo_efectivo");
     const metodoTransferenciaInput = document.getElementById("metodo_transferencia");
