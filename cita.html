@@ -758,6 +758,14 @@
       margin-bottom: 6px;
     }
 
+    .transfer-card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .transfer-card-content small {
       display: inline-block;
       padding: 6px 10px;
@@ -766,6 +774,32 @@
       color: #8fc0ff;
       font-size: 0.88rem;
       font-weight: 700;
+    }
+
+    .copy-account-btn {
+      border: 1px solid rgba(31,134,255,0.22);
+      background: rgba(31,134,255,0.10);
+      color: #d9ecff;
+      border-radius: 12px;
+      min-height: 36px;
+      padding: 8px 12px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .copy-account-btn:hover,
+    .copy-account-btn:focus-visible {
+      background: rgba(31,134,255,0.16);
+      border-color: rgba(31,134,255,0.34);
+      outline: none;
+    }
+
+    .copy-account-btn.copied {
+      background: rgba(54, 179, 126, 0.16);
+      border-color: rgba(54, 179, 126, 0.36);
+      color: #c7f1c2;
     }
 
     .transfer-card input:checked + .transfer-card-content {
@@ -1243,7 +1277,10 @@
                     <div class="transfer-card-content">
                       <strong>Banreservas</strong>
                       <span>Cuenta de ahorro</span>
-                      <small>9602003811</small>
+                      <div class="transfer-card-meta">
+                        <small>960200381</small>
+                        <button type="button" class="copy-account-btn" data-copy-value="960200381">Copiar</button>
+                      </div>
                     </div>
                   </label>
 
@@ -1257,7 +1294,10 @@
                     <div class="transfer-card-content">
                       <strong>Popular</strong>
                       <span>Cuenta de ahorro</span>
-                      <small>853557841</small>
+                      <div class="transfer-card-meta">
+                        <small>853557841</small>
+                        <button type="button" class="copy-account-btn" data-copy-value="853557841">Copiar</button>
+                      </div>
                     </div>
                   </label>
                 </div>
@@ -2028,6 +2068,73 @@
       return "Efectivo";
     }
 
+    async function copyTextToClipboard(text) {
+      const value = String(text || "").trim();
+      if (!value) return false;
+
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(value);
+          return true;
+        } catch (error) {
+          console.warn("No se pudo copiar con clipboard API:", error);
+        }
+      }
+
+      const tempInput = document.createElement("textarea");
+      tempInput.value = value;
+      tempInput.setAttribute("readonly", "");
+      tempInput.style.position = "fixed";
+      tempInput.style.opacity = "0";
+      tempInput.style.pointerEvents = "none";
+      document.body.appendChild(tempInput);
+      tempInput.focus();
+      tempInput.select();
+      tempInput.setSelectionRange(0, tempInput.value.length);
+
+      let copied = false;
+      try {
+        copied = document.execCommand("copy");
+      } catch (error) {
+        console.warn("No se pudo copiar con execCommand:", error);
+      }
+
+      tempInput.remove();
+      return copied;
+    }
+
+    function bindCopyAccountButtons() {
+      const copyButtons = document.querySelectorAll(".copy-account-btn");
+      if (!copyButtons.length) return;
+
+      copyButtons.forEach(button => {
+        button.addEventListener("click", async event => {
+          event.preventDefault();
+          event.stopPropagation();
+
+          const value = button.dataset.copyValue || "";
+          const transferCard = button.closest(".transfer-card");
+          const radio = transferCard?.querySelector('input[name="cuenta_transferencia"]');
+
+          if (radio) {
+            radio.checked = true;
+            updateSummary();
+          }
+
+          const originalText = button.textContent || "Copiar";
+          const copied = await copyTextToClipboard(value);
+
+          button.textContent = copied ? "Copiado" : "No copiado";
+          button.classList.toggle("copied", copied);
+
+          window.setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove("copied");
+          }, 1600);
+        });
+      });
+    }
+
     function updatePaymentMethodUI() {
       if (!paymentTransferInfo) return;
 
@@ -2763,6 +2870,7 @@
       bindSecretShortcut();
       configurarInputNombre();
       configurarInputTelefono();
+      bindCopyAccountButtons();
       listenAppointments();
       listenShopStatus();
       listenDailyOverrides();
