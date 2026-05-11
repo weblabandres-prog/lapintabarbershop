@@ -676,7 +676,7 @@ function isSlotAvailable(date, barber, startSlot, serviceName, list) {
 
 function getCuentaTransferenciaSeleccionada() {
   if (cuentaPopularInput?.checked) return "Popular - Ahorro - 853557841";
-  return "Banreservas - Ahorro - 960200381";
+  return "Banreservas - Ahorro - 9602003811";
 }
 
 function getMetodoPagoSeleccionado() {
