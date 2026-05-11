@@ -135,10 +135,13 @@
     .field input,.field select{width:100%;background:#111821;border:1px solid var(--line-strong);color:#fff;border-radius:16px;padding:13px 14px;outline:none;font-size:16px;min-height:52px;}
     .table-subtext{margin:4px 0 0;font-size:.95rem;}
     .table-wrap{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.015);}
-    table{width:100%;border-collapse:collapse;min-width:980px;background:transparent;}
+    table{width:100%;border-collapse:collapse;min-width:100%;background:transparent;table-layout:fixed;}
     thead th{text-align:left;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:16px 18px;border-bottom:1px solid var(--line);}
     tbody td{padding:16px 18px;border-bottom:1px solid var(--line);vertical-align:top;}
     tbody tr:hover{background:rgba(255,255,255,.02);}
+    .summary-row td{vertical-align:middle;}
+    .summary-client strong,.summary-turno strong{display:block;color:#fff;margin-bottom:4px;}
+    .summary-client small,.summary-turno small{color:var(--muted);line-height:1.45;}
     .client-box strong,.service-box strong{display:block;margin-bottom:4px;color:#fff;}
     .client-box small,.service-box small,.meta-text{color:var(--muted);line-height:1.5;}
     .price-text{color:var(--success)!important;font-weight:700;}
@@ -147,6 +150,15 @@
     .cell-stack small{color:var(--muted);line-height:1.45;}
     .cell-tag{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border-radius:999px;background:rgba(31,134,255,.10);border:1px solid rgba(31,134,255,.18);color:#cfe5ff;font-size:.8rem;font-weight:700;}
     .mono-text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9rem;}
+    .details-toggle-btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 12px;border-radius:12px;color:#fff;border:1px solid var(--line-strong);background:rgba(255,255,255,.03);font-weight:700;white-space:nowrap;}
+    .details-row.hidden{display:none;}
+    .details-row td{padding:0;border-bottom:1px solid var(--line);}
+    .details-panel{padding:18px;background:rgba(255,255,255,.018);}
+    .details-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+    .details-box{padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.02);}
+    .details-box span{display:block;color:#8fb2e7;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+    .details-box strong,.details-box div{color:#fff;line-height:1.45;word-break:break-word;}
+    .details-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
     .status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:110px;padding:8px 12px;border-radius:999px;font-size:.85rem;font-weight:700;text-transform:capitalize;}
     .status-pill.pending{background:rgba(245,158,11,.12);color:#ffc76b;border:1px solid rgba(245,158,11,.22);}
     .status-pill.approved{background:rgba(62,207,142,.12);color:#8ff0bc;border:1px solid rgba(62,207,142,.22);}
@@ -200,7 +212,6 @@
       .topbar,.status-head,.filters-header,.table-header{flex-direction:column;align-items:stretch;}
       .table-wrap{display:block;margin-inline:-2px;}
       .mobile-cards{display:none!important;}
-      table{min-width:860px;}
       thead th,tbody td{padding:14px 14px;}
     }
     @media (max-width:640px){
@@ -211,12 +222,12 @@
       .topbar-actions>*,.table-actions>*{width:100%;}
       .service-view-mode,.time-block-item{flex-direction:column;align-items:flex-start;}
       .mobile-service-title{font-size:1rem;}
-      table{min-width:820px;}
+      .details-grid{grid-template-columns:1fr 1fr;}
       thead th{font-size:.75rem;}
       tbody td{font-size:.95rem;}
       .status-pill{min-width:96px;padding:7px 10px;font-size:.8rem;}
-      .row-actions{display:grid;grid-template-columns:1fr;gap:6px;}
-      .row-actions button{width:100%;padding:9px 10px;font-size:.84rem;min-height:40px;}
+      .details-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+      .details-actions button,.details-toggle-btn{width:100%;padding:9px 10px;font-size:.84rem;min-height:40px;}
       .cell-stack small,.client-box small,.service-box small,.meta-text{font-size:.84rem;}
     }
   </style>
@@ -421,11 +432,9 @@
             <thead>
               <tr>
                 <th>Cliente</th>
-                <th>Cita</th>
-                <th>Agenda</th>
-                <th>Creada</th>
+                <th>Turno</th>
                 <th>Estado</th>
-                <th>Acciones</th>
+                <th>Detalle</th>
               </tr>
             </thead>
             <tbody id="appointmentsTableBody"></tbody>
@@ -573,6 +582,7 @@
     let dailyOverrides = {};
     let isFirstServicesLoad = true;
     let deletingExpiredAppointments = false;
+    let expandedAppointmentIds = new Set();
 
     const normalWorkingDays = {
       0: null,
@@ -1507,46 +1517,73 @@
 
       appointmentsTableBody.innerHTML = data.map(appointment => {
         const precioText = getAppointmentPriceText(appointment);
+        const isExpanded = expandedAppointmentIds.has(appointment.id);
 
         return `
-          <tr>
+          <tr class="summary-row">
             <td>
-              <div class="client-box">
+              <div class="client-box summary-client">
                 <strong>${escapeHTML(appointment.nombre)}</strong>
-                <small>Publico: ${escapeHTML(getPublicNameText(appointment))}</small>
-                <small>Telefono: <span class="mono-text">${escapeHTML(appointment.telefono)}</span></small>
-                <small>ID: <span class="mono-text">${escapeHTML(appointment.id)}</span></small>
+                <small>${escapeHTML(appointment.telefono)}</small>
               </div>
             </td>
             <td>
-              <div class="service-box">
-                <strong>${escapeHTML(appointment.servicio)}</strong>
-                <small class="price-text">${escapeHTML(precioText)}</small>
-                <small>Pago: ${escapeHTML(appointment.metodoPago || "Sin definir")}</small>
-                <small>Barbero: ${escapeHTML(appointment.barbero)}</small>
-                <small>${appointment.slots.length ? `${escapeHTML(String(appointment.slots.length))} bloque(s)` : "Sin bloques guardados"}</small>
-              </div>
-            </td>
-            <td>
-              <div class="cell-stack">
+              <div class="summary-turno">
                 <strong>${escapeHTML(formatDate(appointment.fecha))}</strong>
-                <small>Hora: ${escapeHTML(appointment.hora || "Sin hora")}</small>
-                <small>Duracion: ${escapeHTML(String(appointment.duration || 0))} min</small>
-                <small>Visible: ${escapeHTML(getVisibilityText(appointment))}</small>
+                <small>${escapeHTML(appointment.hora || "Sin hora")} · ${escapeHTML(String(appointment.duration || 0))} min</small>
               </div>
             </td>
-            <td><small class="meta-text">${escapeHTML(formatDateTimeValue(appointment.createdAt))}</small></td>
+            <td><span class="status-pill ${escapeHTML(appointment.status)}">${escapeHTML(getStatusLabel(appointment.status))}</span></td>
             <td>
-              <div class="cell-stack">
-                <span class="status-pill ${escapeHTML(appointment.status)}">${escapeHTML(getStatusLabel(appointment.status))}</span>
-                <small class="meta-text">${escapeHTML(getStatusMetaText(appointment))}</small>
-              </div>
+              <button type="button" class="details-toggle-btn" data-action="toggle-details" data-appointment-id="${escapeHTMLAttr(appointment.id)}">${isExpanded ? "Ocultar" : "Ver datos"}</button>
             </td>
-            <td>
-              <div class="row-actions">
-                <button type="button" data-action="approve" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Aprobar</button>
-                <button type="button" data-action="cancel" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Cancelar</button>
-                <button type="button" data-action="delete" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Eliminar</button>
+          </tr>
+          <tr class="details-row${isExpanded ? "" : " hidden"}">
+            <td colspan="4">
+              <div class="details-panel">
+                <div class="details-grid">
+                  <div class="details-box">
+                    <span>Cliente</span>
+                    <strong>${escapeHTML(appointment.nombre)}</strong>
+                    <div>Publico: ${escapeHTML(getPublicNameText(appointment))}</div>
+                    <div>Telefono: <span class="mono-text">${escapeHTML(appointment.telefono)}</span></div>
+                    <div>ID: <span class="mono-text">${escapeHTML(appointment.id)}</span></div>
+                  </div>
+                  <div class="details-box">
+                    <span>Cita</span>
+                    <strong>${escapeHTML(appointment.servicio)}</strong>
+                    <div class="price-text">${escapeHTML(precioText)}</div>
+                    <div>Barbero: ${escapeHTML(appointment.barbero)}</div>
+                    <div>Pago: ${escapeHTML(appointment.metodoPago || "Sin definir")}</div>
+                  </div>
+                  <div class="details-box">
+                    <span>Agenda</span>
+                    <strong>${escapeHTML(formatDate(appointment.fecha))}</strong>
+                    <div>Hora: ${escapeHTML(appointment.hora || "Sin hora")}</div>
+                    <div>Duracion: ${escapeHTML(String(appointment.duration || 0))} min</div>
+                    <div>Visibilidad: ${escapeHTML(getVisibilityText(appointment))}</div>
+                  </div>
+                  <div class="details-box">
+                    <span>Estado</span>
+                    <strong>${escapeHTML(getStatusLabel(appointment.status))}</strong>
+                    <div>${escapeHTML(getStatusMetaText(appointment))}</div>
+                  </div>
+                  <div class="details-box">
+                    <span>Registro</span>
+                    <div>Creada: ${escapeHTML(formatDateTimeValue(appointment.createdAt))}</div>
+                    <div>Actualizada: ${escapeHTML(formatDateTimeValue(appointment.updatedAt))}</div>
+                  </div>
+                  <div class="details-box">
+                    <span>Bloques</span>
+                    <div>${appointment.slots.length ? `${escapeHTML(String(appointment.slots.length))} bloque(s)` : "Sin bloques guardados"}</div>
+                    <div>${appointment.slots.length ? escapeHTML(appointment.slots.join(", ")) : "Sin horas extra guardadas"}</div>
+                  </div>
+                </div>
+                <div class="row-actions details-actions">
+                  <button type="button" data-action="approve" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Aprobar</button>
+                  <button type="button" data-action="cancel" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Cancelar</button>
+                  <button type="button" data-action="delete" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Eliminar</button>
+                </div>
               </div>
             </td>
           </tr>
@@ -1565,7 +1602,11 @@
       const appointmentId = button.dataset.appointmentId;
       const action = button.dataset.action;
 
-      if (action === "approve") {
+      if (action === "toggle-details") {
+        if (expandedAppointmentIds.has(appointmentId)) expandedAppointmentIds.delete(appointmentId);
+        else expandedAppointmentIds.add(appointmentId);
+        renderAll();
+      } else if (action === "approve") {
         updateAppointmentStatus(appointmentId, "approved");
       } else if (action === "cancel") {
         updateAppointmentStatus(appointmentId, "cancelled");
