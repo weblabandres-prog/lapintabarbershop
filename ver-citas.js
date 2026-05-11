@@ -638,6 +638,21 @@ function isPastAppointment(fecha, hora) {
   return dateTime.getTime() < Date.now();
 }
 
+function hasAppointmentFinished(app) {
+  if (!app?.fecha || !app?.hora) return false;
+
+  const time24 = formatTimeToInput(app.hora) || app.hora;
+  const startDateTime = new Date(`${app.fecha}T${time24}:00`);
+
+  if (Number.isNaN(startDateTime.getTime())) return false;
+
+  const duration = Number(app.duration || 0);
+  const safeDuration = Number.isFinite(duration) && duration > 0 ? duration : 60;
+  const endDateTime = new Date(startDateTime.getTime() + (safeDuration * 60 * 1000));
+
+  return endDateTime.getTime() <= Date.now();
+}
+
 function getStatusLabel(status) {
   if (status === "approved") return "Aprobada";
   if (status === "cancelled") return "Cancelada";
@@ -703,6 +718,7 @@ function getFilteredAppointments() {
   return allAppointments
     .filter(app => app.status !== "cancelled")
     .filter(isInsidePublicAgendaWindow)
+    .filter(app => !hasAppointmentFinished(app))
     .sort((a, b) => {
       const aKey = `${a.fecha} ${to24Hour(a.hora)}`;
       const bKey = `${b.fecha} ${to24Hour(b.hora)}`;
