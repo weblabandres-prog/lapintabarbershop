@@ -316,6 +316,14 @@ function isKidsService(serviceName) {
   return normalizeLookupText(serviceName).includes("nino");
 }
 
+function getServiceDisplayName(serviceName) {
+  if (!serviceName) return "";
+  if (String(serviceName).includes("1 a 15")) return serviceName;
+  return isKidsService(serviceName)
+    ? `${serviceName} (1 a 15 años)`
+    : serviceName;
+}
+
 function generateTimeSlots(start, end, interval = 30) {
   const slots = [];
   let current = convertToMinutes(start);
@@ -710,6 +718,49 @@ function telefonoParaGuardar(valor) {
   return normalizarTelefono(valor);
 }
 
+function limpiarNombre(valor) {
+  return String(valor || "")
+    .replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'’-]/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trimStart();
+}
+
+function nombreValido(valor) {
+  const limpio = limpiarNombre(valor).trim();
+  const soloLetras = limpio.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü]/g, "");
+  return soloLetras.length >= 2;
+}
+
+function configurarInputNombre() {
+  if (!nombreInput) return;
+
+  nombreInput.setAttribute("inputmode", "text");
+  nombreInput.setAttribute("autocomplete", "name");
+  nombreInput.setAttribute("placeholder", "Tu nombre");
+
+  nombreInput.addEventListener("input", () => {
+    nombreInput.value = limpiarNombre(nombreInput.value).slice(0, 80);
+    updateSummary();
+  });
+
+  nombreInput.addEventListener("blur", () => {
+    const valor = nombreInput.value.trim();
+    if (!valor) return;
+
+    if (!nombreValido(valor)) {
+      nombreInput.setCustomValidity("Escribe un nombre válido sin números.");
+    } else {
+      nombreInput.setCustomValidity("");
+    }
+
+    nombreInput.reportValidity();
+  });
+
+  nombreInput.addEventListener("focus", () => {
+    nombreInput.setCustomValidity("");
+  });
+}
+
 function configurarInputTelefono() {
   if (!telefonoInput) return;
 
@@ -846,6 +897,7 @@ function updateSummary() {
   const nombre = nombreInput?.value.trim() || "-";
   const telefono = telefonoInput?.value.trim() || "-";
   const servicio = servicioInput?.value || "-";
+  const servicioLabel = servicio === "-" ? servicio : getServiceDisplayName(servicio);
   const barbero = barberoInput?.value || "-";
   const fecha = fechaInput?.value ? formatDateSafe(fechaInput.value) : "-";
   const hora = horaInput?.value ? formatStatusTime(horaInput.value) : "-";
@@ -862,7 +914,7 @@ function updateSummary() {
     <p><strong>Nombre real:</strong> ${escapeHTML(nombre)}</p>
     <p><strong>Nombre en público:</strong> ${escapeHTML(nombrePublico)}</p>
     <p><strong>Teléfono:</strong> ${escapeHTML(telefono)}</p>
-    <p><strong>Servicio:</strong> ${escapeHTML(servicio)}</p>
+    <p><strong>Servicio:</strong> ${escapeHTML(servicioLabel)}</p>
     <p><strong>Precio:</strong> ${escapeHTML(precio ? `RD$${precio}` : "-")}</p>
     <p><strong>Barbero:</strong> ${escapeHTML(barbero)}</p>
     <p><strong>Fecha:</strong> ${escapeHTML(fecha)}</p>
@@ -1203,12 +1255,23 @@ if (bookingForm) {
     e.preventDefault();
 
     const telefonoLimpio = telefonoParaGuardar(telefonoInput?.value || "");
-    const nombre = nombreInput?.value.trim() || "";
+    const nombre = limpiarNombre(nombreInput?.value || "").trim();
 
     if (!nombre) {
       alert("Por favor escribe tu nombre.");
       nombreInput?.focus();
       return;
+    }
+
+    if (!nombreValido(nombre)) {
+      alert("Escribe un nombre válido sin números.");
+      nombreInput?.focus();
+      return;
+    }
+
+    if (nombreInput) {
+      nombreInput.value = nombre;
+      nombreInput.setCustomValidity("");
     }
 
     if (!telefonoLimpio) {
@@ -1412,7 +1475,7 @@ function populateServiceOptions() {
   services.forEach(servicio => {
     const option = document.createElement("option");
     option.value = servicio.nombre;
-    option.textContent = `${servicio.nombre} - RD$${Number(servicio.precio || 0)}`;
+    option.textContent = `${getServiceDisplayName(servicio.nombre)} - RD$${Number(servicio.precio || 0)}`;
     option.dataset.duracion = String(servicio.duracion || "");
     servicioInput.appendChild(option);
   });
@@ -1536,6 +1599,7 @@ setMinDate();
 hideApproveButtons();
 bindHiddenApproveButtons();
 bindSecretShortcut();
+configurarInputNombre();
 configurarInputTelefono();
 
 listenAppointments();
