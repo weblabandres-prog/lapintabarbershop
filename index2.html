@@ -134,14 +134,19 @@
     .field label{font-size:.92rem;color:var(--muted);font-weight:700;}
     .field input,.field select{width:100%;background:#111821;border:1px solid var(--line-strong);color:#fff;border-radius:16px;padding:13px 14px;outline:none;font-size:16px;min-height:52px;}
     .table-subtext{margin:4px 0 0;font-size:.95rem;}
-    .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.015);}
-    table{width:100%;border-collapse:collapse;min-width:1180px;background:transparent;}
+    .table-wrap{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.015);}
+    table{width:100%;border-collapse:collapse;min-width:1680px;background:transparent;}
     thead th{text-align:left;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:16px 18px;border-bottom:1px solid var(--line);}
     tbody td{padding:16px 18px;border-bottom:1px solid var(--line);vertical-align:top;}
     tbody tr:hover{background:rgba(255,255,255,.02);}
     .client-box strong,.service-box strong{display:block;margin-bottom:4px;color:#fff;}
     .client-box small,.service-box small,.meta-text{color:var(--muted);line-height:1.5;}
     .price-text{color:var(--success)!important;font-weight:700;}
+    .cell-stack{display:grid;gap:4px;}
+    .cell-stack strong{color:#fff;}
+    .cell-stack small{color:var(--muted);line-height:1.45;}
+    .cell-tag{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border-radius:999px;background:rgba(31,134,255,.10);border:1px solid rgba(31,134,255,.18);color:#cfe5ff;font-size:.8rem;font-weight:700;}
+    .mono-text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9rem;}
     .status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:110px;padding:8px 12px;border-radius:999px;font-size:.85rem;font-weight:700;text-transform:capitalize;}
     .status-pill.pending{background:rgba(245,158,11,.12);color:#ffc76b;border:1px solid rgba(245,158,11,.22);}
     .status-pill.approved{background:rgba(62,207,142,.12);color:#8ff0bc;border:1px solid rgba(62,207,142,.22);}
@@ -193,8 +198,10 @@
       .sidebar.open{transform:translateX(0);}
       .main-content{padding:18px 16px;}
       .topbar,.status-head,.filters-header,.table-header{flex-direction:column;align-items:stretch;}
-      .table-wrap{display:none;}
-      .mobile-cards{display:grid;}
+      .table-wrap{display:block;margin-inline:-2px;}
+      .mobile-cards{display:none!important;}
+      table{min-width:1420px;}
+      thead th,tbody td{padding:14px 14px;}
     }
     @media (max-width:640px){
       .main-content{padding:16px;}
@@ -204,6 +211,10 @@
       .topbar-actions>*,.table-actions>*{width:100%;}
       .service-view-mode,.time-block-item{flex-direction:column;align-items:flex-start;}
       .mobile-service-title{font-size:1rem;}
+      table{min-width:1320px;}
+      thead th{font-size:.75rem;}
+      tbody td{font-size:.95rem;}
+      .status-pill{min-width:96px;padding:7px 10px;font-size:.8rem;}
     }
   </style>
 </head>
@@ -406,7 +417,20 @@
           <table>
             <thead>
               <tr>
-                <th>Cliente</th><th>Servicio</th><th>Barbero</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Acciones</th>
+                <th>Cliente real</th>
+                <th>Publico</th>
+                <th>Telefono</th>
+                <th>Servicio</th>
+                <th>Precio</th>
+                <th>Pago</th>
+                <th>Barbero</th>
+                <th>Fecha cita</th>
+                <th>Hora</th>
+                <th>Dur.</th>
+                <th>Visible</th>
+                <th>Creada</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="appointmentsTableBody"></tbody>
@@ -638,6 +662,64 @@
       return `${day}/${month}/${year}`;
     }
 
+    function formatDateTimeValue(value) {
+      if (!value && value !== 0) return "Sin registro";
+
+      let parsedDate = null;
+
+      if (typeof value === "number") {
+        parsedDate = new Date(value);
+      } else {
+        const normalized = String(value).trim();
+        if (!normalized) return "Sin registro";
+        parsedDate = new Date(normalized);
+      }
+
+      if (Number.isNaN(parsedDate?.getTime?.())) {
+        return String(value);
+      }
+
+      return parsedDate.toLocaleString("es-DO", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    }
+
+    function getAppointmentPriceText(appointment) {
+      if (Number(appointment?.precio || 0) > 0) {
+        return `RD$${Number(appointment.precio)}`;
+      }
+      return getServicePriceText(appointment?.servicio || "");
+    }
+
+    function getPublicNameText(appointment) {
+      return appointment?.anonimo ? "Anonimo" : "Nombre visible";
+    }
+
+    function getVisibilityText(appointment) {
+      if (!appointment?.agendaDesde) return "Sin fecha";
+      if (appointment.mostrarEnAgendaDosDiasAntes) {
+        return `${formatDate(appointment.agendaDesde)} (2 dias antes)`;
+      }
+      return `${formatDate(appointment.agendaDesde)} (normal)`;
+    }
+
+    function getStatusMetaText(appointment) {
+      if (appointment.status === "approved" && appointment.approvedAt) {
+        return `Aprobada: ${formatDateTimeValue(appointment.approvedAt)}`;
+      }
+      if (appointment.status === "cancelled" && appointment.cancelledAt) {
+        return `Cancelada: ${formatDateTimeValue(appointment.cancelledAt)}`;
+      }
+      if (appointment.updatedAt) {
+        return `Actualizada: ${formatDateTimeValue(appointment.updatedAt)}`;
+      }
+      return "Sin cambio adicional";
+    }
+
     function to24Hour(time12) {
       if (!time12) return "00:00";
       const match = String(time12).match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
@@ -695,10 +777,19 @@
         servicio: appointment?.servicio || "Sin servicio",
         barbero: appointment?.barbero || "No definido",
         fecha: appointment?.fecha || "",
+        agendaDesde: appointment?.agendaDesde || appointment?.fecha || "",
+        mostrarEnAgendaDosDiasAntes: Boolean(appointment?.mostrarEnAgendaDosDiasAntes),
         hora: appointment?.hora || "",
         duration: Number(appointment?.duration || 30),
+        precio: Number(appointment?.precio || 0),
+        metodoPago: appointment?.metodoPago || "Sin definir",
+        slots: Array.isArray(appointment?.slots) ? appointment.slots : [],
         anonimo: Boolean(appointment?.anonimo),
-        status: normalizeStatus(appointment?.status)
+        status: normalizeStatus(appointment?.status),
+        createdAt: appointment?.createdAt || "",
+        updatedAt: appointment?.updatedAt || "",
+        approvedAt: appointment?.approvedAt || "",
+        cancelledAt: appointment?.cancelledAt || ""
       };
     }
 
@@ -1375,8 +1466,16 @@
 
       return appointments.filter(appointment => {
         const matchesSearch = !search || [
-          appointment.nombre, appointment.telefono, appointment.servicio,
-          appointment.barbero, appointment.fecha, appointment.hora
+          appointment.nombre,
+          appointment.telefono,
+          appointment.servicio,
+          appointment.barbero,
+          appointment.fecha,
+          appointment.hora,
+          appointment.metodoPago,
+          appointment.agendaDesde,
+          getPublicNameText(appointment),
+          getStatusLabel(appointment.status)
         ].some(field => String(field).toLowerCase().includes(search));
 
         const matchesStatus = status === "all" || appointment.status === status;
@@ -1412,16 +1511,38 @@
       emptyState.classList.add("hidden");
 
       appointmentsTableBody.innerHTML = data.map(appointment => {
-        const precioText = getServicePriceText(appointment.servicio);
+        const precioText = getAppointmentPriceText(appointment);
 
         return `
           <tr>
-            <td><div class="client-box"><strong>${escapeHTML(appointment.nombre)}</strong><small>${escapeHTML(appointment.telefono)}</small></div></td>
-            <td><div class="service-box"><strong>${escapeHTML(appointment.servicio)}</strong><small class="price-text">${escapeHTML(precioText)}</small><br><small>${appointment.anonimo ? "Publico: Anonimo" : "Publico: Nombre visible"}</small></div></td>
+            <td>
+              <div class="client-box">
+                <strong>${escapeHTML(appointment.nombre)}</strong>
+                <small>ID: <span class="mono-text">${escapeHTML(appointment.id)}</span></small>
+              </div>
+            </td>
+            <td><span class="cell-tag">${escapeHTML(getPublicNameText(appointment))}</span></td>
+            <td><span class="mono-text">${escapeHTML(appointment.telefono)}</span></td>
+            <td>
+              <div class="service-box">
+                <strong>${escapeHTML(appointment.servicio)}</strong>
+                <small>${appointment.slots.length ? `${escapeHTML(String(appointment.slots.length))} bloque(s)` : "Sin bloques guardados"}</small>
+              </div>
+            </td>
+            <td><span class="price-text">${escapeHTML(precioText)}</span></td>
+            <td><div class="cell-stack"><strong>${escapeHTML(appointment.metodoPago || "Sin definir")}</strong></div></td>
             <td>${escapeHTML(appointment.barbero)}</td>
             <td>${escapeHTML(formatDate(appointment.fecha))}</td>
-            <td>${escapeHTML(appointment.hora || "Sin hora")}<br><small class="meta-text">${escapeHTML(String(appointment.duration || 0))} min</small></td>
-            <td><span class="status-pill ${escapeHTML(appointment.status)}">${escapeHTML(getStatusLabel(appointment.status))}</span></td>
+            <td>${escapeHTML(appointment.hora || "Sin hora")}</td>
+            <td>${escapeHTML(String(appointment.duration || 0))} min</td>
+            <td><small class="meta-text">${escapeHTML(getVisibilityText(appointment))}</small></td>
+            <td><small class="meta-text">${escapeHTML(formatDateTimeValue(appointment.createdAt))}</small></td>
+            <td>
+              <div class="cell-stack">
+                <span class="status-pill ${escapeHTML(appointment.status)}">${escapeHTML(getStatusLabel(appointment.status))}</span>
+                <small class="meta-text">${escapeHTML(getStatusMetaText(appointment))}</small>
+              </div>
+            </td>
             <td>
               <div class="row-actions">
                 <button type="button" data-action="approve" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Aprobar</button>
@@ -1435,35 +1556,7 @@
     }
 
     function renderMobileCards(data) {
-      if (!mobileCards) return;
-
-      mobileCards.innerHTML = data.map(appointment => {
-        const precioText = getServicePriceText(appointment.servicio);
-
-        let mobileStatusClass = "mobile-status-pending";
-        if (appointment.status === "approved") mobileStatusClass = "mobile-status-approved";
-        if (appointment.status === "cancelled") mobileStatusClass = "mobile-status-cancelled";
-
-        return `
-          <article class="mobile-card">
-            <h4 class="mobile-service-title">${escapeHTML(appointment.servicio)}</h4>
-            <div class="mobile-status-pill ${mobileStatusClass}">${escapeHTML(getStatusLabel(appointment.status))}</div>
-            <div class="mobile-fields">
-              <div class="mobile-field-box"><span class="mobile-field-label">Cliente</span><span class="mobile-field-value">${escapeHTML(appointment.nombre)}</span></div>
-              <div class="mobile-field-box"><span class="mobile-field-label">Barbero</span><span class="mobile-field-value">${escapeHTML(appointment.barbero)}</span></div>
-              <div class="mobile-field-box"><span class="mobile-field-label">Hora</span><span class="mobile-field-value">${escapeHTML(appointment.hora || "Sin hora")}</span></div>
-              <div class="mobile-field-box"><span class="mobile-field-label">Duracion</span><span class="mobile-field-value">${escapeHTML(String(appointment.duration || 0))} min</span></div>
-              <div class="mobile-field-box"><span class="mobile-field-label">Precio</span><span class="mobile-field-value">${escapeHTML(precioText)}</span></div>
-              <div class="mobile-field-box"><span class="mobile-field-label">Fecha</span><span class="mobile-field-value">${escapeHTML(formatDate(appointment.fecha))}</span></div>
-            </div>
-            <div class="mobile-actions">
-              <button type="button" data-action="approve" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Aprobar</button>
-              <button type="button" data-action="cancel" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Cancelar</button>
-              <button type="button" data-action="delete" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Eliminar</button>
-            </div>
-          </article>
-        `;
-      }).join("");
+      if (mobileCards) mobileCards.innerHTML = "";
     }
 
     function handleAppointmentActionClick(event) {
