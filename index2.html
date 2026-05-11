@@ -135,7 +135,7 @@
     .field input,.field select{width:100%;background:#111821;border:1px solid var(--line-strong);color:#fff;border-radius:16px;padding:13px 14px;outline:none;font-size:16px;min-height:52px;}
     .table-subtext{margin:4px 0 0;font-size:.95rem;}
     .table-wrap{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.015);}
-    table{width:100%;border-collapse:collapse;min-width:1680px;background:transparent;}
+    table{width:100%;border-collapse:collapse;min-width:980px;background:transparent;}
     thead th{text-align:left;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:16px 18px;border-bottom:1px solid var(--line);}
     tbody td{padding:16px 18px;border-bottom:1px solid var(--line);vertical-align:top;}
     tbody tr:hover{background:rgba(255,255,255,.02);}
@@ -200,7 +200,7 @@
       .topbar,.status-head,.filters-header,.table-header{flex-direction:column;align-items:stretch;}
       .table-wrap{display:block;margin-inline:-2px;}
       .mobile-cards{display:none!important;}
-      table{min-width:1420px;}
+      table{min-width:860px;}
       thead th,tbody td{padding:14px 14px;}
     }
     @media (max-width:640px){
@@ -211,10 +211,13 @@
       .topbar-actions>*,.table-actions>*{width:100%;}
       .service-view-mode,.time-block-item{flex-direction:column;align-items:flex-start;}
       .mobile-service-title{font-size:1rem;}
-      table{min-width:1320px;}
+      table{min-width:820px;}
       thead th{font-size:.75rem;}
       tbody td{font-size:.95rem;}
       .status-pill{min-width:96px;padding:7px 10px;font-size:.8rem;}
+      .row-actions{display:grid;grid-template-columns:1fr;gap:6px;}
+      .row-actions button{width:100%;padding:9px 10px;font-size:.84rem;min-height:40px;}
+      .cell-stack small,.client-box small,.service-box small,.meta-text{font-size:.84rem;}
     }
   </style>
 </head>
@@ -417,17 +420,9 @@
           <table>
             <thead>
               <tr>
-                <th>Cliente real</th>
-                <th>Publico</th>
-                <th>Telefono</th>
-                <th>Servicio</th>
-                <th>Precio</th>
-                <th>Pago</th>
-                <th>Barbero</th>
-                <th>Fecha cita</th>
-                <th>Hora</th>
-                <th>Dur.</th>
-                <th>Visible</th>
+                <th>Cliente</th>
+                <th>Cita</th>
+                <th>Agenda</th>
                 <th>Creada</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -1518,24 +1513,28 @@
             <td>
               <div class="client-box">
                 <strong>${escapeHTML(appointment.nombre)}</strong>
+                <small>Publico: ${escapeHTML(getPublicNameText(appointment))}</small>
+                <small>Telefono: <span class="mono-text">${escapeHTML(appointment.telefono)}</span></small>
                 <small>ID: <span class="mono-text">${escapeHTML(appointment.id)}</span></small>
               </div>
             </td>
-            <td><span class="cell-tag">${escapeHTML(getPublicNameText(appointment))}</span></td>
-            <td><span class="mono-text">${escapeHTML(appointment.telefono)}</span></td>
             <td>
               <div class="service-box">
                 <strong>${escapeHTML(appointment.servicio)}</strong>
+                <small class="price-text">${escapeHTML(precioText)}</small>
+                <small>Pago: ${escapeHTML(appointment.metodoPago || "Sin definir")}</small>
+                <small>Barbero: ${escapeHTML(appointment.barbero)}</small>
                 <small>${appointment.slots.length ? `${escapeHTML(String(appointment.slots.length))} bloque(s)` : "Sin bloques guardados"}</small>
               </div>
             </td>
-            <td><span class="price-text">${escapeHTML(precioText)}</span></td>
-            <td><div class="cell-stack"><strong>${escapeHTML(appointment.metodoPago || "Sin definir")}</strong></div></td>
-            <td>${escapeHTML(appointment.barbero)}</td>
-            <td>${escapeHTML(formatDate(appointment.fecha))}</td>
-            <td>${escapeHTML(appointment.hora || "Sin hora")}</td>
-            <td>${escapeHTML(String(appointment.duration || 0))} min</td>
-            <td><small class="meta-text">${escapeHTML(getVisibilityText(appointment))}</small></td>
+            <td>
+              <div class="cell-stack">
+                <strong>${escapeHTML(formatDate(appointment.fecha))}</strong>
+                <small>Hora: ${escapeHTML(appointment.hora || "Sin hora")}</small>
+                <small>Duracion: ${escapeHTML(String(appointment.duration || 0))} min</small>
+                <small>Visible: ${escapeHTML(getVisibilityText(appointment))}</small>
+              </div>
+            </td>
             <td><small class="meta-text">${escapeHTML(formatDateTimeValue(appointment.createdAt))}</small></td>
             <td>
               <div class="cell-stack">
