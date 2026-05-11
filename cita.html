@@ -1289,8 +1289,8 @@
             <div class="info-item"><strong>Lunes, miércoles y jueves:</strong> 8:00 AM a 8:00 PM</div>
             <div class="info-item"><strong>Viernes y sábado:</strong> 8:00 AM a 9:00 PM</div>
             <div class="info-item"><strong>Domingo y martes:</strong> disponibles cuando estén habilitados</div>
-            <div class="info-item"><strong>Cortes niños:</strong> 30 minutos</div>
-            <div class="info-item"><strong>Demás servicios:</strong> 1 hora</div>
+            <div class="info-item"><strong>Cortes niños:</strong> 45 minutos</div>
+            <div class="info-item"><strong>Demás servicios:</strong> 1 hora 15 minutos</div>
             <div class="info-item"><strong>Recomendación:</strong> llega 10 minutos antes</div>
           </div>
         </div>
@@ -1422,6 +1422,8 @@
       servicioCompleto: { nombre: "Corte + Fade + Facial + Lavado de cabello", precio: 700, duracion: 60 }
     };
 
+    const APPOINTMENT_BUFFER_MINUTES = 15;
+
     const extendedTuesdaySchedule = {
       start: "8:00 AM",
       end: "10:00 PM",
@@ -1437,10 +1439,14 @@
       return services.find(s => s && s.nombre === serviceName) || null;
     }
 
-    function getServiceDuration(serviceName) {
+    function getServiceBaseDuration(serviceName, fallback = 60) {
       const serviceObj = getServiceByName(serviceName);
-      const duration = Number(serviceObj?.duracion || 60);
-      return Number.isFinite(duration) && duration > 0 ? duration : 60;
+      const duration = Number(serviceObj?.duracion || fallback);
+      return Number.isFinite(duration) && duration > 0 ? duration : fallback;
+    }
+
+    function getServiceDuration(serviceName, fallback = 60) {
+      return getServiceBaseDuration(serviceName, fallback) + APPOINTMENT_BUFFER_MINUTES;
     }
 
     function getServicePrice(serviceName) {
@@ -1622,9 +1628,9 @@
         agendaDesde: app?.agendaDesde || app?.fecha || "",
         mostrarEnAgendaDosDiasAntes: Boolean(app?.mostrarEnAgendaDosDiasAntes),
         hora: app?.hora || "",
-        duration: app?.duration || getServiceDuration(app?.servicio) || 60,
+        duration: getAppointmentDurationValue(app),
         precio: app?.precio || 0,
-        slots: Array.isArray(app?.slots) ? app.slots : [],
+        slots: getAppointmentSlotsValue(app),
         anonimo: Boolean(app?.anonimo),
         metodoPago: app?.metodoPago || "",
         status: normalizeStatus(app?.status),
@@ -1734,6 +1740,41 @@
       }
 
       return slots;
+    }
+
+    function buildSlotsFromStartTime(startTime, duration) {
+      if (!startTime) return [];
+
+      const startMinutes = parseAnyTimeToMinutes(startTime);
+      if (Number.isNaN(startMinutes)) return [];
+
+      const blocks = Math.max(1, Math.ceil(Number(duration || 30) / 30));
+      return Array.from({ length: blocks }, (_, index) => {
+        return convertToTime(startMinutes + (index * 30));
+      });
+    }
+
+    function getAppointmentDurationValue(app) {
+      const bufferedDuration = getServiceDuration(app?.servicio);
+      const storedDuration = Number(app?.duration || 0);
+
+      if (Number.isFinite(storedDuration) && storedDuration >= bufferedDuration) {
+        return storedDuration;
+      }
+
+      return bufferedDuration;
+    }
+
+    function getAppointmentSlotsValue(app) {
+      const duration = getAppointmentDurationValue(app);
+      const storedSlots = Array.isArray(app?.slots) ? app.slots.filter(Boolean) : [];
+      const requiredBlocks = Math.max(1, Math.ceil(duration / 30));
+
+      if (storedSlots.length >= requiredBlocks) {
+        return storedSlots;
+      }
+
+      return buildSlotsFromStartTime(app?.hora || "", duration);
     }
 
     function getDayFromDate(dateString) {

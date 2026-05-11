@@ -585,6 +585,7 @@
     let isFirstServicesLoad = true;
     let deletingExpiredAppointments = false;
     let expandedAppointmentIds = new Set();
+    const APPOINTMENT_BUFFER_MINUTES = 15;
 
     const normalWorkingDays = {
       0: null,
@@ -655,6 +656,16 @@
     function getServiceByName(serviceName) {
       if (!serviceName) return null;
       return Object.values(servicesData || {}).find(service => service?.nombre === serviceName) || null;
+    }
+
+    function getServiceBaseDuration(serviceName, fallback = 60) {
+      const serviceObj = getServiceByName(serviceName);
+      const duration = Number(serviceObj?.duracion || fallback);
+      return Number.isFinite(duration) && duration > 0 ? duration : fallback;
+    }
+
+    function getServiceDuration(serviceName, fallback = 60) {
+      return getServiceBaseDuration(serviceName, fallback) + APPOINTMENT_BUFFER_MINUTES;
     }
 
     function getServicePriceText(serviceName) {
@@ -739,6 +750,46 @@
       return String(hour).padStart(2, "0") + ":" + minutes;
     }
 
+    function minutesToStatusTime(minutes) {
+      const safeMinutes = ((minutes % 1440) + 1440) % 1440;
+      const hour = String(Math.floor(safeMinutes / 60)).padStart(2, "0");
+      const minute = String(safeMinutes % 60).padStart(2, "0");
+      return formatStatusTime(`${hour}:${minute}`);
+    }
+
+    function buildAppointmentSlotsFromData(startTime, duration) {
+      const startMinutes = convertTimeStringToMinutes(startTime);
+      if (Number.isNaN(startMinutes)) return [];
+
+      const blocks = Math.max(1, Math.ceil(Number(duration || 30) / 30));
+      return Array.from({ length: blocks }, (_, index) => {
+        return minutesToStatusTime(startMinutes + (index * 30));
+      });
+    }
+
+    function getAppointmentDurationValue(appointment) {
+      const bufferedDuration = getServiceDuration(appointment?.servicio);
+      const storedDuration = Number(appointment?.duration || 0);
+
+      if (Number.isFinite(storedDuration) && storedDuration >= bufferedDuration) {
+        return storedDuration;
+      }
+
+      return bufferedDuration;
+    }
+
+    function getAppointmentSlotsValue(appointment) {
+      const duration = getAppointmentDurationValue(appointment);
+      const storedSlots = Array.isArray(appointment?.slots) ? appointment.slots.filter(Boolean) : [];
+      const requiredBlocks = Math.max(1, Math.ceil(duration / 30));
+
+      if (storedSlots.length >= requiredBlocks) {
+        return storedSlots;
+      }
+
+      return buildAppointmentSlotsFromData(appointment?.hora || "", duration);
+    }
+
     function parseAppointmentDateTime(fecha, hora) {
       if (!fecha) return null;
       const safeDate = String(fecha).trim();
@@ -787,10 +838,10 @@
         agendaDesde: appointment?.agendaDesde || appointment?.fecha || "",
         mostrarEnAgendaDosDiasAntes: Boolean(appointment?.mostrarEnAgendaDosDiasAntes),
         hora: appointment?.hora || "",
-        duration: Number(appointment?.duration || 30),
+        duration: getAppointmentDurationValue(appointment),
         precio: Number(appointment?.precio || 0),
         metodoPago: appointment?.metodoPago || "Sin definir",
-        slots: Array.isArray(appointment?.slots) ? appointment.slots : [],
+        slots: getAppointmentSlotsValue(appointment),
         anonimo: Boolean(appointment?.anonimo),
         status: normalizeStatus(appointment?.status),
         createdAt: appointment?.createdAt || "",

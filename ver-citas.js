@@ -32,6 +32,7 @@ const STORAGE_CLIENT_TOKEN = "lapinta_client_token";
 const STORAGE_CLIENT_APPOINTMENTS = "lapinta_client_appointments";
 const WHATSAPP_NOTIFICATION_PHONE = "18493757710";
 const PUBLIC_AGENDA_MAX_DAYS_AHEAD = 2;
+const APPOINTMENT_BUFFER_MINUTES = 15;
 
 let allAppointments = [];
 let servicesData = {};
@@ -159,9 +160,9 @@ function normalizeAppointment(id, app) {
     barbero: app?.barbero || "No definido",
     fecha: app?.fecha || "",
     hora: app?.hora || "",
-    duration: Number(app?.duration || 0),
+    duration: getAppointmentDurationValue(app),
     precio: Number(app?.precio || 0),
-    slots: Array.isArray(app?.slots) ? app.slots : [],
+    slots: getAppointmentSlotsValue(app),
     agendaDesde: app?.agendaDesde || app?.fecha || "",
     mostrarEnAgendaDosDiasAntes: Boolean(app?.mostrarEnAgendaDosDiasAntes),
     anonimo: Boolean(app?.anonimo),
@@ -204,6 +205,10 @@ function isKidsService(serviceName) {
 }
 
 function getServiceDuration(serviceName, fallback = 60) {
+  return getServiceBaseDuration(serviceName, fallback) + APPOINTMENT_BUFFER_MINUTES;
+}
+
+function getServiceBaseDuration(serviceName, fallback = 60) {
   const service = getServiceByName(serviceName);
   const defaultDuration = isKidsService(serviceName) ? 30 : fallback;
   const duration = Number(service?.duracion || defaultDuration || 60);
@@ -288,6 +293,29 @@ function buildReservedSlots(startTime, duration) {
   return Array.from({ length: blocks }, (_, index) => {
     return formatTimeTo12Hour(minutesToInputTime(startMinutes + (index * 30)));
   });
+}
+
+function getAppointmentDurationValue(app) {
+  const bufferedDuration = getServiceDuration(app?.servicio, isKidsService(app?.servicio) ? 30 : 60);
+  const storedDuration = Number(app?.duration || 0);
+
+  if (Number.isFinite(storedDuration) && storedDuration >= bufferedDuration) {
+    return storedDuration;
+  }
+
+  return bufferedDuration;
+}
+
+function getAppointmentSlotsValue(app) {
+  const duration = getAppointmentDurationValue(app);
+  const storedSlots = Array.isArray(app?.slots) ? app.slots.filter(Boolean) : [];
+  const requiredBlocks = Math.max(1, Math.ceil(duration / 30));
+
+  if (storedSlots.length >= requiredBlocks) {
+    return storedSlots;
+  }
+
+  return buildReservedSlots(app?.hora || "", duration);
 }
 
 function hasAppointmentConflict(id, fecha, barbero, requestedSlots) {

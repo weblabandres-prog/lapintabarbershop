@@ -110,6 +110,8 @@ const extendedTuesdaySchedule = {
   breaks: []
 };
 
+const APPOINTMENT_BUFFER_MINUTES = 15;
+
 function escapeHTML(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -413,10 +415,15 @@ function listenDailyOverrides() {
   });
 }
 
-function getServiceDuration(serviceName) {
-  if (!serviceName) return 60;
+function getServiceBaseDuration(serviceName, fallback = 60) {
+  if (!serviceName) return fallback;
   const serviceObj = Object.values(servicesData).find(s => s.nombre === serviceName);
-  return serviceObj && serviceObj.duracion ? Number(serviceObj.duracion) : 60;
+  const duration = Number(serviceObj?.duracion || fallback);
+  return Number.isFinite(duration) && duration > 0 ? duration : fallback;
+}
+
+function getServiceDuration(serviceName, fallback = 60) {
+  return getServiceBaseDuration(serviceName, fallback) + APPOINTMENT_BUFFER_MINUTES;
 }
 
 function getServicePrice(serviceName) {
@@ -427,6 +434,41 @@ function getServicePrice(serviceName) {
 
 function getServiceBlocks(serviceName) {
   return Math.ceil(getServiceDuration(serviceName) / 30);
+}
+
+function buildSlotsFromStartTime(startTime, duration) {
+  if (!startTime) return [];
+
+  const startMinutes = parseAnyTimeToMinutes(startTime);
+  if (Number.isNaN(startMinutes)) return [];
+
+  const blocks = Math.max(1, Math.ceil(Number(duration || 30) / 30));
+  return Array.from({ length: blocks }, (_, index) => {
+    return convertToTime(startMinutes + (index * 30));
+  });
+}
+
+function getAppointmentDurationValue(app) {
+  const bufferedDuration = getServiceDuration(app?.servicio);
+  const storedDuration = Number(app?.duration || 0);
+
+  if (Number.isFinite(storedDuration) && storedDuration >= bufferedDuration) {
+    return storedDuration;
+  }
+
+  return bufferedDuration;
+}
+
+function getAppointmentSlotsValue(app) {
+  const duration = getAppointmentDurationValue(app);
+  const storedSlots = Array.isArray(app?.slots) ? app.slots.filter(Boolean) : [];
+  const requiredBlocks = Math.max(1, Math.ceil(duration / 30));
+
+  if (storedSlots.length >= requiredBlocks) {
+    return storedSlots;
+  }
+
+  return buildSlotsFromStartTime(app?.hora || "", duration);
 }
 
 function normalizeAppointment(id, app) {
@@ -440,9 +482,9 @@ function normalizeAppointment(id, app) {
     agendaDesde: app?.agendaDesde || app?.fecha || "",
     mostrarEnAgendaDosDiasAntes: Boolean(app?.mostrarEnAgendaDosDiasAntes),
     hora: app?.hora || "",
-    duration: app?.duration || getServiceDuration(app?.servicio) || 60,
+    duration: getAppointmentDurationValue(app),
     precio: app?.precio || 0,
-    slots: Array.isArray(app?.slots) ? app.slots : [],
+    slots: getAppointmentSlotsValue(app),
     anonimo: Boolean(app?.anonimo),
     metodoPago: app?.metodoPago || "",
     status: normalizeStatus(app?.status),
