@@ -142,6 +142,8 @@
     .summary-row td{vertical-align:middle;}
     .summary-client strong,.summary-turno strong{display:block;color:#fff;margin-bottom:4px;}
     .summary-client small,.summary-turno small{color:var(--muted);line-height:1.45;}
+    .summary-actions{display:grid;gap:8px;}
+    .summary-actions .status-pill,.summary-actions .details-toggle-btn{width:100%;min-width:0;}
     .client-box strong,.service-box strong{display:block;margin-bottom:4px;color:#fff;}
     .client-box small,.service-box small,.meta-text{color:var(--muted);line-height:1.5;}
     .price-text{color:var(--success)!important;font-weight:700;}
@@ -222,10 +224,11 @@
       .topbar-actions>*,.table-actions>*{width:100%;}
       .service-view-mode,.time-block-item{flex-direction:column;align-items:flex-start;}
       .mobile-service-title{font-size:1rem;}
-      .details-grid{grid-template-columns:1fr 1fr;}
+      .details-grid{grid-template-columns:1fr;}
       thead th{font-size:.75rem;}
       tbody td{font-size:.95rem;}
       .status-pill{min-width:96px;padding:7px 10px;font-size:.8rem;}
+      .summary-actions{gap:6px;}
       .details-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
       .details-actions button,.details-toggle-btn{width:100%;padding:9px 10px;font-size:.84rem;min-height:40px;}
       .cell-stack small,.client-box small,.service-box small,.meta-text{font-size:.84rem;}
@@ -433,8 +436,7 @@
               <tr>
                 <th>Cliente</th>
                 <th>Turno</th>
-                <th>Estado</th>
-                <th>Detalle</th>
+                <th>Gestion</th>
               </tr>
             </thead>
             <tbody id="appointmentsTableBody"></tbody>
@@ -1530,16 +1532,18 @@
             <td>
               <div class="summary-turno">
                 <strong>${escapeHTML(formatDate(appointment.fecha))}</strong>
-                <small>${escapeHTML(appointment.hora || "Sin hora")} · ${escapeHTML(String(appointment.duration || 0))} min</small>
+                <small>${escapeHTML(appointment.hora || "Sin hora")} - ${escapeHTML(String(appointment.duration || 0))} min</small>
               </div>
             </td>
-            <td><span class="status-pill ${escapeHTML(appointment.status)}">${escapeHTML(getStatusLabel(appointment.status))}</span></td>
             <td>
-              <button type="button" class="details-toggle-btn" data-action="toggle-details" data-appointment-id="${escapeHTMLAttr(appointment.id)}">${isExpanded ? "Ocultar" : "Ver datos"}</button>
+              <div class="summary-actions">
+                <span class="status-pill ${escapeHTML(appointment.status)}">${escapeHTML(getStatusLabel(appointment.status))}</span>
+                <button type="button" class="details-toggle-btn" data-action="toggle-details" data-appointment-id="${escapeHTMLAttr(appointment.id)}">${isExpanded ? "Cerrar" : "Ver"}</button>
+              </div>
             </td>
           </tr>
           <tr class="details-row${isExpanded ? "" : " hidden"}">
-            <td colspan="4">
+            <td colspan="3">
               <div class="details-panel">
                 <div class="details-grid">
                   <div class="details-box">
@@ -1864,3 +1868,4 @@
   </script>
 </body>
 </html>
+
