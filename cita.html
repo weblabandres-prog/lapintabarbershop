@@ -1818,6 +1818,58 @@
       return buildSlotsFromStartTime(app?.hora || "", duration);
     }
 
+    function normalizeComparableText(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function getAppointmentOccupiedMinutes(app) {
+      const duration = getAppointmentDurationValue(app);
+      const slotCoverageMinutes = Array.isArray(app?.slots) ? app.slots.filter(Boolean).length * 30 : 0;
+      return Math.max(duration, slotCoverageMinutes);
+    }
+
+    function appointmentConflictsWithRequestedRange(app, date, barber, requestedStartMinutes, requestedEndMinutes) {
+      if (!app || app.status === "cancelled") return false;
+
+      if (normalizeComparableText(app.fecha) !== normalizeComparableText(date)) {
+        return false;
+      }
+
+      if (normalizeComparableText(app.barbero) !== normalizeComparableText(barber)) {
+        return false;
+      }
+
+      const appointmentStartMinutes = convertToMinutes(app.hora);
+      const appointmentEndMinutes = appointmentStartMinutes + getAppointmentOccupiedMinutes(app);
+
+      if (
+        Number.isFinite(appointmentStartMinutes) &&
+        rangesOverlapMinutes(
+          requestedStartMinutes,
+          requestedEndMinutes,
+          appointmentStartMinutes,
+          appointmentEndMinutes
+        )
+      ) {
+        return true;
+      }
+
+      if (!Array.isArray(app.slots) || !app.slots.length) {
+        return false;
+      }
+
+      return app.slots.some(slot => {
+        const slotStartMinutes = convertToMinutes(slot);
+        const slotEndMinutes = slotStartMinutes + 30;
+        return rangesOverlapMinutes(
+          requestedStartMinutes,
+          requestedEndMinutes,
+          slotStartMinutes,
+          slotEndMinutes
+        );
+      });
+    }
+
     function getDayFromDate(dateString) {
       return new Date(dateString + "T00:00:00").getDay();
     }
@@ -2029,6 +2081,8 @@
       const breaks = config.breaks || [];
       const neededBlocks = getServiceBlocks(serviceName);
       const startIndex = slots.indexOf(startSlot);
+      const slotStartMinutes = convertToMinutes(startSlot);
+      const slotEndMinutes = slotStartMinutes + (neededBlocks * 30);
 
       if (startIndex === -1) return false;
       if (isPastDateTime(date, startSlot)) return false;
@@ -2041,14 +2095,7 @@
         if (date === getTodayISO() && isPastDateTime(date, currentSlot)) return false;
 
         for (const app of list) {
-          if (app.status === "cancelled") continue;
-
-          if (
-            app.fecha === date &&
-            app.barbero === barber &&
-            Array.isArray(app.slots) &&
-            app.slots.includes(currentSlot)
-          ) {
+          if (appointmentConflictsWithRequestedRange(app, date, barber, slotStartMinutes, slotEndMinutes)) {
             return false;
           }
         }
@@ -2440,17 +2487,40 @@
       `;
     }
 
-    async function loadLatestAppointmentsForValidation() {
-      try {
-        const snapshot = await appointmentsRef.once("value");
-        const data = snapshot.val() || {};
-        return Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
-      } catch (error) {
-        console.warn("No se pudo cargar la validación fresca de citas:", error);
-        return appointments;
+    async function readAllAppointmentsFromDatabase() {
+      const baseUrl = String(firebaseConfig.databaseURL || "").replace(/\/$/, "");
+      const response = await fetch(`${baseUrl}/appointments.json`, {
+        method: "GET",
+        cache: "no-store",
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudieron cargar las citas desde Firebase.");
       }
+
+      return response.json() || {};
     }
 
+    async function loadLatestAppointmentsForValidation() {
+      try {
+        const data = await readAllAppointmentsFromDatabase();
+        return Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+      } catch (error) {
+        console.warn("No se pudo cargar la validacion fresca por REST, probando con Firebase SDK:", error);
+
+        try {
+          const snapshot = await appointmentsRef.once("value");
+          const data = snapshot.val() || {};
+          return Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+        } catch (sdkError) {
+          console.warn("No se pudo cargar la validacion fresca de citas:", sdkError);
+          return appointments;
+        }
+      }
+    }
     function listenAppointments() {
       appointmentsRef.on("value", snapshot => {
         const data = snapshot.val() || {};
