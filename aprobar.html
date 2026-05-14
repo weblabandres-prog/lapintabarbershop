@@ -771,6 +771,23 @@
       return response.json();
     }
 
+    async function readAllAppointments() {
+      const baseUrl = String(firebaseConfig.databaseURL || "").replace(/\/$/, "");
+      const response = await fetch(`${baseUrl}/appointments.json`, {
+        method: "GET",
+        cache: "no-store",
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudieron validar las citas existentes.");
+      }
+
+      return response.json() || {};
+    }
+
     function normalizePhoneForWhatsApp(phone) {
       if (!phone) return "";
 
@@ -823,6 +840,94 @@
       else if (hour > 12) hour -= 12;
 
       return `${hour}:${minute} ${suffix}`;
+    }
+
+    function timeStringToMinutes(timeValue) {
+      if (!timeValue) return NaN;
+
+      const value = String(timeValue).trim();
+
+      if (/^\d{2}:\d{2}$/.test(value)) {
+        const [hour, minute] = value.split(":").map(Number);
+        return (hour * 60) + minute;
+      }
+
+      const match = value.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+      if (!match) return NaN;
+
+      let hour = parseInt(match[1], 10);
+      const minute = parseInt(match[2], 10);
+      const suffix = match[3].toUpperCase();
+
+      if (suffix === "AM" && hour === 12) hour = 0;
+      if (suffix === "PM" && hour !== 12) hour += 12;
+
+      return (hour * 60) + minute;
+    }
+
+    function minutesTo12Hour(totalMinutes) {
+      const safeMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+      let hour = Math.floor(safeMinutes / 60);
+      const minute = safeMinutes % 60;
+      const suffix = hour >= 12 ? "PM" : "AM";
+
+      if (hour === 0) hour = 12;
+      else if (hour > 12) hour -= 12;
+
+      return `${hour}:${String(minute).padStart(2, "0")} ${suffix}`;
+    }
+
+    function getAppointmentSlotsForConflict(appointment) {
+      const duration = Number(appointment?.duration || 0);
+      const safeDuration = Number.isFinite(duration) && duration > 0 ? duration : 60;
+      const requiredBlocks = Math.max(1, Math.ceil(safeDuration / 30));
+      const storedSlots = Array.isArray(appointment?.slots) ? appointment.slots.filter(Boolean) : [];
+
+      if (storedSlots.length >= requiredBlocks) {
+        return storedSlots;
+      }
+
+      const startMinutes = timeStringToMinutes(appointment?.hora || "");
+      if (Number.isNaN(startMinutes)) return storedSlots;
+
+      return Array.from({ length: requiredBlocks }, (_, index) => {
+        return minutesTo12Hour(startMinutes + (index * 30));
+      });
+    }
+
+    function getAppointmentPriorityKey(id, appointment) {
+      const timestamp = Date.parse(appointment?.createdAt || "") || 0;
+      return `${String(timestamp).padStart(15, "0")}-${String(id || "")}`;
+    }
+
+    function getApprovalConflict(id, appointment, appointmentsMap) {
+      const targetSlots = getAppointmentSlotsForConflict(appointment);
+      if (!targetSlots.length) return null;
+
+      const targetSlotSet = new Set(targetSlots);
+      const targetPriority = getAppointmentPriorityKey(id, appointment);
+
+      for (const [otherId, otherAppointment] of Object.entries(appointmentsMap || {})) {
+        if (!otherAppointment || otherId === id) continue;
+        if (otherAppointment.status === "cancelled") continue;
+        if ((otherAppointment.fecha || "") !== (appointment.fecha || "")) continue;
+        if ((otherAppointment.barbero || "") !== (appointment.barbero || "")) continue;
+
+        const otherSlots = getAppointmentSlotsForConflict(otherAppointment);
+        const overlaps = otherSlots.some(slot => targetSlotSet.has(slot));
+        if (!overlaps) continue;
+
+        if (otherAppointment.status === "approved") {
+          return { id: otherId, appointment: otherAppointment, type: "approved" };
+        }
+
+        const otherPriority = getAppointmentPriorityKey(otherId, otherAppointment);
+        if (otherPriority <= targetPriority) {
+          return { id: otherId, appointment: otherAppointment, type: "pending" };
+        }
+      }
+
+      return null;
     }
 
     function fillAppointmentData(data) {
@@ -1081,6 +1186,21 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
           fillAppointmentData(currentAppointment);
           setCancelledButtons();
           setStatus("La cita está cancelada y no puede aprobarse.", "error");
+          return;
+        }
+
+        const appointmentsMap = await readAllAppointments();
+        const conflict = getApprovalConflict(appointmentId, appointment, appointmentsMap);
+
+        if (conflict) {
+          const conflictName = conflict.appointment?.anonimo ? "Anónimo" : (conflict.appointment?.nombre || "otra cita");
+          const conflictHour = formatStatusTime(conflict.appointment?.hora || "");
+          const conflictTypeText = conflict.type === "approved" ? "ya aprobada" : "más antigua";
+          setPendingButtons();
+          setStatus(
+            `No se puede aprobar esta cita porque se cruza con una cita ${conflictTypeText} de ${conflictName} a las ${conflictHour}.`,
+            "error"
+          );
           return;
         }
 

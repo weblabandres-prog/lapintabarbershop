@@ -851,6 +851,49 @@
       };
     }
 
+    function getAppointmentPriorityKey(appointment) {
+      const timestamp = Date.parse(appointment?.createdAt || "") || 0;
+      return `${String(timestamp).padStart(15, "0")}-${String(appointment?.id || "")}`;
+    }
+
+    function getApprovalConflictForAppointment(targetAppointment, appointmentList) {
+      if (!targetAppointment) return null;
+
+      const targetSlots = Array.isArray(targetAppointment.slots) ? targetAppointment.slots.filter(Boolean) : [];
+      if (!targetSlots.length) return null;
+
+      const targetSlotSet = new Set(targetSlots);
+      const targetPriority = getAppointmentPriorityKey(targetAppointment);
+
+      for (const otherAppointment of appointmentList) {
+        if (!otherAppointment || otherAppointment.id === targetAppointment.id) continue;
+        if (otherAppointment.status === "cancelled") continue;
+        if ((otherAppointment.fecha || "") !== (targetAppointment.fecha || "")) continue;
+        if ((otherAppointment.barbero || "") !== (targetAppointment.barbero || "")) continue;
+
+        const otherSlots = Array.isArray(otherAppointment.slots) ? otherAppointment.slots.filter(Boolean) : [];
+        const overlaps = otherSlots.some(slot => targetSlotSet.has(slot));
+        if (!overlaps) continue;
+
+        if (otherAppointment.status === "approved") {
+          return { appointment: otherAppointment, type: "approved" };
+        }
+
+        const otherPriority = getAppointmentPriorityKey(otherAppointment);
+        if (otherPriority <= targetPriority) {
+          return { appointment: otherAppointment, type: "pending" };
+        }
+      }
+
+      return null;
+    }
+
+    async function loadLatestAppointmentsForValidation() {
+      const snapshot = await appointmentsRef.once("value");
+      const data = snapshot.val() || {};
+      return Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+    }
+
     function normalizeTimeBlock(id, block) {
       const fecha = block?.fecha || block?.date || "";
       const start = block?.start || block?.inicio || block?.startTime || "";
@@ -1683,11 +1726,35 @@
       renderMobileCards(filtered);
     }
 
-    function updateAppointmentStatus(id, status) {
+    async function updateAppointmentStatus(id, status) {
       if (!requireAuthAction()) return;
-      appointmentsRef.child(id).update({ status, updatedAt: new Date().toISOString() })
-        .then(() => showToast(status === "approved" ? "Cita aprobada" : "Cita cancelada"))
-        .catch(() => showToast("No se pudo actualizar la cita"));
+
+      try {
+        if (status === "approved") {
+          const latestAppointments = await loadLatestAppointmentsForValidation();
+          const targetAppointment = latestAppointments.find(item => item.id === id);
+
+          if (!targetAppointment) {
+            showToast("La cita ya no existe");
+            return;
+          }
+
+          const conflict = getApprovalConflictForAppointment(targetAppointment, latestAppointments);
+          if (conflict) {
+            const conflictName = conflict.appointment?.anonimo ? "Anónimo" : (conflict.appointment?.nombre || "otra cita");
+            const conflictHour = conflict.appointment?.hora || "sin hora";
+            const conflictTypeText = conflict.type === "approved" ? "ya aprobada" : "más antigua";
+            showToast(`Conflicto: se cruza con una cita ${conflictTypeText} de ${conflictName} a las ${conflictHour}`);
+            return;
+          }
+        }
+
+        await appointmentsRef.child(id).update({ status, updatedAt: new Date().toISOString() });
+        showToast(status === "approved" ? "Cita aprobada" : "Cita cancelada");
+      } catch (error) {
+        console.error("No se pudo actualizar la cita:", error);
+        showToast("No se pudo actualizar la cita");
+      }
     }
 
     function deleteAppointment(id) {

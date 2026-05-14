@@ -926,6 +926,17 @@ function updateSummary() {
   `;
 }
 
+async function loadLatestAppointmentsForValidation() {
+  try {
+    const snapshot = await appointmentsRef.once("value");
+    const data = snapshot.val() || {};
+    return Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+  } catch (error) {
+    console.warn("No se pudo cargar la validación fresca de citas:", error);
+    return appointments;
+  }
+}
+
 function renderAppointments() {
   const publicStatTotal = document.getElementById("publicStatTotal");
   const publicStatApproved = document.getElementById("publicStatApproved");
@@ -1311,7 +1322,9 @@ if (bookingForm) {
       return;
     }
 
-    if (!isSlotAvailable(selectedDate, selectedBarber, selectedHour, selectedService, appointments)) {
+    const latestAppointments = await loadLatestAppointmentsForValidation();
+
+    if (!isSlotAvailable(selectedDate, selectedBarber, selectedHour, selectedService, latestAppointments)) {
       alert("Esa hora ya no está disponible. Por favor elige otra.");
       renderHours();
       return;
