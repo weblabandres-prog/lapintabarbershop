@@ -56,6 +56,7 @@ let extendedHours = false;
 let customClosures = {};
 let dailyOverrides = {};
 let requestedServiceFromURL = "";
+let hoursRenderRequestId = 0;
 
 const EMAILJS_PUBLIC_KEY = "TXQSraRTJ0Ro5hhuk";
 const EMAILJS_SERVICE_ID = "service_15uyzin";
@@ -794,64 +795,70 @@ function configurarInputTelefono() {
   });
 }
 
-function renderHours() {
+function createHoursMessage(text) {
+  const message = document.createElement("p");
+  message.className = "hours-message";
+  message.textContent = text;
+  return message;
+}
+
+function showHoursMessage(text) {
+  if (!hoursGrid) return;
+  hoursGrid.replaceChildren(createHoursMessage(text));
+}
+
+async function renderHours() {
   if (!hoursGrid) return;
 
-  hoursGrid.innerHTML = "";
+  const requestId = ++hoursRenderRequestId;
+  hoursGrid.replaceChildren();
 
   const selectedDate = fechaInput?.value || "";
   const selectedBarber = barberoInput?.value || "";
   const selectedService = servicioInput?.value || "";
 
   if (!selectedDate) {
-    hoursGrid.innerHTML = '<p style="color:#93a3bd; grid-column: 1/-1;">Selecciona primero una fecha.</p>';
+    showHoursMessage("Selecciona primero una fecha.");
     return;
   }
 
   if (!selectedBarber) {
-    hoursGrid.innerHTML = '<p style="color:#93a3bd; grid-column: 1/-1;">Selecciona primero un barbero.</p>';
+    showHoursMessage("Selecciona primero un barbero.");
     return;
   }
 
   if (!selectedService) {
-    hoursGrid.innerHTML = '<p style="color:#93a3bd; grid-column: 1/-1;">Selecciona primero un servicio.</p>';
+    showHoursMessage("Selecciona primero un servicio.");
     return;
   }
 
   const config = getWorkingConfigByDate(selectedDate);
 
   if (!config) {
-    hoursGrid.innerHTML = '<p style="color:#93a3bd; grid-column: 1/-1;">Este día está cerrado.</p>';
+    showHoursMessage("Este día está cerrado.");
     return;
   }
 
+  showHoursMessage("Cargando disponibilidad...");
+  const latestAppointments = await loadLatestAppointmentsForValidation();
+
+  if (requestId !== hoursRenderRequestId) {
+    return;
+  }
+
+  appointments = latestAppointments;
+  hoursGrid.replaceChildren();
+
   const timeBlocks = getTimeBlocksForDate(selectedDate);
-
   if (timeBlocks.length) {
-    const info = document.createElement("div");
-    info.style.color = "#93a3bd";
-    info.style.gridColumn = "1 / -1";
-    info.style.marginBottom = "10px";
-    info.style.lineHeight = "1.6";
-
-    const detail = timeBlocks
-      .map(block => `${formatStatusTime(block.start)} - ${formatStatusTime(block.end)}${block.reason ? ` (${block.reason})` : ""}`)
-      .join(" | ");
-
-    info.textContent = `Bloques cerrados para esta fecha: ${detail}`;
-    hoursGrid.appendChild(info);
+    hoursGrid.appendChild(createHoursMessage("Hay bloques de horas cerrados en esta fecha."));
   }
 
   const allSlots = generateTimeSlots(config.start, config.end, 30);
   const visibleSlots = allSlots.filter(slot => shouldShowSlot(slot, selectedService));
 
   if (isKidsService(selectedService)) {
-    const info = document.createElement("p");
-    info.style.color = "#93a3bd";
-    info.style.gridColumn = "1 / -1";
-    info.style.marginBottom = "8px";
-    info.textContent = "Corte de nino usa media hora.";
-    hoursGrid.appendChild(info);
+    hoursGrid.appendChild(createHoursMessage("Corte de niño usa media hora."));
   }
 
   let availableCount = 0;
@@ -861,18 +868,30 @@ function renderHours() {
     btn.type = "button";
     btn.classList.add("hour-btn");
     btn.textContent = slot;
+    btn.setAttribute("aria-pressed", "false");
 
-    const available = isSlotAvailable(selectedDate, selectedBarber, slot, selectedService, appointments);
+    const available = isSlotAvailable(
+      selectedDate,
+      selectedBarber,
+      slot,
+      selectedService,
+      latestAppointments
+    );
 
     if (!available) {
       btn.classList.add("disabled");
       btn.disabled = true;
       btn.title = "Hora no disponible";
+      btn.setAttribute("aria-disabled", "true");
     } else {
       availableCount++;
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".hour-btn").forEach(b => b.classList.remove("active"));
+        hoursGrid.querySelectorAll(".hour-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-pressed", "false");
+        });
         btn.classList.add("active");
+        btn.setAttribute("aria-pressed", "true");
         if (horaInput) horaInput.value = slot;
         updateSummary();
       });
@@ -882,12 +901,7 @@ function renderHours() {
   });
 
   if (!availableCount) {
-    const empty = document.createElement("p");
-    empty.style.color = "#93a3bd";
-    empty.style.gridColumn = "1 / -1";
-    empty.style.marginTop = "10px";
-    empty.textContent = "No quedan horarios disponibles para esta selección.";
-    hoursGrid.appendChild(empty);
+    hoursGrid.appendChild(createHoursMessage("No quedan horarios disponibles para esta selección."));
   }
 }
 

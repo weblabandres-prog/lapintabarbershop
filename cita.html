@@ -2302,9 +2302,10 @@
       hoursGrid.replaceChildren(createHoursMessage(text));
     }
 
-    function renderHours() {
+    async function renderHours() {
       if (!hoursGrid) return;
 
+      const requestId = ++hoursRenderRequestId;
       hoursGrid.replaceChildren();
 
       const selectedDate = fechaInput?.value || "";
@@ -2333,11 +2334,19 @@
         return;
       }
 
+      showHoursMessage("Cargando disponibilidad...");
+      const latestAppointments = await loadLatestAppointmentsForValidation();
+
+      if (requestId !== hoursRenderRequestId) {
+        return;
+      }
+
+      appointments = latestAppointments;
+      hoursGrid.replaceChildren();
+
       const timeBlocks = getTimeBlocksForDate(selectedDate);
       if (timeBlocks.length) {
-        hoursGrid.appendChild(
-          createHoursMessage(`Hay ${timeBlocks.length} bloque${timeBlocks.length === 1 ? "" : "s"} de horas cerrado${timeBlocks.length === 1 ? "" : "s"} en esta fecha.`)
-        );
+        hoursGrid.appendChild(createHoursMessage("Hay bloques de horas cerrados en esta fecha."));
       }
 
       const allSlots = generateTimeSlots(config.start, config.end, 30);
@@ -2361,7 +2370,7 @@
           selectedBarber,
           slot,
           selectedService,
-          appointments
+          latestAppointments
         );
 
         if (!available) {
@@ -2390,7 +2399,6 @@
         hoursGrid.appendChild(createHoursMessage("No quedan horarios disponibles para esta selección."));
       }
     }
-
     function updateSummary() {
       if (!bookingSummary) return;
 

@@ -653,6 +653,56 @@ function hasAppointmentFinished(app) {
   return endDateTime.getTime() <= Date.now();
 }
 
+function getPublicConflictPriority(app) {
+  const statusWeight = app?.status === "approved" ? 0 : 1;
+  const createdAtValue = Date.parse(app?.createdAt || "") || Number.MAX_SAFE_INTEGER;
+  const idValue = String(app?.id || "");
+  return [statusWeight, createdAtValue, idValue];
+}
+
+function comparePublicConflictPriority(a, b) {
+  const aPriority = getPublicConflictPriority(a);
+  const bPriority = getPublicConflictPriority(b);
+
+  if (aPriority[0] !== bPriority[0]) return aPriority[0] - bPriority[0];
+  if (aPriority[1] !== bPriority[1]) return aPriority[1] - bPriority[1];
+  return aPriority[2].localeCompare(bPriority[2]);
+}
+
+function getAppointmentSlotsForPublicAgenda(app) {
+  const storedSlots = Array.isArray(app?.slots) ? app.slots.filter(Boolean) : [];
+  if (storedSlots.length) return storedSlots;
+  return buildReservedSlots(app?.hora || "", app?.duration || 60);
+}
+
+function removeConflictingPublicAppointments(appointments) {
+  const acceptedSlotKeys = new Set();
+  const orderedAppointments = [...appointments].sort(comparePublicConflictPriority);
+  const acceptedAppointmentIds = new Set();
+
+  orderedAppointments.forEach(app => {
+    const barber = app?.barbero || "Chocho la pinta";
+    const slots = getAppointmentSlotsForPublicAgenda(app);
+
+    if (!slots.length) {
+      acceptedAppointmentIds.add(String(app.id));
+      return;
+    }
+
+    const slotKeys = slots.map(slot => `${app.fecha}|${barber}|${timeToMinutes(slot)}`);
+    const hasConflict = slotKeys.some(key => acceptedSlotKeys.has(key));
+
+    if (hasConflict) {
+      return;
+    }
+
+    slotKeys.forEach(key => acceptedSlotKeys.add(key));
+    acceptedAppointmentIds.add(String(app.id));
+  });
+
+  return appointments.filter(app => acceptedAppointmentIds.has(String(app.id)));
+}
+
 function getStatusLabel(status) {
   if (status === "approved") return "Aprobada";
   if (status === "cancelled") return "Cancelada";
@@ -715,7 +765,7 @@ function isInsidePublicAgendaWindow(app) {
 }
 
 function getFilteredAppointments() {
-  return allAppointments
+  const visibleAppointments = allAppointments
     .filter(app => app.status !== "cancelled")
     .filter(isInsidePublicAgendaWindow)
     .filter(app => !hasAppointmentFinished(app))
@@ -724,6 +774,8 @@ function getFilteredAppointments() {
       const bKey = `${b.fecha} ${to24Hour(b.hora)}`;
       return aKey.localeCompare(bKey);
     });
+
+  return removeConflictingPublicAppointments(visibleAppointments);
 }
 
 function getHiddenMyFutureAppointments() {
