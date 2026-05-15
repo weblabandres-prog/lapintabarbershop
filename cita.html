@@ -2,49 +2,18 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <link rel="canonical" href="https://lapintabarbershop.com/cita.html" />
-  <meta property="og:locale" content="es_DO" />
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Agendar cita | La Pinta Barber en Los Llanos" />
-  <meta property="og:description" content="Reserva tu cita en La Pinta Barber, barberia en Los Llanos, San Pedro de Macoris." />
-  <meta property="og:url" content="https://lapintabarbershop.com/cita.html" />
-  <meta property="og:site_name" content="La Pinta Barber" />
-  <meta property="og:image" content="https://lapintabarbershop.com/interior.jpeg" />
-  <meta property="og:image:alt" content="Reserva tu cita en La Pinta Barber" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Agendar cita | La Pinta Barber en Los Llanos" />
-  <meta name="twitter:description" content="Haz tu reserva online en La Pinta Barber, barberia en Los Llanos, San Pedro de Macoris." />
-  <meta name="twitter:image" content="https://lapintabarbershop.com/interior.jpeg" />
-  <title>Agendar cita | La Pinta Barber en Los Llanos</title>
-  <meta name="description" content="Reserva tu cita en La Pinta Barber, barberia en Los Llanos, San Pedro de Macoris. Agenda cortes, fade y servicios premium de forma rapida." />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+  <title>Agendar cita | La Pinta Barber</title>
+  <meta
+    name="description"
+    content="Reserva tu cita en La Pinta Barber de forma rápida, clara y profesional."
+  />
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
   <link rel="preload" as="image" href="interior.jpeg" fetchpriority="high" />
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "name": "Agendar cita | La Pinta Barber",
-      "url": "https://lapintabarbershop.com/cita.html",
-      "description": "Reserva tu cita en La Pinta Barber, barberia en Los Llanos, San Pedro de Macoris.",
-      "isPartOf": {
-        "@type": "WebSite",
-        "name": "La Pinta Barber",
-        "url": "https://lapintabarbershop.com/"
-      },
-      "about": {
-        "@type": "HairSalon",
-        "name": "La Pinta Barber",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Los Llanos",
-          "addressRegion": "San Pedro de Macoris",
-          "addressCountry": "DO"
-        }
-      }
-    }
-  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -487,7 +456,6 @@
     .form-grid {
       display: grid;
       gap: 14px;
-      min-width: 0;
     }
 
     .two-cols {
@@ -498,7 +466,6 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      min-width: 0;
     }
 
     .form-group label {
@@ -510,7 +477,6 @@
     .form-group input,
     .form-group select {
       width: 100%;
-      max-width: 100%;
       min-height: 52px;
       padding: 14px 15px;
       border-radius: 16px;
@@ -520,32 +486,6 @@
       outline: none;
       font-size: 0.97rem;
       transition: 0.2s ease;
-      min-width: 0;
-    }
-
-    .form-grid > *,
-    .two-cols > * {
-      min-width: 0;
-    }
-
-    .form-group input[type="date"] {
-      display: block;
-      overflow: hidden;
-      padding-right: 50px;
-      line-height: 1.2;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    .form-group input[type="date"]::-webkit-date-and-time-value {
-      text-align: left;
-      min-height: 1.2em;
-    }
-
-    .form-group input[type="date"]::-webkit-calendar-picker-indicator {
-      filter: invert(1) opacity(0.82);
-      cursor: pointer;
-      margin: 0;
     }
 
     .form-group input:focus,
@@ -561,19 +501,6 @@
 
     .form-group select option {
       color: #111;
-    }
-
-    .field-note {
-      color: var(--muted-2);
-      font-size: 0.82rem;
-      line-height: 1.45;
-      margin-top: -2px;
-    }
-
-    .fixed-input {
-      color: rgba(255,255,255,0.88);
-      background: rgba(255,255,255,0.04);
-      cursor: default;
     }
 
     .hours-wrap {
@@ -758,14 +685,6 @@
       margin-bottom: 6px;
     }
 
-    .transfer-card-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
     .transfer-card-content small {
       display: inline-block;
       padding: 6px 10px;
@@ -774,32 +693,6 @@
       color: #8fc0ff;
       font-size: 0.88rem;
       font-weight: 700;
-    }
-
-    .copy-account-btn {
-      border: 1px solid rgba(31,134,255,0.22);
-      background: rgba(31,134,255,0.10);
-      color: #d9ecff;
-      border-radius: 12px;
-      min-height: 36px;
-      padding: 8px 12px;
-      font-size: 0.84rem;
-      font-weight: 800;
-      cursor: pointer;
-      transition: 0.2s ease;
-    }
-
-    .copy-account-btn:hover,
-    .copy-account-btn:focus-visible {
-      background: rgba(31,134,255,0.16);
-      border-color: rgba(31,134,255,0.34);
-      outline: none;
-    }
-
-    .copy-account-btn.copied {
-      background: rgba(54, 179, 126, 0.16);
-      border-color: rgba(54, 179, 126, 0.36);
-      color: #c7f1c2;
     }
 
     .transfer-card input:checked + .transfer-card-content {
@@ -952,10 +845,6 @@
         grid-template-columns: 1fr;
       }
 
-      .two-cols .form-group {
-        width: 100%;
-      }
-
       .hours-grid {
         grid-template-columns: repeat(2, 1fr);
       }
@@ -1045,7 +934,6 @@
 
       .section-card {
         padding: 16px;
-        overflow: hidden;
       }
 
       .section-head {
@@ -1063,11 +951,6 @@
       .payment-option,
       .hour-btn {
         font-size: 0.92rem;
-      }
-
-      .form-group input[type="date"] {
-        min-height: 54px;
-        padding-right: 44px;
       }
     }
   </style>
@@ -1087,7 +970,7 @@
       </a>
 
       <div class="topbar-actions">
-        <a href="ver-citas.html?v=public-agenda-window-20260507h" class="back-btn view-cita-btn">Ver mi cita</a>
+        <a href="ver-citas.html" class="back-btn view-cita-btn">Ver mi cita</a>
         <a href="index.html" class="back-btn" aria-label="Volver al inicio">&larr; Volver</a>
       </div>
     </div>
@@ -1140,7 +1023,7 @@
             <div class="form-grid">
               <div class="form-group">
                 <label for="nombre">Nombre</label>
-                <input type="text" id="nombre" name="nombre" required autocomplete="name" minlength="2" maxlength="80" placeholder="Tu nombre" />
+                <input type="text" id="nombre" name="nombre" required autocomplete="name" minlength="2" maxlength="80" placeholder="Tu nombre completo" />
               </div>
 
               <div class="form-group">
@@ -1179,16 +1062,10 @@
               <div class="form-grid two-cols">
                 <div class="form-group">
                   <label for="barbero">Barbero</label>
-                  <input
-                    type="text"
-                    id="barbero"
-                    name="barbero"
-                    class="fixed-input"
-                    value="Chocho la pinta"
-                    readonly
-                    aria-readonly="true"
-                  />
-                  <small class="field-note">Asignado automáticamente</small>
+                  <select id="barbero" name="barbero" required>
+                    <option value="">Selecciona</option>
+                    <option value="Chocho la pinta">Chocho la pinta</option>
+                  </select>
                 </div>
 
                 <div class="form-group">
@@ -1271,16 +1148,13 @@
                       type="radio"
                       name="cuenta_transferencia"
                       id="cuenta_banreservas"
-                      value="Banreservas - Ahorro - 9602003811"
+                      value="Banreservas - Ahorro - 960200381"
                       checked
                     />
                     <div class="transfer-card-content">
                       <strong>Banreservas</strong>
                       <span>Cuenta de ahorro</span>
-                      <div class="transfer-card-meta">
-                        <small>9602003811</small>
-                        <button type="button" class="copy-account-btn" data-copy-value="9602003811">Copiar</button>
-                      </div>
+                      <small>960200381</small>
                     </div>
                   </label>
 
@@ -1294,10 +1168,7 @@
                     <div class="transfer-card-content">
                       <strong>Popular</strong>
                       <span>Cuenta de ahorro</span>
-                      <div class="transfer-card-meta">
-                        <small>853557841</small>
-                        <button type="button" class="copy-account-btn" data-copy-value="853557841">Copiar</button>
-                      </div>
+                      <small>853557841</small>
                     </div>
                   </label>
                 </div>
@@ -1329,8 +1200,8 @@
             <div class="info-item"><strong>Lunes, miércoles y jueves:</strong> 8:00 AM a 8:00 PM</div>
             <div class="info-item"><strong>Viernes y sábado:</strong> 8:00 AM a 9:00 PM</div>
             <div class="info-item"><strong>Domingo y martes:</strong> disponibles cuando estén habilitados</div>
-            <div class="info-item"><strong>Cortes niños (1 a 15 años):</strong> 45 minutos</div>
-            <div class="info-item"><strong>Demás servicios:</strong> 1 hora 15 minutos</div>
+            <div class="info-item"><strong>Cortes niños:</strong> 30 minutos</div>
+            <div class="info-item"><strong>Demás servicios:</strong> 1 hora</div>
             <div class="info-item"><strong>Recomendación:</strong> llega 10 minutos antes</div>
           </div>
         </div>
@@ -1381,10 +1252,6 @@
     const barberoInput = document.getElementById("barbero");
     const anonimoInput = document.getElementById("anonimo");
 
-    if (barberoInput && !barberoInput.value) {
-      barberoInput.value = "Chocho la pinta";
-    }
-
     const metodoEfectivoInput = document.getElementById("metodo_efectivo");
     const metodoTransferenciaInput = document.getElementById("metodo_transferencia");
     const paymentTransferInfo = document.getElementById("paymentTransferInfo");
@@ -1406,7 +1273,6 @@
     let customClosures = {};
     let dailyOverrides = {};
     let requestedServiceFromURL = "";
-    let hoursRenderRequestId = 0;
 
     const EMAILJS_PUBLIC_KEY = "TXQSraRTJ0Ro5hhuk";
     const EMAILJS_SERVICE_ID = "service_15uyzin";
@@ -1463,8 +1329,6 @@
       servicioCompleto: { nombre: "Corte + Fade + Facial + Lavado de cabello", precio: 700, duracion: 60 }
     };
 
-    const APPOINTMENT_BUFFER_MINUTES = 15;
-
     const extendedTuesdaySchedule = {
       start: "8:00 AM",
       end: "10:00 PM",
@@ -1480,14 +1344,10 @@
       return services.find(s => s && s.nombre === serviceName) || null;
     }
 
-    function getServiceBaseDuration(serviceName, fallback = 60) {
+    function getServiceDuration(serviceName) {
       const serviceObj = getServiceByName(serviceName);
-      const duration = Number(serviceObj?.duracion || fallback);
-      return Number.isFinite(duration) && duration > 0 ? duration : fallback;
-    }
-
-    function getServiceDuration(serviceName, fallback = 60) {
-      return getServiceBaseDuration(serviceName, fallback) + APPOINTMENT_BUFFER_MINUTES;
+      const duration = Number(serviceObj?.duracion || 60);
+      return Number.isFinite(duration) && duration > 0 ? duration : 60;
     }
 
     function getServicePrice(serviceName) {
@@ -1669,9 +1529,9 @@
         agendaDesde: app?.agendaDesde || app?.fecha || "",
         mostrarEnAgendaDosDiasAntes: Boolean(app?.mostrarEnAgendaDosDiasAntes),
         hora: app?.hora || "",
-        duration: getAppointmentDurationValue(app),
+        duration: app?.duration || getServiceDuration(app?.servicio) || 60,
         precio: app?.precio || 0,
-        slots: getAppointmentSlotsValue(app),
+        slots: Array.isArray(app?.slots) ? app.slots : [],
         anonimo: Boolean(app?.anonimo),
         metodoPago: app?.metodoPago || "",
         status: normalizeStatus(app?.status),
@@ -1732,7 +1592,7 @@
     }
 
     function necesitaPublicarseDosDiasAntes(fechaISO) {
-      return diferenciaDiasDesdeHoy(fechaISO) > 2;
+      return diferenciaDiasDesdeHoy(fechaISO) > 15;
     }
 
     function setMinDate() {
@@ -1781,93 +1641,6 @@
       }
 
       return slots;
-    }
-
-    function buildSlotsFromStartTime(startTime, duration) {
-      if (!startTime) return [];
-
-      const startMinutes = parseAnyTimeToMinutes(startTime);
-      if (Number.isNaN(startMinutes)) return [];
-
-      const blocks = Math.max(1, Math.ceil(Number(duration || 30) / 30));
-      return Array.from({ length: blocks }, (_, index) => {
-        return convertToTime(startMinutes + (index * 30));
-      });
-    }
-
-    function getAppointmentDurationValue(app) {
-      const bufferedDuration = getServiceDuration(app?.servicio);
-      const storedDuration = Number(app?.duration || 0);
-
-      if (Number.isFinite(storedDuration) && storedDuration >= bufferedDuration) {
-        return storedDuration;
-      }
-
-      return bufferedDuration;
-    }
-
-    function getAppointmentSlotsValue(app) {
-      const duration = getAppointmentDurationValue(app);
-      const storedSlots = Array.isArray(app?.slots) ? app.slots.filter(Boolean) : [];
-      const requiredBlocks = Math.max(1, Math.ceil(duration / 30));
-
-      if (storedSlots.length >= requiredBlocks) {
-        return storedSlots;
-      }
-
-      return buildSlotsFromStartTime(app?.hora || "", duration);
-    }
-
-    function normalizeComparableText(value) {
-      return String(value || "").trim().toLowerCase();
-    }
-
-    function getAppointmentOccupiedMinutes(app) {
-      const duration = getAppointmentDurationValue(app);
-      const slotCoverageMinutes = Array.isArray(app?.slots) ? app.slots.filter(Boolean).length * 30 : 0;
-      return Math.max(duration, slotCoverageMinutes);
-    }
-
-    function appointmentConflictsWithRequestedRange(app, date, barber, requestedStartMinutes, requestedEndMinutes) {
-      if (!app || app.status === "cancelled") return false;
-
-      if (normalizeComparableText(app.fecha) !== normalizeComparableText(date)) {
-        return false;
-      }
-
-      if (normalizeComparableText(app.barbero) !== normalizeComparableText(barber)) {
-        return false;
-      }
-
-      const appointmentStartMinutes = convertToMinutes(app.hora);
-      const appointmentEndMinutes = appointmentStartMinutes + getAppointmentOccupiedMinutes(app);
-
-      if (
-        Number.isFinite(appointmentStartMinutes) &&
-        rangesOverlapMinutes(
-          requestedStartMinutes,
-          requestedEndMinutes,
-          appointmentStartMinutes,
-          appointmentEndMinutes
-        )
-      ) {
-        return true;
-      }
-
-      if (!Array.isArray(app.slots) || !app.slots.length) {
-        return false;
-      }
-
-      return app.slots.some(slot => {
-        const slotStartMinutes = convertToMinutes(slot);
-        const slotEndMinutes = slotStartMinutes + 30;
-        return rangesOverlapMinutes(
-          requestedStartMinutes,
-          requestedEndMinutes,
-          slotStartMinutes,
-          slotEndMinutes
-        );
-      });
     }
 
     function getDayFromDate(dateString) {
@@ -2043,14 +1816,6 @@
       return normalizeServiceName(serviceName).includes("nino");
     }
 
-    function getServiceDisplayName(serviceName) {
-      if (!serviceName) return "";
-      if (String(serviceName).includes("1 a 15")) return serviceName;
-      return isKidsService(serviceName)
-        ? `${serviceName} (1 a 15 años)`
-        : serviceName;
-    }
-
     function shouldShowSlot(slot, serviceName) {
       if (isKidsService(serviceName)) return true;
       return convertToMinutes(slot) % 60 === 0;
@@ -2081,8 +1846,6 @@
       const breaks = config.breaks || [];
       const neededBlocks = getServiceBlocks(serviceName);
       const startIndex = slots.indexOf(startSlot);
-      const slotStartMinutes = convertToMinutes(startSlot);
-      const slotEndMinutes = slotStartMinutes + (neededBlocks * 30);
 
       if (startIndex === -1) return false;
       if (isPastDateTime(date, startSlot)) return false;
@@ -2095,7 +1858,14 @@
         if (date === getTodayISO() && isPastDateTime(date, currentSlot)) return false;
 
         for (const app of list) {
-          if (appointmentConflictsWithRequestedRange(app, date, barber, slotStartMinutes, slotEndMinutes)) {
+          if (app.status === "cancelled") continue;
+
+          if (
+            app.fecha === date &&
+            app.barbero === barber &&
+            Array.isArray(app.slots) &&
+            app.slots.includes(currentSlot)
+          ) {
             return false;
           }
         }
@@ -2106,7 +1876,7 @@
 
     function getCuentaTransferenciaSeleccionada() {
       if (cuentaPopularInput?.checked) return "Popular - Ahorro - 853557841";
-      return "Banreservas - Ahorro - 9602003811";
+      return "Banreservas - Ahorro - 960200381";
     }
 
     function getMetodoPagoSeleccionado() {
@@ -2114,73 +1884,6 @@
         return `Transferencia | ${getCuentaTransferenciaSeleccionada()}`;
       }
       return "Efectivo";
-    }
-
-    async function copyTextToClipboard(text) {
-      const value = String(text || "").trim();
-      if (!value) return false;
-
-      if (navigator.clipboard && window.isSecureContext) {
-        try {
-          await navigator.clipboard.writeText(value);
-          return true;
-        } catch (error) {
-          console.warn("No se pudo copiar con clipboard API:", error);
-        }
-      }
-
-      const tempInput = document.createElement("textarea");
-      tempInput.value = value;
-      tempInput.setAttribute("readonly", "");
-      tempInput.style.position = "fixed";
-      tempInput.style.opacity = "0";
-      tempInput.style.pointerEvents = "none";
-      document.body.appendChild(tempInput);
-      tempInput.focus();
-      tempInput.select();
-      tempInput.setSelectionRange(0, tempInput.value.length);
-
-      let copied = false;
-      try {
-        copied = document.execCommand("copy");
-      } catch (error) {
-        console.warn("No se pudo copiar con execCommand:", error);
-      }
-
-      tempInput.remove();
-      return copied;
-    }
-
-    function bindCopyAccountButtons() {
-      const copyButtons = document.querySelectorAll(".copy-account-btn");
-      if (!copyButtons.length) return;
-
-      copyButtons.forEach(button => {
-        button.addEventListener("click", async event => {
-          event.preventDefault();
-          event.stopPropagation();
-
-          const value = button.dataset.copyValue || "";
-          const transferCard = button.closest(".transfer-card");
-          const radio = transferCard?.querySelector('input[name="cuenta_transferencia"]');
-
-          if (radio) {
-            radio.checked = true;
-            updateSummary();
-          }
-
-          const originalText = button.textContent || "Copiar";
-          const copied = await copyTextToClipboard(value);
-
-          button.textContent = copied ? "Copiado" : "No copiado";
-          button.classList.toggle("copied", copied);
-
-          window.setTimeout(() => {
-            button.textContent = originalText;
-            button.classList.remove("copied");
-          }, 1600);
-        });
-      });
     }
 
     function updatePaymentMethodUI() {
@@ -2224,50 +1927,6 @@
 
     function telefonoParaGuardar(valor) {
       return normalizarTelefono(valor);
-    }
-
-    function limpiarNombre(valor) {
-      return String(valor || "")
-        .replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'’-]/g, "")
-        .replace(/\s{2,}/g, " ")
-        .trimStart();
-    }
-
-    function nombreValido(valor) {
-      const limpio = limpiarNombre(valor).trim();
-      const soloLetras = limpio.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü]/g, "");
-      return soloLetras.length >= 2;
-    }
-
-    function configurarInputNombre() {
-      if (!nombreInput) return;
-
-      nombreInput.setAttribute("inputmode", "text");
-      nombreInput.setAttribute("autocomplete", "name");
-      nombreInput.setAttribute("placeholder", "Tu nombre");
-
-      nombreInput.addEventListener("input", () => {
-        nombreInput.value = limpiarNombre(nombreInput.value).slice(0, 80);
-        updateSummary();
-      });
-
-      nombreInput.addEventListener("blur", () => {
-        const valor = nombreInput.value.trim();
-
-        if (!valor) return;
-
-        if (!nombreValido(valor)) {
-          nombreInput.setCustomValidity("Escribe un nombre válido sin números.");
-        } else {
-          nombreInput.setCustomValidity("");
-        }
-
-        nombreInput.reportValidity();
-      });
-
-      nombreInput.addEventListener("focus", () => {
-        nombreInput.setCustomValidity("");
-      });
     }
 
     function configurarInputTelefono() {
@@ -2325,7 +1984,7 @@
       services.forEach(servicio => {
         const option = document.createElement("option");
         option.value = servicio.nombre;
-        option.textContent = `${getServiceDisplayName(servicio.nombre)} - RD$${Number(servicio.precio || 0)}`;
+        option.textContent = `${servicio.nombre} - RD$${Number(servicio.precio || 0)}`;
         option.dataset.duracion = String(servicio.duracion || "");
         servicioInput.appendChild(option);
       });
@@ -2350,115 +2009,101 @@
       hoursGrid.replaceChildren(createHoursMessage(text));
     }
 
-    async function renderHours() {
+    function renderHours() {
       if (!hoursGrid) return;
 
-      const requestId = ++hoursRenderRequestId;
       hoursGrid.replaceChildren();
 
-      try {
-        const selectedDate = fechaInput?.value || "";
-        const selectedBarber = barberoInput?.value || "";
-        const selectedService = servicioInput?.value || "";
+      const selectedDate = fechaInput?.value || "";
+      const selectedBarber = barberoInput?.value || "";
+      const selectedService = servicioInput?.value || "";
 
-        if (!selectedDate) {
-          showHoursMessage("Selecciona primero una fecha.");
-          return;
-        }
+      if (!selectedDate) {
+        showHoursMessage("Selecciona primero una fecha.");
+        return;
+      }
 
-        if (!selectedBarber) {
-          showHoursMessage("Selecciona primero un barbero.");
-          return;
-        }
+      if (!selectedBarber) {
+        showHoursMessage("Selecciona primero un barbero.");
+        return;
+      }
 
-        if (!selectedService) {
-          showHoursMessage("Selecciona primero un servicio.");
-          return;
-        }
+      if (!selectedService) {
+        showHoursMessage("Selecciona primero un servicio.");
+        return;
+      }
 
-        const config = getWorkingConfigByDate(selectedDate);
+      const config = getWorkingConfigByDate(selectedDate);
 
-        if (!config) {
-          showHoursMessage("Este día está cerrado.");
-          return;
-        }
+      if (!config) {
+        showHoursMessage("Este día está cerrado.");
+        return;
+      }
 
-        showHoursMessage("Cargando disponibilidad...");
-        const latestAppointments = await loadLatestAppointmentsForValidation();
+      const timeBlocks = getTimeBlocksForDate(selectedDate);
+      if (timeBlocks.length) {
+        hoursGrid.appendChild(
+          createHoursMessage(`Hay ${timeBlocks.length} bloque${timeBlocks.length === 1 ? "" : "s"} de horas cerrado${timeBlocks.length === 1 ? "" : "s"} en esta fecha.`)
+        );
+      }
 
-        if (requestId !== hoursRenderRequestId) {
-          return;
-        }
+      const allSlots = generateTimeSlots(config.start, config.end, 30);
+      const visibleSlots = allSlots.filter(slot => shouldShowSlot(slot, selectedService));
 
-        appointments = latestAppointments;
-        hoursGrid.replaceChildren();
+      if (isKidsService(selectedService)) {
+        hoursGrid.appendChild(createHoursMessage("Corte de niño usa media hora."));
+      }
 
-        const timeBlocks = getTimeBlocksForDate(selectedDate);
-        if (timeBlocks.length) {
-          hoursGrid.appendChild(createHoursMessage("Hay bloques de horas cerrados en esta fecha."));
-        }
+      let availableCount = 0;
 
-        const allSlots = generateTimeSlots(config.start, config.end, 30);
-        const visibleSlots = allSlots.filter(slot => shouldShowSlot(slot, selectedService));
+      visibleSlots.forEach(slot => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.classList.add("hour-btn");
+        btn.textContent = slot;
+        btn.setAttribute("aria-pressed", "false");
 
-        if (isKidsService(selectedService)) {
-          hoursGrid.appendChild(createHoursMessage("Corte de niño usa media hora."));
-        }
+        const available = isSlotAvailable(
+          selectedDate,
+          selectedBarber,
+          slot,
+          selectedService,
+          appointments
+        );
 
-        let availableCount = 0;
-
-        visibleSlots.forEach(slot => {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.classList.add("hour-btn");
-          btn.textContent = slot;
-          btn.setAttribute("aria-pressed", "false");
-
-          const available = isSlotAvailable(
-            selectedDate,
-            selectedBarber,
-            slot,
-            selectedService,
-            latestAppointments
-          );
-
-          if (!available) {
-            btn.classList.add("disabled");
-            btn.disabled = true;
-            btn.title = "Hora no disponible";
-            btn.setAttribute("aria-disabled", "true");
-          } else {
-            availableCount++;
-            btn.addEventListener("click", () => {
-              hoursGrid.querySelectorAll(".hour-btn").forEach(b => {
-                b.classList.remove("active");
-                b.setAttribute("aria-pressed", "false");
-              });
-              btn.classList.add("active");
-              btn.setAttribute("aria-pressed", "true");
-              if (horaInput) horaInput.value = slot;
-              updateSummary();
+        if (!available) {
+          btn.classList.add("disabled");
+          btn.disabled = true;
+          btn.title = "Hora no disponible";
+          btn.setAttribute("aria-disabled", "true");
+        } else {
+          availableCount++;
+          btn.addEventListener("click", () => {
+            hoursGrid.querySelectorAll(".hour-btn").forEach(b => {
+              b.classList.remove("active");
+              b.setAttribute("aria-pressed", "false");
             });
-          }
-
-          hoursGrid.appendChild(btn);
-        });
-
-        if (!availableCount) {
-          hoursGrid.appendChild(createHoursMessage("No quedan horarios disponibles para esta selección."));
+            btn.classList.add("active");
+            btn.setAttribute("aria-pressed", "true");
+            if (horaInput) horaInput.value = slot;
+            updateSummary();
+          });
         }
-      } catch (error) {
-        console.error("Error cargando las horas disponibles:", error);
-        showHoursMessage("No se pudieron cargar las horas. Recarga la página e inténtalo otra vez.");
+
+        hoursGrid.appendChild(btn);
+      });
+
+      if (!availableCount) {
+        hoursGrid.appendChild(createHoursMessage("No quedan horarios disponibles para esta selección."));
       }
     }
+
     function updateSummary() {
       if (!bookingSummary) return;
 
       const nombre = nombreInput?.value.trim() || "-";
       const telefono = telefonoInput?.value.trim() || "-";
       const servicio = servicioInput?.value || "-";
-      const servicioLabel = servicio === "-" ? servicio : getServiceDisplayName(servicio);
       const barbero = barberoInput?.value || "-";
       const fecha = fechaInput?.value ? formatDateSafe(fechaInput.value) : "-";
       const hora = horaInput?.value || "-";
@@ -2475,7 +2120,7 @@
         <p><strong>Nombre real:</strong> ${escapeHTML(nombre)}</p>
         <p><strong>Nombre en público:</strong> ${escapeHTML(nombrePublico)}</p>
         <p><strong>Teléfono:</strong> ${escapeHTML(telefono)}</p>
-        <p><strong>Servicio:</strong> ${escapeHTML(servicioLabel)}</p>
+        <p><strong>Servicio:</strong> ${escapeHTML(servicio)}</p>
         <p><strong>Precio:</strong> ${precio ? `RD$${precio}` : "-"}</p>
         <p><strong>Barbero:</strong> ${escapeHTML(barbero)}</p>
         <p><strong>Fecha:</strong> ${escapeHTML(fecha)}</p>
@@ -2487,40 +2132,6 @@
       `;
     }
 
-    async function readAllAppointmentsFromDatabase() {
-      const baseUrl = String(firebaseConfig.databaseURL || "").replace(/\/$/, "");
-      const response = await fetch(`${baseUrl}/appointments.json`, {
-        method: "GET",
-        cache: "no-store",
-        headers: {
-          "Accept": "application/json"
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error("No se pudieron cargar las citas desde Firebase.");
-      }
-
-      return response.json() || {};
-    }
-
-    async function loadLatestAppointmentsForValidation() {
-      try {
-        const data = await readAllAppointmentsFromDatabase();
-        return Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
-      } catch (error) {
-        console.warn("No se pudo cargar la validacion fresca por REST, probando con Firebase SDK:", error);
-
-        try {
-          const snapshot = await appointmentsRef.once("value");
-          const data = snapshot.val() || {};
-          return Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
-        } catch (sdkError) {
-          console.warn("No se pudo cargar la validacion fresca de citas:", sdkError);
-          return appointments;
-        }
-      }
-    }
     function listenAppointments() {
       appointmentsRef.on("value", snapshot => {
         const data = snapshot.val() || {};
@@ -2746,23 +2357,12 @@
         e.preventDefault();
 
         const telefonoLimpio = telefonoParaGuardar(telefonoInput?.value || "");
-        const nombre = limpiarNombre(nombreInput?.value || "").trim();
+        const nombre = nombreInput?.value.trim() || "";
 
         if (!nombre) {
           alert("Por favor escribe tu nombre.");
           nombreInput?.focus();
           return;
-        }
-
-        if (!nombreValido(nombre)) {
-          alert("Escribe un nombre válido sin números.");
-          nombreInput?.focus();
-          return;
-        }
-
-        if (nombreInput) {
-          nombreInput.value = nombre;
-          nombreInput.setCustomValidity("");
         }
 
         if (!telefonoLimpio) {
@@ -2802,9 +2402,7 @@
           return;
         }
 
-        const latestAppointments = await loadLatestAppointmentsForValidation();
-
-        if (!isSlotAvailable(selectedDate, selectedBarber, selectedHour, selectedService, latestAppointments)) {
+        if (!isSlotAvailable(selectedDate, selectedBarber, selectedHour, selectedService, appointments)) {
           alert("Esa hora ya no está disponible. Por favor elige otra.");
           renderHours();
           return;
@@ -2878,7 +2476,7 @@
 
             if (mostrarEnAgendaDosDiasAntes) {
               alert(
-                `Cita agendada correctamente. Se envió el correo y la cita quedó pendiente de aprobación. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y se mostrará dos días antes en la agenda pública.`
+                `Cita agendada correctamente. Se envió el correo y la cita quedó pendiente de aprobación. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
               );
             } else {
               alert("Cita agendada correctamente. Se envió el correo y la cita quedó pendiente de aprobación.");
@@ -2888,7 +2486,7 @@
 
             if (mostrarEnAgendaDosDiasAntes) {
               alert(
-                `La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y se mostrará dos días antes en la agenda pública.`
+                `La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
               );
             } else {
               alert(
@@ -2908,7 +2506,7 @@
           updateSummary();
           renderHours();
 
-          window.location.href = "ver-citas.html?v=public-agenda-window-20260507h";
+          window.location.href = "ver-citas.html";
         } catch (firebaseError) {
           console.error("Error guardando cita:", firebaseError);
           alert("No se pudo guardar la cita en Firebase.");
@@ -2965,9 +2563,7 @@
       hideApproveButtons();
       bindHiddenApproveButtons();
       bindSecretShortcut();
-      configurarInputNombre();
       configurarInputTelefono();
-      bindCopyAccountButtons();
       listenAppointments();
       listenShopStatus();
       listenDailyOverrides();
