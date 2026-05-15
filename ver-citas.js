@@ -19,6 +19,12 @@ const db = firebase.database();
 const appointmentsRef = db.ref("appointments");
 const servicesRef = db.ref("services");
 
+const searchInput = document.getElementById("searchInput");
+const filterStatus = document.getElementById("filterStatus");
+const filterBarber = document.getElementById("filterBarber");
+const filterDate = document.getElementById("filterDate");
+const clearFiltersBtn = document.getElementById("clearFiltersBtn");
+
 const appointmentsView = document.getElementById("appointmentsView");
 const resultsInfo = document.getElementById("resultsInfo");
 
@@ -31,58 +37,12 @@ const STORAGE_APPOINTMENT_ID = "lapinta_client_appointment_id";
 const STORAGE_CLIENT_TOKEN = "lapinta_client_token";
 const STORAGE_CLIENT_APPOINTMENTS = "lapinta_client_appointments";
 const WHATSAPP_NOTIFICATION_PHONE = "18493757710";
-const PUBLIC_AGENDA_MAX_DAYS_AHEAD = 2;
-const APPOINTMENT_BUFFER_MINUTES = 15;
 
 let allAppointments = [];
 let servicesData = {};
 let myAppointmentId = localStorage.getItem(STORAGE_APPOINTMENT_ID);
 let myClientToken = localStorage.getItem(STORAGE_CLIENT_TOKEN);
 let myAppointments = [];
-
-function removeLegacyFiltersUI() {
-  if (!document.getElementById("legacy-filters-hide-style")) {
-    const style = document.createElement("style");
-    style.id = "legacy-filters-hide-style";
-    style.textContent = `
-      .filters-section,
-      .filters-box,
-      #searchInput,
-      #filterStatus,
-      #filterBarber,
-      #filterDate,
-      #clearFiltersBtn {
-        display: none !important;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  document.querySelectorAll(".filters-section").forEach(section => section.remove());
-
-  [
-    "searchInput",
-    "filterStatus",
-    "filterBarber",
-    "filterDate",
-    "clearFiltersBtn"
-  ].forEach(id => {
-    const element = document.getElementById(id);
-    if (!element) return;
-
-    const removableParent =
-      element.closest(".filters-section") ||
-      element.closest(".filters-box") ||
-      element.closest(".form-group");
-
-    if (removableParent) {
-      removableParent.remove();
-      return;
-    }
-
-    element.remove();
-  });
-}
 
 function refreshMyAppointmentData() {
   myAppointmentId = localStorage.getItem(STORAGE_APPOINTMENT_ID);
@@ -160,17 +120,14 @@ function normalizeAppointment(id, app) {
     barbero: app?.barbero || "No definido",
     fecha: app?.fecha || "",
     hora: app?.hora || "",
-    duration: getAppointmentDurationValue(app),
+    duration: Number(app?.duration || 0),
     precio: Number(app?.precio || 0),
-    slots: getAppointmentSlotsValue(app),
+    slots: Array.isArray(app?.slots) ? app.slots : [],
     agendaDesde: app?.agendaDesde || app?.fecha || "",
     mostrarEnAgendaDosDiasAntes: Boolean(app?.mostrarEnAgendaDosDiasAntes),
     anonimo: Boolean(app?.anonimo),
     status: normalizeStatus(app?.status),
     clientToken: app?.clientToken || "",
-    approveToken: app?.approveToken || "",
-    approvedAt: app?.approvedAt || "",
-    cancelledAt: app?.cancelledAt || "",
     createdAt: app?.createdAt || "",
     updatedAt: app?.updatedAt || ""
   };
@@ -205,10 +162,6 @@ function isKidsService(serviceName) {
 }
 
 function getServiceDuration(serviceName, fallback = 60) {
-  return getServiceBaseDuration(serviceName, fallback) + APPOINTMENT_BUFFER_MINUTES;
-}
-
-function getServiceBaseDuration(serviceName, fallback = 60) {
   const service = getServiceByName(serviceName);
   const defaultDuration = isKidsService(serviceName) ? 30 : fallback;
   const duration = Number(service?.duracion || defaultDuration || 60);
@@ -295,29 +248,6 @@ function buildReservedSlots(startTime, duration) {
   });
 }
 
-function getAppointmentDurationValue(app) {
-  const bufferedDuration = getServiceDuration(app?.servicio, isKidsService(app?.servicio) ? 30 : 60);
-  const storedDuration = Number(app?.duration || 0);
-
-  if (Number.isFinite(storedDuration) && storedDuration >= bufferedDuration) {
-    return storedDuration;
-  }
-
-  return bufferedDuration;
-}
-
-function getAppointmentSlotsValue(app) {
-  const duration = getAppointmentDurationValue(app);
-  const storedSlots = Array.isArray(app?.slots) ? app.slots.filter(Boolean) : [];
-  const requiredBlocks = Math.max(1, Math.ceil(duration / 30));
-
-  if (storedSlots.length >= requiredBlocks) {
-    return storedSlots;
-  }
-
-  return buildReservedSlots(app?.hora || "", duration);
-}
-
 function hasAppointmentConflict(id, fecha, barbero, requestedSlots) {
   const requestedMinutes = new Set(requestedSlots.map(timeToMinutes).filter(minutes => Number.isFinite(minutes)));
   if (!requestedMinutes.size) return false;
@@ -354,9 +284,7 @@ function subtractDays(dateString, days) {
 }
 
 function getAgendaDesde(dateString) {
-  return daysFromToday(dateString) > PUBLIC_AGENDA_MAX_DAYS_AHEAD
-    ? subtractDays(dateString, 2)
-    : dateString;
+  return daysFromToday(dateString) > 15 ? subtractDays(dateString, 2) : dateString;
 }
 function isMine(app) {
   refreshMyAppointmentData();
@@ -370,31 +298,12 @@ function isMine(app) {
   });
 }
 
-function canEditAppointment(app) {
+function canModify(app) {
   if (!isMine(app)) return false;
-  if (app.status === "cancelled") return false;
+  if (app.status !== "pending") return false;
   if (isPastAppointment(app.fecha, app.hora)) return false;
 
   return true;
-}
-
-function canCancelAppointment(app) {
-  if (!isMine(app)) return false;
-  if (app.status === "cancelled") return false;
-  if (isPastAppointment(app.fecha, app.hora)) return false;
-
-  return true;
-}
-
-function didAppointmentScheduleChange(originalAppointment, nextAppointment) {
-  if (!originalAppointment || !nextAppointment) return false;
-
-  const previousDate = String(originalAppointment.fecha || "");
-  const nextDate = String(nextAppointment.fecha || "");
-  const previousTime = formatTimeToInput(originalAppointment.hora || "");
-  const nextTime = formatTimeToInput(nextAppointment.hora || "");
-
-  return previousDate !== nextDate || previousTime !== nextTime;
 }
 
 function formatDateSafe(dateString) {
@@ -410,16 +319,10 @@ function formatDateSafe(dateString) {
 function buildWhatsAppNotificationMessage(type, appointment, previousAppointment = null) {
   const previousHour = previousAppointment?.hora || appointment?.hora || "Sin hora";
   const newHour = appointment?.hora || "Sin hora";
-  const previousDate = previousAppointment?.fecha || appointment?.fecha || "";
-  const newDate = appointment?.fecha || "";
-  const scheduleChanged = didAppointmentScheduleChange(previousAppointment, appointment);
-  const requiresReapproval = previousAppointment?.status === "approved" &&
-    appointment?.status === "pending" &&
-    scheduleChanged;
 
   if (type === "cancel") {
     return [
-      "Cancele mi cita, sera en otro momento.",
+      "Cancelé mi cita, será en otro momento.",
       "",
       `Nombre: ${appointment?.nombre || "Sin nombre"}`,
       `Servicio: ${appointment?.servicio || "Sin servicio"}`,
@@ -429,31 +332,20 @@ function buildWhatsAppNotificationMessage(type, appointment, previousAppointment
     ].join("\n");
   }
 
-  let headerText = "Hola, actualizaron los datos de una cita.";
-  let actionText = `La cita sigue para las ${newHour}.`;
-
-  if (scheduleChanged) {
-    actionText = `La cita se movio de ${formatDateSafe(previousDate)} a las ${previousHour} para ${formatDateSafe(newDate)} a las ${newHour}.`;
-  }
-
-  if (requiresReapproval) {
-    headerText = "Hola, una cita aprobada fue reprogramada y necesita nueva aprobacion.";
-  } else if (scheduleChanged) {
-    headerText = "Hola, una cita fue reprogramada.";
-  }
+  const actionText = `Soy la cita de las ${previousHour} y cambié para esta hora nueva: ${newHour}.`;
 
   return [
-    headerText,
+    "Hola, su cambio fue aceptado.",
     actionText,
     "",
     `Nombre: ${appointment?.nombre || "Sin nombre"}`,
     `Servicio: ${appointment?.servicio || "Sin servicio"}`,
     `Fecha: ${formatDateSafe(appointment?.fecha)}`,
     `Hora: ${appointment?.hora || "Sin hora"}`,
-    `Barbero: ${appointment?.barbero || "No definido"}`,
-    `Estado actual: ${getStatusLabel(appointment?.status)}`
+    `Barbero: ${appointment?.barbero || "No definido"}`
   ].join("\n");
 }
+
 function openWhatsAppNotification(type, appointment, previousAppointment = null) {
   const message = buildWhatsAppNotificationMessage(type, appointment, previousAppointment);
   const url = `https://wa.me/${WHATSAPP_NOTIFICATION_PHONE}?text=${encodeURIComponent(message)}`;
@@ -638,84 +530,10 @@ function isPastAppointment(fecha, hora) {
   return dateTime.getTime() < Date.now();
 }
 
-function hasAppointmentFinished(app) {
-  if (!app?.fecha || !app?.hora) return false;
-
-  const time24 = formatTimeToInput(app.hora) || app.hora;
-  const startDateTime = new Date(`${app.fecha}T${time24}:00`);
-
-  if (Number.isNaN(startDateTime.getTime())) return false;
-
-  const duration = Number(app.duration || 0);
-  const safeDuration = Number.isFinite(duration) && duration > 0 ? duration : 60;
-  const endDateTime = new Date(startDateTime.getTime() + (safeDuration * 60 * 1000));
-
-  return endDateTime.getTime() <= Date.now();
-}
-
-function getPublicConflictPriority(app) {
-  const statusWeight = app?.status === "approved" ? 0 : 1;
-  const createdAtValue = Date.parse(app?.createdAt || "") || Number.MAX_SAFE_INTEGER;
-  const idValue = String(app?.id || "");
-  return [statusWeight, createdAtValue, idValue];
-}
-
-function comparePublicConflictPriority(a, b) {
-  const aPriority = getPublicConflictPriority(a);
-  const bPriority = getPublicConflictPriority(b);
-
-  if (aPriority[0] !== bPriority[0]) return aPriority[0] - bPriority[0];
-  if (aPriority[1] !== bPriority[1]) return aPriority[1] - bPriority[1];
-  return aPriority[2].localeCompare(bPriority[2]);
-}
-
-function getAppointmentSlotsForPublicAgenda(app) {
-  const storedSlots = Array.isArray(app?.slots) ? app.slots.filter(Boolean) : [];
-  if (storedSlots.length) return storedSlots;
-  return buildReservedSlots(app?.hora || "", app?.duration || 60);
-}
-
-function removeConflictingPublicAppointments(appointments) {
-  const acceptedSlotKeys = new Set();
-  const orderedAppointments = [...appointments].sort(comparePublicConflictPriority);
-  const acceptedAppointmentIds = new Set();
-
-  orderedAppointments.forEach(app => {
-    const barber = app?.barbero || "Chocho la pinta";
-    const slots = getAppointmentSlotsForPublicAgenda(app);
-
-    if (!slots.length) {
-      acceptedAppointmentIds.add(String(app.id));
-      return;
-    }
-
-    const slotKeys = slots.map(slot => `${app.fecha}|${barber}|${timeToMinutes(slot)}`);
-    const hasConflict = slotKeys.some(key => acceptedSlotKeys.has(key));
-
-    if (hasConflict) {
-      return;
-    }
-
-    slotKeys.forEach(key => acceptedSlotKeys.add(key));
-    acceptedAppointmentIds.add(String(app.id));
-  });
-
-  return appointments.filter(app => acceptedAppointmentIds.has(String(app.id)));
-}
-
 function getStatusLabel(status) {
   if (status === "approved") return "Aprobada";
   if (status === "cancelled") return "Cancelada";
   return "Pendiente";
-}
-
-function getDisplayStatusLabel(status) {
-  const compactMobile = typeof window !== "undefined" && window.innerWidth <= 640;
-  if (!compactMobile) return getStatusLabel(status);
-
-  if (status === "approved") return "Aprobado";
-  if (status === "cancelled") return "No";
-  return "Pend.";
 }
 
 function getRelativeDateLabel(dateString) {
@@ -752,6 +570,26 @@ function getRelativeDateSubtext(dateString) {
   return `Fecha: ${formatDateSafe(dateString)}`;
 }
 
+function fillBarberFilter(appointments) {
+  const currentValue = filterBarber.value;
+
+  const barbers = [...new Set(
+    appointments
+      .map(app => app.barbero)
+      .filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, "es"));
+
+  filterBarber.innerHTML =
+    `<option value="all">Todos</option>` +
+    barbers.map(barber => `<option value="${escapeHTML(barber)}">${escapeHTML(barber)}</option>`).join("");
+
+  if (barbers.includes(currentValue)) {
+    filterBarber.value = currentValue;
+  } else {
+    filterBarber.value = "all";
+  }
+}
+
 function updateStats(appointments) {
   statTotal.textContent = appointments.length;
   statApproved.textContent = appointments.filter(app => app.status === "approved").length;
@@ -759,52 +597,43 @@ function updateStats(appointments) {
   statCancelled.textContent = appointments.filter(app => app.status === "cancelled").length;
 }
 
-function isInsidePublicAgendaWindow(app) {
-  const diffDays = daysFromToday(app.fecha);
-  return diffDays >= 0 && diffDays <= PUBLIC_AGENDA_MAX_DAYS_AHEAD;
-}
-
 function getFilteredAppointments() {
-  const visibleAppointments = allAppointments
-    .filter(app => app.status !== "cancelled")
-    .filter(isInsidePublicAgendaWindow)
-    .filter(app => !hasAppointmentFinished(app))
-    .sort((a, b) => {
-      const aKey = `${a.fecha} ${to24Hour(a.hora)}`;
-      const bKey = `${b.fecha} ${to24Hour(b.hora)}`;
-      return aKey.localeCompare(bKey);
-    });
+  const search = searchInput.value.trim().toLowerCase();
+  const status = filterStatus.value;
+  const barber = filterBarber.value;
+  const date = filterDate.value;
 
-  return removeConflictingPublicAppointments(visibleAppointments);
-}
-
-function getHiddenMyFutureAppointments() {
   return allAppointments
-    .filter(app => app.status !== "cancelled")
-    .filter(app => isMine(app))
-    .filter(app => daysFromToday(app.fecha) > PUBLIC_AGENDA_MAX_DAYS_AHEAD)
+    .filter(app => {
+      if (app.status === "cancelled") return false;
+
+      const publicName = app.anonimo ? "anónimo" : app.nombre;
+
+      const matchesSearch =
+        !search ||
+        [
+          app.nombre,
+          publicName,
+          app.telefono,
+          app.servicio,
+          app.barbero,
+          app.fecha,
+          app.hora
+        ]
+          .map(v => String(v || "").toLowerCase())
+          .some(v => v.includes(search));
+
+      const matchesStatus = status === "all" || app.status === status;
+      const matchesBarber = barber === "all" || app.barbero === barber;
+      const matchesDate = !date || app.fecha === date;
+
+      return matchesSearch && matchesStatus && matchesBarber && matchesDate;
+    })
     .sort((a, b) => {
       const aKey = `${a.fecha} ${to24Hour(a.hora)}`;
       const bKey = `${b.fecha} ${to24Hour(b.hora)}`;
       return aKey.localeCompare(bKey);
     });
-}
-
-function getVisibilityNoticeHTML(hiddenAppointments) {
-  if (!hiddenAppointments.length) return "";
-
-  const singleAppointment = hiddenAppointments.length === 1;
-  const title = singleAppointment ? "Tu cita se mostrará dos días antes" : "Tus citas se mostrarán dos días antes";
-  const body = singleAppointment
-    ? `La cita del ${formatDateSafe(hiddenAppointments[0].fecha)} todavía no aparece aquí porque la agenda pública solo muestra hoy, mañana y pasado mañana.`
-    : "Algunas de tus citas todavía no aparecen aquí porque la agenda pública solo muestra hoy, mañana y pasado mañana.";
-
-  return `
-    <div class="visibility-note">
-      <strong>${escapeHTML(title)}</strong>
-      <p>${escapeHTML(body)}</p>
-    </div>
-  `;
 }
 
 function groupAppointmentsByDate(appointments) {
@@ -819,57 +648,49 @@ function groupAppointmentsByDate(appointments) {
 }
 
 function getActionsHTML(app) {
-  const compactMobile = typeof window !== "undefined" && window.innerWidth <= 640;
-  const editLabel = compactMobile ? "Edit." : "Editar";
-  const cancelLabel = compactMobile ? "Canc." : "Cancelar";
-  const viewLabel = compactMobile ? "Ver" : "Solo ver";
-
-  if (canEditAppointment(app) || canCancelAppointment(app)) {
+  if (canModify(app)) {
     return `
       <div class="client-actions-wrap">
-        <button type="button" class="client-action-btn edit-client-btn" data-id="${escapeHTML(app.id)}"${canEditAppointment(app) ? "" : " disabled"}>
-          ${editLabel}
+        <button type="button" class="client-action-btn edit-client-btn" data-id="${escapeHTML(app.id)}">
+          Editar
         </button>
 
-        <button type="button" class="client-action-btn cancel-client-btn" data-id="${escapeHTML(app.id)}"${canCancelAppointment(app) ? "" : " disabled"}>
-          ${cancelLabel}
+        <button type="button" class="client-action-btn cancel-client-btn" data-id="${escapeHTML(app.id)}">
+          Cancelar
         </button>
       </div>
     `;
   }
 
   if (isMine(app) && app.status === "approved") {
-    return `<span class="client-note">${viewLabel}</span>`;
+    return `<span class="client-note">Tu cita aprobada</span>`;
   }
 
   if (isMine(app) && app.status === "cancelled") {
-    return `<span class="client-note">${viewLabel}</span>`;
+    return `<span class="client-note">Tu cita cancelada</span>`;
   }
 
   if (isMine(app) && isPastAppointment(app.fecha, app.hora)) {
-    return `<span class="client-note">${viewLabel}</span>`;
+    return `<span class="client-note">Tu cita ya pasó</span>`;
   }
 
-  return `<span class="client-note">${viewLabel}</span>`;
+  return `<span class="client-note">Solo ver</span>`;
 }
 
 function renderGroupedAppointments(groupedAppointments) {
   const dates = Object.keys(groupedAppointments).sort();
-  const hiddenMyAppointments = getHiddenMyFutureAppointments();
-  const visibilityNoticeHTML = getVisibilityNoticeHTML(hiddenMyAppointments);
 
   if (!dates.length) {
     appointmentsView.innerHTML = `
-      ${visibilityNoticeHTML}
       <div class="empty-state">
         <h3>No hay citas para mostrar</h3>
-        <p>No hay citas visibles fuera de hoy, mañana y pasado mañana.</p>
+        <p>No se encontraron citas con los filtros seleccionados.</p>
       </div>
     `;
     return;
   }
 
-  let html = visibilityNoticeHTML;
+  let html = "";
 
   dates.forEach(date => {
     const items = groupedAppointments[date];
@@ -886,6 +707,8 @@ function renderGroupedAppointments(groupedAppointments) {
             <thead>
               <tr>
                 <th>Cliente</th>
+                <th>Servicio</th>
+                <th>Barbero</th>
                 <th>Hora</th>
                 <th>Estado</th>
                 <th>Acción</th>
@@ -902,11 +725,16 @@ function renderGroupedAppointments(groupedAppointments) {
                     </span>
                   </td>
 
+                  <td>
+                    <span class="service-name">${escapeHTML(app.servicio)}</span>
+                  </td>
+
+                  <td>${escapeHTML(app.barbero)}</td>
                   <td>${escapeHTML(app.hora)}</td>
 
                   <td>
                     <span class="status-pill status-${escapeHTML(app.status)}">
-                      ${escapeHTML(getDisplayStatusLabel(app.status))}
+                      ${escapeHTML(getStatusLabel(app.status))}
                     </span>
                   </td>
 
@@ -920,36 +748,51 @@ function renderGroupedAppointments(groupedAppointments) {
         </div>
 
         <div class="mobile-table-list">
-          ${items.map(app => `
-            <article class="mobile-row-card">
-              <div class="mobile-card-top">
-                <div class="mobile-card-name-wrap">
-                  <span class="mobile-card-label">Cliente</span>
-                  <div class="mobile-card-name">${escapeHTML(app.anonimo ? "AnÃ³nimo" : app.nombre)}</div>
-                  ${isMine(app) ? `<small class="mine-badge mobile-card-badge">Mi cita</small>` : ""}
+          ${items.map(app => {
+            let mobileStatusClass = "mobile-status-pending";
+            if (app.status === "approved") mobileStatusClass = "mobile-status-approved";
+            if (app.status === "cancelled") mobileStatusClass = "mobile-status-cancelled";
+
+            return `
+              <article class="mobile-row-card">
+                <h4 class="mobile-service-title">
+                  ${escapeHTML(app.servicio)}
+                  ${isMine(app) ? `<small class="mine-badge mobile-mine-badge">Mi cita</small>` : ""}
+                </h4>
+
+                <div class="mobile-status-pill ${mobileStatusClass}">
+                  ${escapeHTML(getStatusLabel(app.status))}
                 </div>
 
-                <div class="mobile-card-time-wrap">
-                  <span class="mobile-card-label">Hora</span>
-                  <div class="mobile-card-time">${escapeHTML(app.hora)}</div>
-                </div>
-              </div>
+                <div class="mobile-fields">
+                  <div class="mobile-field-box">
+                    <span class="mobile-field-label">Cliente</span>
+                    <span class="mobile-field-value">${escapeHTML(app.anonimo ? "Anónimo" : app.nombre)}</span>
+                  </div>
 
-              <div class="mobile-card-meta">
-                <div class="mobile-card-block mobile-card-status">
-                  <span class="mobile-card-label">Estado</span>
-                  <span class="status-pill status-${escapeHTML(app.status)}">
-                    ${escapeHTML(getStatusLabel(app.status))}
-                  </span>
-                </div>
+                  <div class="mobile-field-box">
+                    <span class="mobile-field-label">Barbero</span>
+                    <span class="mobile-field-value">${escapeHTML(app.barbero)}</span>
+                  </div>
 
-                <div class="mobile-card-block mobile-card-actions">
-                  <span class="mobile-card-label">Accion</span>
-                  ${getActionsHTML(app)}
+                  <div class="mobile-field-box">
+                    <span class="mobile-field-label">Hora</span>
+                    <span class="mobile-field-value">${escapeHTML(app.hora)}</span>
+                  </div>
+
+                  <div class="mobile-field-box">
+                    <span class="mobile-field-label">Estado</span>
+                    <span class="mobile-field-value">${escapeHTML(getStatusLabel(app.status))}</span>
+                  </div>
+
+                  <div class="mobile-field-box">
+                    <span class="mobile-field-label">Acción</span>
+                    <span class="mobile-field-value">${getActionsHTML(app)}</span>
+                  </div>
                 </div>
-              </div>
-            </article>
-          `).join("")}
+              </article>
+            `;
+          }).join("")}
         </div>
       </div>
     `;
@@ -964,11 +807,10 @@ function renderAll() {
 
   const filtered = getFilteredAppointments();
   const grouped = groupAppointmentsByDate(filtered);
-  updateStats(filtered);
 
   resultsInfo.textContent = filtered.length === 1
-    ? "1 cita visible"
-    : `${filtered.length} citas visibles`;
+    ? "1 cita encontrada"
+    : `${filtered.length} citas encontradas`;
 
   renderGroupedAppointments(grouped);
 }
@@ -977,6 +819,9 @@ function listenAppointments() {
   appointmentsRef.on("value", snapshot => {
     const data = snapshot.val() || {};
     allAppointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+
+    updateStats(allAppointments);
+    fillBarberFilter(allAppointments);
     renderAll();
   });
 }
@@ -986,6 +831,14 @@ function listenServices() {
     servicesData = snapshot.val() || {};
     populateEditServiceOptions(document.getElementById("editServicio")?.value || "");
   });
+}
+
+function clearFilters() {
+  searchInput.value = "";
+  filterStatus.value = "all";
+  filterBarber.value = "all";
+  filterDate.value = "";
+  renderAll();
 }
 
 function attachActionEvents() {
@@ -1016,7 +869,7 @@ function openEditModal(id) {
     return;
   }
 
-  if (!canEditAppointment(app)) {
+  if (!canModify(app)) {
     alert("No puedes modificar esta cita.");
     return;
   }
@@ -1061,7 +914,7 @@ async function saveEditAppointment(event) {
     return;
   }
 
-  if (!canEditAppointment(app)) {
+  if (!canModify(app)) {
     alert("No puedes modificar esta cita.");
     return;
   }
@@ -1089,12 +942,6 @@ async function saveEditAppointment(event) {
   const duration = getServiceDuration(servicio, app.duration || 60);
   const precio = getServicePrice(servicio, app.precio || 0);
   const slots = buildReservedSlots(horaInput, duration);
-  const scheduleChanged = didAppointmentScheduleChange(app, {
-    fecha,
-    hora
-  });
-  const shouldRequireReapproval = app.status === "approved" && scheduleChanged;
-  const nextStatus = shouldRequireReapproval ? "pending" : app.status;
 
   if (!slots.length) {
     alert("Selecciona una hora válida.");
@@ -1113,35 +960,23 @@ async function saveEditAppointment(event) {
     barbero,
     fecha,
     agendaDesde: getAgendaDesde(fecha),
-    mostrarEnAgendaDosDiasAntes: daysFromToday(fecha) > PUBLIC_AGENDA_MAX_DAYS_AHEAD,
+    mostrarEnAgendaDosDiasAntes: daysFromToday(fecha) > 15,
     hora,
     duration,
     precio,
     slots,
-    status: nextStatus,
+    status: "pending",
     updatedAt: new Date().toISOString()
   };
-
-  if (shouldRequireReapproval) {
-    updatedData.approvedAt = null;
-  }
 
   try {
     await appointmentsRef.child(id).update(updatedData);
     closeEditModal();
-    const finalAppointment = {
+    openWhatsAppNotification("edit", {
       ...app,
       ...updatedData
-    };
-    openWhatsAppNotification("edit", finalAppointment, app);
-
-    if (shouldRequireReapproval) {
-      alert("Tu cita fue actualizada y quedó pendiente de nueva aprobación porque cambiaste la fecha o la hora.");
-    } else if (app.status === "approved") {
-      alert("Tu cita fue actualizada y mantuvo su aprobación.");
-    } else {
-      alert("Tu cita fue actualizada correctamente.");
-    }
+    }, app);
+    alert("Tu cita fue actualizada correctamente.");
   } catch (error) {
     console.error(error);
     alert("No se pudo actualizar la cita.");
@@ -1156,7 +991,7 @@ async function cancelMyAppointment(id) {
     return;
   }
 
-  if (!canCancelAppointment(app)) {
+  if (!canModify(app)) {
     alert("No puedes cancelar esta cita.");
     return;
   }
@@ -1363,38 +1198,6 @@ function createEditModal() {
       }
 
       @media (max-width: 640px) {
-        .appointments-table .mine-badge {
-          display: inline-flex;
-          width: fit-content;
-          margin-left: 0;
-          margin-top: 6px;
-          padding: 4px 8px;
-          font-size: 0.64rem;
-        }
-
-        .appointments-table .client-note {
-          display: block;
-          font-size: 0.72rem;
-          line-height: 1.2;
-          white-space: normal;
-          word-break: break-word;
-        }
-
-        .appointments-table .client-actions-wrap {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 6px;
-          width: 100%;
-        }
-
-        .appointments-table .client-action-btn {
-          min-height: 34px;
-          width: 100%;
-          padding: 7px 6px;
-          font-size: 0.7rem;
-          line-height: 1.1;
-        }
-
         .client-edit-grid {
           grid-template-columns: 1fr;
         }
@@ -1499,7 +1302,12 @@ function createEditModal() {
   });
 }
 
-removeLegacyFiltersUI();
+searchInput.addEventListener("input", renderAll);
+filterStatus.addEventListener("change", renderAll);
+filterBarber.addEventListener("change", renderAll);
+filterDate.addEventListener("change", renderAll);
+clearFiltersBtn.addEventListener("click", clearFilters);
+
 refreshMyAppointmentData();
 createEditModal();
 listenServices();
