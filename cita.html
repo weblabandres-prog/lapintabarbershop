@@ -6,10 +6,10 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
-  <title>Agendar cita | La Pinta Barber</title>
+  <title>Agendar cita rápida | La Pinta Barber</title>
   <meta
     name="description"
-    content="Reserva tu cita en La Pinta Barber de forma rápida, clara y profesional."
+    content="Agenda tu cita en La Pinta Barber de forma rápida y sencilla."
   />
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
@@ -348,7 +348,8 @@
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.14fr) minmax(320px, 0.82fr);
+      grid-template-columns: minmax(0, 760px) minmax(280px, 360px);
+      justify-content: center;
       gap: 24px;
       align-items: start;
     }
@@ -953,6 +954,86 @@
         font-size: 0.92rem;
       }
     }
+
+
+    /* Versión rápida: menos pasos visibles y más fácil para el cliente */
+    .simple-hidden-fields { display: none !important; }
+
+    .form-panel .panel-head h2 {
+      font-size: 2.15rem;
+    }
+
+    .section-card {
+      padding: 20px;
+    }
+
+    .hours-grid {
+      grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+    }
+
+
+    .horario-panel .panel-head {
+      margin-bottom: 16px;
+    }
+
+    .horario-panel .box {
+      margin-top: 0;
+    }
+
+    @media (max-width: 680px) {
+      .layout {
+        gap: 18px;
+      }
+
+
+      .panel-head h2,
+      .panel-head h3 {
+        font-size: 1.72rem;
+      }
+    }
+
+
+    /* Compatibilidad PC + celular: dos columnas en pantallas grandes y una columna en pantallas pequeñas */
+    .horario-panel {
+      width: 100%;
+    }
+
+    @media (min-width: 931px) {
+      .main-shell {
+        width: min(1180px, 94%);
+      }
+
+      .form-panel {
+        min-width: 0;
+      }
+
+      .horario-panel {
+        align-self: start;
+      }
+    }
+
+    @media (max-width: 930px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        position: static;
+        top: auto;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .main-shell {
+        width: min(100% - 24px, var(--max));
+      }
+
+      .form-panel,
+      .side-panel {
+        border-radius: 22px;
+      }
+    }
+
   </style>
 </head>
 <body class="booking-page">
@@ -981,10 +1062,9 @@
       <div class="hero-content">
         <span class="hero-kicker">Reserva online</span>
         <div class="status-badge" id="shopStatusBadge">Consultando horario...</div>
-        <h1>Agenda tu cita</h1>
+        <h1>Agenda rápido</h1>
         <p>
-          Reserva tu turno de forma clara y rápida. Elige el servicio, selecciona
-          la fecha y marca una hora disponible sin perder tiempo.
+          Elige el servicio, marca el día, selecciona una hora disponible y confirma tu cita en pocos pasos.
         </p>
 
         <div class="hidden-admin-btns">
@@ -999,10 +1079,9 @@
       <div class="panel form-panel">
         <div class="panel-head">
           <span class="eyebrow">Reserva online</span>
-          <h2>Completa tus datos</h2>
+          <h2>Reserva en pocos pasos</h2>
           <p>
-            Todo está organizado por pasos para que la reserva se sienta limpia,
-            clara y profesional.
+            Solo completa lo necesario para apartar tu turno de forma rápida.
           </p>
         </div>
 
@@ -1011,19 +1090,75 @@
         </div>
 
         <form id="bookingForm" autocomplete="on">
+          <input type="hidden" id="barbero" name="barbero" value="Chocho la pinta" />
+
+          <div class="simple-hidden-fields" style="display:none;" aria-hidden="true">
+            <input type="checkbox" id="anonimo" name="anonimo" />
+            <input type="radio" name="metodo_pago" id="metodo_efectivo" value="Efectivo" checked />
+            <input type="radio" name="metodo_pago" id="metodo_transferencia" value="Transferencia" />
+            <input type="radio" name="cuenta_transferencia" id="cuenta_banreservas" value="Banreservas - Ahorro - 960200381" checked />
+            <input type="radio" name="cuenta_transferencia" id="cuenta_popular" value="Popular - Ahorro - 853557841" />
+            <div class="payment-transfer-info hidden" id="paymentTransferInfo"></div>
+          </div>
+
           <div class="section-card">
             <div class="section-head">
               <div class="section-number">1</div>
               <div class="section-title">
-                <h3>Información personal</h3>
-                <p>Escribe tus datos para registrar correctamente tu cita.</p>
+                <h3>Elige servicio y fecha</h3>
+                <p>El barbero se asigna automáticamente para que la reserva sea más rápida.</p>
               </div>
             </div>
 
-            <div class="form-grid">
+            <div class="form-grid two-cols">
+              <div class="form-group">
+                <label for="servicio">Servicio</label>
+                <select id="servicio" name="servicio" required>
+                  <option value="">Cargando servicios...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fecha">Fecha</label>
+                <input type="date" id="fecha" name="fecha" required />
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">2</div>
+              <div class="section-title">
+                <h3>Selecciona una hora</h3>
+                <p>Solo aparecerán las horas que están libres para ese día.</p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Horas disponibles</label>
+              <div class="hours-wrap">
+                <p class="hours-note">
+                  Elige servicio y fecha para ver las horas disponibles.
+                </p>
+                <div class="hours-grid" id="hoursGrid" role="list" aria-live="polite" aria-label="Horas disponibles"></div>
+              </div>
+              <input type="hidden" id="hora" name="hora" required />
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">3</div>
+              <div class="section-title">
+                <h3>Tus datos</h3>
+                <p>Escribe tu nombre y teléfono para confirmar la cita.</p>
+              </div>
+            </div>
+
+            <div class="form-grid two-cols">
               <div class="form-group">
                 <label for="nombre">Nombre</label>
-                <input type="text" id="nombre" name="nombre" required autocomplete="name" minlength="2" maxlength="80" placeholder="Tu nombre completo" />
+                <input type="text" id="nombre" name="nombre" required autocomplete="name" minlength="2" maxlength="80" placeholder="Tu nombre" />
               </div>
 
               <div class="form-group">
@@ -1036,166 +1171,25 @@
                   autocomplete="tel"
                   inputmode="tel"
                   maxlength="16"
-                  placeholder="Número obligatorio"
+                  placeholder="Tu número"
                 />
               </div>
             </div>
           </div>
 
-          <div class="section-card">
-            <div class="section-head">
-              <div class="section-number">2</div>
-              <div class="section-title">
-                <h3>Servicio y fecha</h3>
-                <p>Selecciona el servicio, el barbero y el día en que quieres tu turno.</p>
-              </div>
-            </div>
-
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="servicio">Servicio</label>
-                <select id="servicio" name="servicio" required>
-                  <option value="">Cargando servicios...</option>
-                </select>
-              </div>
-
-              <div class="form-grid two-cols">
-                <div class="form-group">
-                  <label for="barbero">Barbero</label>
-                  <select id="barbero" name="barbero" required>
-                    <option value="">Selecciona</option>
-                    <option value="Chocho la pinta">Chocho la pinta</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label for="fecha">Fecha</label>
-                  <input type="date" id="fecha" name="fecha" required />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="section-card">
-            <div class="section-head">
-              <div class="section-number">3</div>
-              <div class="section-title">
-                <h3>Hora disponible</h3>
-                <p>Las horas se cargan automáticamente según el día, el servicio y la disponibilidad.</p>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Horas disponibles</label>
-              <div class="hours-wrap">
-                <p class="hours-note">
-                  Primero elige servicio, barbero y fecha para mostrar las horas libres.
-                </p>
-                <div class="hours-grid" id="hoursGrid" role="list" aria-live="polite" aria-label="Horas disponibles"></div>
-              </div>
-              <input type="hidden" id="hora" name="hora" required />
-            </div>
-          </div>
-
-          <div class="section-card">
-            <div class="section-head">
-              <div class="section-number">4</div>
-              <div class="section-title">
-                <h3>Detalles finales</h3>
-                <p>Puedes elegir si tu nombre se verá como anónimo en la parte pública.</p>
-              </div>
-            </div>
-
-            <div class="form-grid">
-              <div class="anonimo-box">
-                <label class="anonimo-label">
-                  <input type="checkbox" id="anonimo" name="anonimo" />
-                  <span>Mostrar mi nombre como <strong>Anónimo</strong> en la vista pública</span>
-                </label>
-                <small>El administrador sí podrá ver tu nombre real y tu teléfono.</small>
-              </div>
-            </div>
-          </div>
-
-          <div class="section-card">
-            <div class="section-head">
-              <div class="section-number">5</div>
-              <div class="section-title">
-                <h3>Método de pago</h3>
-                <p>Selecciona cómo vas a pagar tu cita.</p>
-              </div>
-            </div>
-
-            <div class="payment-box">
-              <div class="payment-method">
-                <label class="payment-option">
-                  <input type="radio" name="metodo_pago" id="metodo_efectivo" value="Efectivo" checked />
-                  <span>Efectivo</span>
-                </label>
-
-                <label class="payment-option">
-                  <input type="radio" name="metodo_pago" id="metodo_transferencia" value="Transferencia" />
-                  <span>Transferencia bancaria</span>
-                </label>
-              </div>
-
-              <div class="payment-transfer-info hidden" id="paymentTransferInfo">
-                <p class="payment-title">Cuentas disponibles para transferencia</p>
-
-                <div class="transfer-accounts">
-                  <label class="transfer-card">
-                    <input
-                      type="radio"
-                      name="cuenta_transferencia"
-                      id="cuenta_banreservas"
-                      value="Banreservas - Ahorro - 960200381"
-                      checked
-                    />
-                    <div class="transfer-card-content">
-                      <strong>Banreservas</strong>
-                      <span>Cuenta de ahorro</span>
-                      <small>960200381</small>
-                    </div>
-                  </label>
-
-                  <label class="transfer-card">
-                    <input
-                      type="radio"
-                      name="cuenta_transferencia"
-                      id="cuenta_popular"
-                      value="Popular - Ahorro - 853557841"
-                    />
-                    <div class="transfer-card-content">
-                      <strong>Popular</strong>
-                      <span>Cuenta de ahorro</span>
-                      <small>853557841</small>
-                    </div>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button type="submit" class="submit-btn" id="submitButton">Confirmar cita</button>
+          <button type="submit" class="submit-btn" id="submitButton">Agendar mi cita</button>
         </form>
       </div>
 
-      <aside class="panel side-panel">
+      <aside class="panel side-panel horario-panel" aria-label="Horario de atención">
         <div class="panel-head">
-          <span class="eyebrow">Resumen</span>
-          <h3>Revisa antes de confirmar</h3>
-          <p>Aquí ves el resumen de tu cita y la información rápida del horario.</p>
+          <span class="eyebrow">Horario</span>
+          <h3>Horario de atención</h3>
+          <p>Revisa los días y horas disponibles antes de agendar.</p>
         </div>
 
         <div class="box">
-          <h4>Tu cita</h4>
-          <div class="booking-summary" id="bookingSummary" aria-live="polite">
-            <p>Completa el formulario para ver el detalle de tu cita.</p>
-          </div>
-        </div>
-
-        <div class="box">
-          <h4>Horario</h4>
+          <h4>Disponibilidad</h4>
           <div class="info-list">
             <div class="info-item"><strong>Lunes, miércoles y jueves:</strong> 8:00 AM a 8:00 PM</div>
             <div class="info-item"><strong>Viernes y sábado:</strong> 8:00 AM a 9:00 PM</div>
@@ -1205,10 +1199,6 @@
             <div class="info-item"><strong>Recomendación:</strong> llega 10 minutos antes</div>
           </div>
         </div>
-
-        <p class="foot-note">
-          Reserva con calma. El sistema te mostrará solo las horas disponibles.
-        </p>
       </aside>
     </section>
   </main>
@@ -1244,12 +1234,11 @@
     const fechaInput = document.getElementById("fecha");
     const horaInput = document.getElementById("hora");
     const hoursGrid = document.getElementById("hoursGrid");
-    const bookingSummary = document.getElementById("bookingSummary");
-
     const nombreInput = document.getElementById("nombre");
     const telefonoInput = document.getElementById("telefono");
     const servicioInput = document.getElementById("servicio");
     const barberoInput = document.getElementById("barbero");
+    const DEFAULT_BARBER = "Chocho la pinta";
     const anonimoInput = document.getElementById("anonimo");
 
     const metodoEfectivoInput = document.getElementById("metodo_efectivo");
@@ -2015,21 +2004,16 @@
       hoursGrid.replaceChildren();
 
       const selectedDate = fechaInput?.value || "";
-      const selectedBarber = barberoInput?.value || "";
+      const selectedBarber = barberoInput?.value || DEFAULT_BARBER;
       const selectedService = servicioInput?.value || "";
 
       if (!selectedDate) {
-        showHoursMessage("Selecciona primero una fecha.");
-        return;
-      }
-
-      if (!selectedBarber) {
-        showHoursMessage("Selecciona primero un barbero.");
+        showHoursMessage("Elige una fecha para ver las horas.");
         return;
       }
 
       if (!selectedService) {
-        showHoursMessage("Selecciona primero un servicio.");
+        showHoursMessage("Elige un servicio para ver las horas.");
         return;
       }
 
@@ -2097,39 +2081,8 @@
         hoursGrid.appendChild(createHoursMessage("No quedan horarios disponibles para esta selección."));
       }
     }
-
     function updateSummary() {
-      if (!bookingSummary) return;
-
-      const nombre = nombreInput?.value.trim() || "-";
-      const telefono = telefonoInput?.value.trim() || "-";
-      const servicio = servicioInput?.value || "-";
-      const barbero = barberoInput?.value || "-";
-      const fecha = fechaInput?.value ? formatDateSafe(fechaInput.value) : "-";
-      const hora = horaInput?.value || "-";
-
-      const duration = getServiceDuration(servicio);
-      const precio = getServicePrice(servicio);
-
-      const anonimo = anonimoInput?.checked ? "Sí" : "No";
-      const nombrePublico = anonimo === "Sí" ? "Anónimo" : nombre;
-      const metodoPago = getMetodoPagoSeleccionado() || "-";
-      const estadoBarberia = getShopStatus().text;
-
-      bookingSummary.innerHTML = `
-        <p><strong>Nombre real:</strong> ${escapeHTML(nombre)}</p>
-        <p><strong>Nombre en público:</strong> ${escapeHTML(nombrePublico)}</p>
-        <p><strong>Teléfono:</strong> ${escapeHTML(telefono)}</p>
-        <p><strong>Servicio:</strong> ${escapeHTML(servicio)}</p>
-        <p><strong>Precio:</strong> ${precio ? `RD$${precio}` : "-"}</p>
-        <p><strong>Barbero:</strong> ${escapeHTML(barbero)}</p>
-        <p><strong>Fecha:</strong> ${escapeHTML(fecha)}</p>
-        <p><strong>Hora:</strong> ${escapeHTML(hora)}</p>
-        <p><strong>Duración:</strong> ${escapeHTML(String(duration))} minutos</p>
-        <p><strong>Anónimo en público:</strong> ${anonimo}</p>
-        <p><strong>Método de pago:</strong> ${escapeHTML(metodoPago)}</p>
-        <p><strong>Estado barbería:</strong> ${escapeHTML(estadoBarberia)}</p>
-      `;
+      // Resumen quitado: se mantiene esta función vacía para no afectar otros procesos.
     }
 
     function listenAppointments() {
@@ -2389,7 +2342,7 @@
 
         const selectedService = servicioInput?.value || "";
         const selectedDate = fechaInput?.value || "";
-        const selectedBarber = barberoInput?.value || "";
+        const selectedBarber = barberoInput?.value || DEFAULT_BARBER;
         const selectedHour = horaInput?.value || "";
 
         const mostrarEnAgendaDosDiasAntes = necesitaPublicarseDosDiasAntes(selectedDate);
@@ -2397,7 +2350,7 @@
           ? restarDiasAFecha(selectedDate, 2)
           : selectedDate;
 
-        if (!selectedService || !selectedDate || !selectedBarber) {
+        if (!selectedService || !selectedDate) {
           alert("Completa todos los campos requeridos.");
           return;
         }
@@ -2476,10 +2429,10 @@
 
             if (mostrarEnAgendaDosDiasAntes) {
               alert(
-                `Cita agendada correctamente. Se envió el correo y la cita quedó pendiente de aprobación. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
+                `Cita agendada correctamente. Quedó pendiente de aprobación. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
               );
             } else {
-              alert("Cita agendada correctamente. Se envió el correo y la cita quedó pendiente de aprobación.");
+              alert("Cita agendada correctamente. Quedó pendiente de aprobación.");
             }
           } catch (emailError) {
             console.error("Error enviando correo:", emailError);
@@ -2497,6 +2450,7 @@
           }
 
           bookingForm.reset();
+          if (barberoInput) barberoInput.value = DEFAULT_BARBER;
           if (horaInput) horaInput.value = "";
           if (metodoEfectivoInput) metodoEfectivoInput.checked = true;
           if (cuentaBanreservasInput) cuentaBanreservasInput.checked = true;
@@ -2559,7 +2513,9 @@
 
     function boot() {
       applyServiceFromURL();
+      if (barberoInput) barberoInput.value = DEFAULT_BARBER;
       setMinDate();
+      if (fechaInput && !fechaInput.value) fechaInput.value = getTodayISO();
       hideApproveButtons();
       bindHiddenApproveButtons();
       bindSecretShortcut();
@@ -2578,7 +2534,7 @@
         updateShopStatusBadge();
 
         const selectedDate = fechaInput?.value || "";
-        const selectedBarber = barberoInput?.value || "";
+        const selectedBarber = barberoInput?.value || DEFAULT_BARBER;
         const selectedService = servicioInput?.value || "";
         const selectedHour = horaInput?.value || "";
 
