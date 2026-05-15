@@ -1,18 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Cache-Control" content="no-store, max-age=0" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
   <title>Ver citas | La Pinta Barber</title>
   <meta
     name="description"
     content="Consulta todas las citas registradas en La Pinta Barber con una vista moderna y profesional."
   />
-  <meta name="robots" content="noindex, nofollow" />
-  <link rel="canonical" href="https://lapintabarbershop.com/ver-citas.html" />
 
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
@@ -308,18 +303,6 @@
       font-size: 1rem;
     }
 
-    .hero-note {
-      margin-top: 14px;
-      max-width: 760px;
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(31, 134, 255, 0.08);
-      border: 1px solid rgba(31, 134, 255, 0.16);
-      color: #d9ecff;
-      font-size: 0.93rem;
-      line-height: 1.55;
-    }
-
     .stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -356,16 +339,6 @@
       font-size: 0.92rem;
     }
 
-    .filters-section,
-    .filters-box,
-    #searchInput,
-    #filterStatus,
-    #filterBarber,
-    #filterDate,
-    #clearFiltersBtn {
-      display: none !important;
-    }
-
     .filters-section {
       padding: 10px 0 20px;
     }
@@ -399,7 +372,7 @@
 
     .filters-grid {
       display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr auto;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr auto;
       gap: 14px;
       align-items: end;
     }
@@ -484,28 +457,6 @@
       font-weight: 700;
     }
 
-    .visibility-note {
-      margin-bottom: 18px;
-      padding: 15px 16px;
-      border-radius: 18px;
-      background: rgba(31, 134, 255, 0.10);
-      border: 1px solid rgba(31, 134, 255, 0.18);
-      color: #d9ecff;
-    }
-
-    .visibility-note strong {
-      display: block;
-      font-size: 0.95rem;
-      margin-bottom: 4px;
-      color: var(--white);
-    }
-
-    .visibility-note p {
-      color: #b8c6da;
-      font-size: 0.92rem;
-      line-height: 1.5;
-    }
-
     .date-group {
       margin-bottom: 28px;
     }
@@ -534,11 +485,7 @@
     }
 
     .table-shell {
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(143, 192, 255, 0.38) rgba(255,255,255,0.05);
+      overflow: hidden;
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 22px;
       background: linear-gradient(180deg, #0f1722, #0b1320);
@@ -547,22 +494,7 @@
 
     .appointments-table {
       width: 100%;
-      min-width: 690px;
       border-collapse: collapse;
-    }
-
-    .table-shell::-webkit-scrollbar {
-      height: 10px;
-    }
-
-    .table-shell::-webkit-scrollbar-track {
-      background: rgba(255,255,255,0.05);
-      border-radius: 999px;
-    }
-
-    .table-shell::-webkit-scrollbar-thumb {
-      background: rgba(143, 192, 255, 0.38);
-      border-radius: 999px;
     }
 
     .appointments-table thead th {
@@ -635,18 +567,90 @@
       border-color: rgba(229, 57, 53, 0.22);
     }
 
-    .mobile-table-list,
-    .mobile-row-card,
-    .mobile-card-top,
-    .mobile-card-name-wrap,
-    .mobile-card-label,
-    .mobile-card-name,
-    .mobile-card-badge,
-    .mobile-card-time-wrap,
-    .mobile-card-time,
-    .mobile-card-meta,
-    .mobile-card-block {
-      display: none !important;
+    .mobile-table-list {
+      display: none;
+      gap: 16px;
+    }
+
+    .mobile-row-card {
+      background: linear-gradient(180deg, #121c2b, #0f1724);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.22);
+    }
+
+    .mobile-service-title {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .mobile-status-pill {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 54px;
+      border-radius: 999px;
+      font-size: 0.95rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      border: 1px solid transparent;
+    }
+
+    .mobile-status-approved {
+      background: rgba(62, 207, 142, 0.12);
+      color: #8ff0bc;
+      border-color: rgba(62, 207, 142, 0.25);
+    }
+
+    .mobile-status-pending {
+      background: rgba(245, 158, 11, 0.12);
+      color: #ffc76b;
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .mobile-status-cancelled {
+      background: rgba(229, 57, 53, 0.12);
+      color: #ff9e99;
+      border-color: rgba(229, 57, 53, 0.25);
+    }
+
+    .mobile-fields {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .mobile-field-box {
+      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 16px 18px;
+    }
+
+    .mobile-field-label {
+      display: block;
+      color: #8fb2e7;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .mobile-field-value {
+      display: block;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 800;
+      line-height: 1.35;
+      word-break: break-word;
     }
 
     .empty-state {
@@ -765,38 +769,8 @@
         border-radius: 22px;
       }
 
-      .hero-note {
-        margin-top: 12px;
-        padding: 12px 13px;
-        border-radius: 16px;
-        font-size: 0.88rem;
-        line-height: 1.5;
-      }
-
       .stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        margin-top: 14px;
-      }
-
-      .stat-card {
-        padding: 13px 12px;
-        border-radius: 16px;
-      }
-
-      .stat-card span {
-        font-size: 0.78rem;
-        margin-bottom: 6px;
-      }
-
-      .stat-card strong {
-        font-size: 1.7rem;
-        margin-bottom: 4px;
-      }
-
-      .stat-card small {
-        font-size: 0.74rem;
-        line-height: 1.2;
+        grid-template-columns: 1fr;
       }
 
       .filters-grid {
@@ -804,91 +778,20 @@
       }
 
       .table-shell {
-        display: block;
-        margin-inline: 0;
-        border-radius: 20px;
-        overflow-x: hidden;
+        display: none;
       }
 
-      .appointments-table {
-        min-width: 100%;
-        table-layout: fixed;
-      }
-
-      .appointments-table thead th,
-      .appointments-table tbody td {
-        padding: 12px 8px;
-      }
-
-      .appointments-table thead th {
-        font-size: 0.68rem;
-        letter-spacing: 0.04em;
-      }
-
-      .appointments-table tbody td {
-        font-size: 0.88rem;
-      }
-
-      .appointments-table thead th:nth-child(1),
-      .appointments-table tbody td:nth-child(1) {
-        width: 35%;
-      }
-
-      .appointments-table thead th:nth-child(2),
-      .appointments-table tbody td:nth-child(2) {
-        width: 15%;
-        text-align: center;
-      }
-
-      .appointments-table thead th:nth-child(3),
-      .appointments-table tbody td:nth-child(3) {
-        width: 27%;
-        text-align: center;
-      }
-
-      .appointments-table thead th:nth-child(4),
-      .appointments-table tbody td:nth-child(4) {
-        width: 23%;
-        text-align: center;
-      }
-
-      .client-name {
-        display: block;
-        font-size: 0.94rem;
-        line-height: 1.22;
-        word-break: break-word;
-      }
-
-      .status-pill {
-        min-width: 0;
-        width: 100%;
-        padding: 7px 4px;
-        font-size: 0.56rem;
-        letter-spacing: 0.02em;
+      .mobile-table-list {
+        display: grid;
       }
 
       .footer-content {
         flex-direction: column;
         text-align: center;
       }
-    }
 
-    @media (max-width: 420px) {
-      .stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-      }
-
-      .stat-card {
-        padding: 11px 10px;
-      }
-
-      .stat-card strong {
-        font-size: 1.5rem;
-      }
-
-      .stat-card small {
-        font-size: 0.7rem;
+      .mobile-service-title {
+        font-size: 1rem;
       }
     }
   </style>
@@ -938,15 +841,11 @@
     <div class="container">
       <div class="hero-box">
         <span class="section-tag">Reservas en vivo</span>
-        <h1>Ver próximas citas</h1>
+        <h1>Ver todas las citas</h1>
         <p>
-          Consulta las citas públicas de hoy, mañana y pasado mañana
-          con una vista clara, organizada por fecha y cómoda para teléfono.
+          Consulta las citas guardadas en tiempo real con una vista moderna,
+          organizada por fecha y sin necesidad de desplazarte en teléfono.
         </p>
-
-        <div class="hero-note">
-          Aquí puedes revisar tu cita en la agenda pública. Solo se muestran las citas de hoy, mañana y pasado mañana. Si tu cita es para más adelante, aparecerá dos días antes.
-        </div>
 
         <div class="stats">
           <article class="stat-card">
@@ -977,6 +876,56 @@
     </div>
   </section>
 
+  <section class="filters-section">
+    <div class="container">
+      <div class="filters-box">
+        <div class="filters-head">
+          <div>
+            <h2>Filtros de búsqueda</h2>
+            <p>Encuentra citas por cliente, servicio, barbero, estado o fecha.</p>
+          </div>
+        </div>
+
+        <div class="filters-grid">
+          <div class="form-group">
+            <label for="searchInput">Buscar</label>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Cliente, anónimo, teléfono, servicio o barbero..."
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="filterStatus">Estado</label>
+            <select id="filterStatus">
+              <option value="all">Todos</option>
+              <option value="approved">Aprobadas</option>
+              <option value="pending">Pendientes</option>
+              <option value="cancelled">Canceladas</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="filterBarber">Barbero</label>
+            <select id="filterBarber">
+              <option value="all">Todos</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="filterDate">Fecha</label>
+            <input type="date" id="filterDate" />
+          </div>
+
+          <button type="button" class="btn btn-secondary" id="clearFiltersBtn">
+            Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="results-section">
     <div class="container">
       <div class="results-box">
@@ -986,7 +935,7 @@
             <p id="resultsInfo">Cargando citas...</p>
           </div>
 
-          <div class="results-badge">Hoy, mañana y pasado mañana</div>
+          <div class="results-badge">Tabla por fecha</div>
         </div>
 
         <div id="appointmentsView"></div>
@@ -1008,13 +957,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script>
-    (function loadFreshAppointmentsScript() {
-      const script = document.createElement("script");
-      script.src = `ver-citas.js?v=public-agenda-window-20260507h&t=${Date.now()}`;
-      document.body.appendChild(script);
-    })();
-  </script>
+  <script src="ver-citas.js?v=cancelar-retira-agenda-20260504"></script>
 
   <script>
     const menuToggle = document.getElementById("menuToggle");
@@ -1051,4 +994,3 @@
   </script>
 </body>
 </html>
-
