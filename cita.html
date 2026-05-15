@@ -2,42 +2,56 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Agenda de citas | La Pinta Barber</title>
-  <meta name="description" content="Agenda responsive de citas para La Pinta Barber, optimizada para celular y PC." />
-
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+  <title>Agendar cita rápida | La Pinta Barber</title>
+  <meta
+    name="description"
+    content="Agenda tu cita en La Pinta Barber de forma rápida y sencilla."
+  />
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
+  <link rel="preload" as="image" href="interior.jpeg" fetchpriority="high" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
 
   <style>
     :root {
-      --bg: #050912;
-      --bg-2: #07101d;
-      --card: #0d1624;
-      --card-2: #101b2b;
-      --line: rgba(255,255,255,.09);
-      --line-2: rgba(255,255,255,.14);
-      --text: #f5f8ff;
-      --muted: #9daec7;
-      --muted-2: #7f91ad;
-      --blue: #1f86ff;
-      --green: #8ff0bc;
-      --green-bg: rgba(43, 198, 130, .14);
-      --green-line: rgba(43, 198, 130, .32);
-      --yellow: #ffd27a;
-      --yellow-bg: rgba(255, 193, 7, .14);
-      --yellow-line: rgba(255, 193, 7, .32);
-      --red: #ff9e99;
-      --red-bg: rgba(229, 57, 53, .14);
-      --red-line: rgba(229, 57, 53, .30);
-      --shadow: 0 22px 55px rgba(0,0,0,.38);
-      --radius: 24px;
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --bg: #05070b;
+      --bg-soft: #0b1018;
+      --bg-deep: #03050a;
+      --panel: rgba(14, 20, 30, 0.92);
+      --panel-strong: #101722;
+      --panel-soft: #121b28;
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(255, 255, 255, 0.14);
+      --text: #f3f7ff;
+      --muted: #b8c6da;
+      --muted-2: #8ea2bf;
+      --primary: #1f86ff;
+      --primary-strong: #57a7ff;
+      --primary-dark: #0d6fe6;
+      --primary-soft: rgba(31, 134, 255, 0.12);
+      --success: #c7f1c2;
+      --success-bg: rgba(25, 62, 35, 0.88);
+      --warning: #ffe29c;
+      --warning-bg: rgba(92, 65, 11, 0.88);
+      --danger: #ffbcbc;
+      --danger-bg: rgba(77, 22, 22, 0.88);
+      --white: #ffffff;
+      --shadow-lg: 0 25px 70px rgba(0, 0, 0, 0.42);
+      --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.28);
+      --radius: 28px;
+      --radius-md: 20px;
+      --radius-sm: 16px;
+      --max: 1200px;
     }
 
     * {
@@ -50,13 +64,12 @@
       scroll-behavior: smooth;
     }
 
-    body {
-      min-height: 100vh;
-      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      color: var(--text);
+    body.booking-page {
+      font-family: "Inter", sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(31,134,255,.10), transparent 30%),
-        linear-gradient(180deg, #050912 0%, #07101d 48%, #03060c 100%);
+        radial-gradient(circle at top, rgba(31, 134, 255, 0.08), transparent 24%),
+        linear-gradient(180deg, #05070b 0%, #0b1018 45%, #03050a 100%);
+      color: var(--text);
       overflow-x: hidden;
     }
 
@@ -65,894 +78,1134 @@
       text-decoration: none;
     }
 
-    button {
+    button,
+    input,
+    select {
       font: inherit;
+      min-width: 0;
     }
 
-    .app-shell {
-      width: min(100%, 560px);
-      margin: 0 auto;
-      min-height: 100vh;
-      border-left: 1px solid rgba(255,255,255,.04);
-      border-right: 1px solid rgba(255,255,255,.04);
-      background: linear-gradient(180deg, rgba(8,14,24,.72), rgba(5,9,18,.88));
-    }
-
-    .header {
+    .topbar {
       position: sticky;
       top: 0;
-      z-index: 30;
-      padding-top: var(--safe-top);
-      background: rgba(5,9,18,.88);
-      border-bottom: 1px solid rgba(255,255,255,.07);
+      z-index: 1000;
+      background: rgba(6, 10, 17, 0.82);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .nav {
-      min-height: 82px;
-      padding: 12px 18px;
+    .topbar-inner {
+      width: min(var(--max), 92%);
+      margin: 0 auto;
+      min-height: 84px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
+      gap: 18px;
     }
 
     .brand {
-      min-width: 0;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 12px;
+      position: relative;
+      z-index: 5;
+      flex-shrink: 0;
+      min-width: 0;
+      max-width: calc(100% - 95px);
     }
 
     .brand-logo-wrap {
-      width: 54px;
-      height: 54px;
+      position: relative;
+      width: 62px;
+      height: 62px;
       border-radius: 50%;
-      flex: 0 0 auto;
-      display: grid;
-      place-items: center;
-      background: #fff;
-      padding: 5px;
+      background: #ffffff;
+      border: none;
       overflow: hidden;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      transition: none;
+      flex-shrink: 0;
+    }
+
+    .brand-logo-wrap::before {
+      display: none;
+    }
+
+    .brand:hover .brand-logo-wrap {
+      transform: none;
     }
 
     .brand-logo {
+      position: relative;
+      z-index: 2;
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      margin: 0;
       display: block;
+      object-fit: contain;
+      image-rendering: auto;
     }
 
-    .brand-text {
-      min-width: 0;
+    .brand-copy {
       display: flex;
       flex-direction: column;
       line-height: 1;
+      min-width: 0;
     }
 
-    .brand-text small {
-      margin-bottom: 6px;
-      color: var(--muted-2);
-      font-size: .61rem;
-      letter-spacing: .23em;
+    .brand-copy small {
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .brand-text strong {
-      color: #fff;
-      font-family: "Cormorant Garamond", serif;
-      font-size: 1.18rem;
+      color: var(--muted-2);
       font-weight: 700;
+      margin-bottom: 6px;
       white-space: nowrap;
     }
 
-    .menu-btn {
-      width: 54px;
-      height: 54px;
-      flex: 0 0 auto;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 18px;
-      background: rgba(255,255,255,.04);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 5px;
-      cursor: pointer;
-      color: #fff;
-      box-shadow: 0 12px 25px rgba(0,0,0,.18);
+    .brand-copy strong {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
     }
 
-    .menu-btn span {
-      width: 24px;
-      height: 3px;
-      border-radius: 999px;
-      background: #fff;
-      transition: .22s ease;
-    }
-
-    .menu-btn.active span:nth-child(1) {
-      transform: translateY(8px) rotate(45deg);
-    }
-
-    .menu-btn.active span:nth-child(2) {
-      opacity: 0;
-    }
-
-    .menu-btn.active span:nth-child(3) {
-      transform: translateY(-8px) rotate(-45deg);
-    }
-
-    .menu-panel {
-      display: none;
-      padding: 0 18px 16px;
-    }
-
-    .menu-panel.open {
-      display: block;
-    }
-
-    .menu-card {
-      display: grid;
-      gap: 10px;
-      padding: 14px;
-      border-radius: 22px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: linear-gradient(180deg, rgba(16,27,43,.98), rgba(9,17,29,.98));
-      box-shadow: var(--shadow);
-    }
-
-    .menu-link {
-      min-height: 48px;
+    .topbar-actions {
       display: flex;
       align-items: center;
-      justify-content: center;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.09);
-      background: rgba(255,255,255,.04);
-      color: var(--text);
-      font-size: .94rem;
-      font-weight: 800;
+      gap: 12px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
-    .menu-link.primary {
-      background: linear-gradient(135deg, #1f86ff, #65b0ff);
-      color: #05101d;
-      border-color: transparent;
-    }
-
-    .desktop-links {
-      display: none;
-      align-items: center;
-      gap: 10px;
-      margin-left: auto;
-    }
-
-    .desktop-link {
-      min-height: 46px;
+    .back-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      min-height: 48px;
       padding: 12px 18px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.09);
-      background: rgba(255,255,255,.04);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
       color: var(--text);
-      font-size: .92rem;
-      font-weight: 800;
-      transition: .2s ease;
+      font-size: 0.94rem;
+      font-weight: 700;
+      transition: 0.25s ease;
       white-space: nowrap;
     }
 
-    .desktop-link:hover {
+    .back-btn:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(31,134,255,0.22);
       transform: translateY(-1px);
-      background: rgba(255,255,255,.075);
-      border-color: rgba(31,134,255,.24);
     }
 
-    .desktop-link.primary {
-      background: linear-gradient(135deg, #1f86ff, #65b0ff);
-      color: #05101d;
-      border-color: transparent;
-      box-shadow: 0 12px 24px rgba(31,134,255,.18);
+    .back-btn:focus-visible,
+    .hour-btn:focus-visible,
+    .submit-btn:focus-visible,
+    .payment-option:focus-within,
+    .transfer-card:focus-within,
+    .anonimo-label:focus-within {
+      outline: 3px solid rgba(31,134,255,0.22);
+      outline-offset: 3px;
     }
 
-    .content {
-      padding: 20px 18px calc(34px + var(--safe-bottom));
+    .view-cita-btn {
+      background: rgba(31, 134, 255, 0.12);
+      border-color: rgba(31, 134, 255, 0.22);
+      color: #d9ecff;
     }
 
-    .top-card {
-      margin-bottom: 20px;
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 28px;
-      padding: 18px;
+    .view-cita-btn:hover {
+      background: rgba(31, 134, 255, 0.18);
+      border-color: rgba(31, 134, 255, 0.32);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 430px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
       background:
-        radial-gradient(circle at top right, rgba(31,134,255,.14), transparent 38%),
-        linear-gradient(180deg, rgba(17,29,47,.90), rgba(10,18,31,.95));
-      box-shadow: var(--shadow);
+        linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.72)),
+        linear-gradient(90deg, rgba(0,0,0,0.76), rgba(0,0,0,0.28)),
+        url("interior.jpeg") center center / cover no-repeat;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 54%, var(--bg) 100%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      width: min(var(--max), 92%);
+      margin: 0 auto;
+      padding: 58px 0 98px;
+    }
+
+    .hero-content {
+      max-width: 720px;
+    }
+
+    .hero-kicker {
+      display: inline-block;
+      margin-bottom: 12px;
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 16px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      border: 1px solid transparent;
+    }
+
+    .status-badge.open {
+      background: var(--success-bg);
+      border-color: rgba(76, 175, 80, 0.45);
+      color: var(--success);
+    }
+
+    .status-badge.break {
+      background: var(--warning-bg);
+      border-color: rgba(255, 193, 7, 0.42);
+      color: var(--warning);
+    }
+
+    .status-badge.closed {
+      background: var(--danger-bg);
+      border-color: rgba(255, 82, 82, 0.36);
+      color: var(--danger);
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      max-width: 9ch;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 560px;
+      font-size: 1.02rem;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.84);
+    }
+
+    .hidden-admin-btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .admin-hidden-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .main-shell {
+      width: min(var(--max), 92%);
+      margin: -60px auto 60px;
+      position: relative;
+      z-index: 3;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 760px) minmax(280px, 360px);
+      justify-content: center;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background:
+        linear-gradient(180deg, rgba(16,23,34,0.94), rgba(12,18,27,0.96));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .form-panel {
+      padding: 28px;
+    }
+
+    .side-panel {
+      padding: 22px;
+      position: sticky;
+      top: 102px;
+    }
+
+    .panel-head {
+      margin-bottom: 22px;
     }
 
     .eyebrow {
       display: inline-block;
       margin-bottom: 8px;
-      color: #7dbbff;
-      font-size: .72rem;
-      letter-spacing: .20em;
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      font-weight: 900;
     }
 
-    .top-card h1 {
-      margin-bottom: 8px;
+    .panel-head h2,
+    .panel-head h3 {
+      margin: 0 0 8px;
       font-family: "Cormorant Garamond", serif;
       font-size: 2rem;
-      line-height: .98;
-      letter-spacing: -.02em;
-    }
-
-    .top-card p {
-      color: var(--muted);
-      font-size: .94rem;
-      line-height: 1.55;
-    }
-
-    .quick-stats {
-      margin-top: 16px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .quick-stat {
-      padding: 13px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.035);
-    }
-
-    .quick-stat span {
-      display: block;
-      margin-bottom: 5px;
-      color: var(--muted-2);
-      font-size: .75rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
-
-    .quick-stat strong {
-      display: block;
-      color: #fff;
-      font-size: 1.45rem;
       line-height: 1;
-      font-weight: 900;
     }
 
-    .agenda-layout {
-      display: block;
+    .panel-head p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.96rem;
     }
 
-    .agenda-section {
-      margin-top: 28px;
+    #bookingForm {
+      display: grid;
+      gap: 16px;
     }
 
-    .agenda-section:first-of-type {
-      margin-top: 0;
+    .section-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      transition: 0.22s ease;
     }
 
-    .section-title {
+    .section-card:hover {
+      border-color: rgba(31,134,255,0.16);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
       margin-bottom: 14px;
     }
 
-    .section-title h2 {
-      margin-bottom: 6px;
-      color: #fff;
-      font-size: 1.42rem;
-      line-height: 1.1;
+    .section-number {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #61a9ff);
+      color: #07111f;
       font-weight: 900;
-      letter-spacing: -.02em;
-      text-transform: capitalize;
+      font-size: 0.96rem;
+      box-shadow: 0 10px 20px rgba(31,134,255,0.18);
+    }
+
+    .section-title h3 {
+      margin: 0 0 4px;
+      font-size: 1.05rem;
+      font-family: "Inter", sans-serif;
     }
 
     .section-title p {
-      color: var(--muted);
-      font-size: 1rem;
-      line-height: 1.35;
-    }
-
-    .section-divider {
-      height: 1px;
-      margin-top: 14px;
-      background: linear-gradient(90deg, rgba(255,255,255,.10), transparent);
-    }
-
-    .agenda-card {
-      overflow: hidden;
-      border-radius: 24px;
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, #111b2a, #09111e);
-      box-shadow: 0 16px 42px rgba(0,0,0,.28);
-    }
-
-    .agenda-grid {
-      display: grid;
-      grid-template-columns: minmax(102px, 1fr) 68px 98px 42px;
-      column-gap: 8px;
-      align-items: center;
-    }
-
-    .agenda-head {
-      min-height: 58px;
-      padding: 0 14px;
-      background: rgba(255,255,255,.025);
-      border-bottom: 1px solid var(--line-2);
-    }
-
-    .agenda-head div {
-      color: #94a7c1;
-      font-size: .72rem;
-      font-weight: 900;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .agenda-row {
-      position: relative;
-      min-height: 86px;
-      padding: 13px 14px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-
-    .agenda-row:last-child {
-      border-bottom: none;
-    }
-
-    .agenda-row:active {
-      background: rgba(255,255,255,.035);
-    }
-
-    .client-name {
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 900;
-      line-height: 1.13;
-      word-break: break-word;
-    }
-
-    .time-cell {
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 600;
-      line-height: 1.25;
-      text-align: left;
-    }
-
-    .time-cell span {
-      display: block;
-    }
-
-    .status-pill {
-      width: 100%;
-      min-height: 38px;
-      padding: 7px 8px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 999px;
-      font-size: .68rem;
-      font-weight: 900;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-      white-space: nowrap;
-      border: 1px solid transparent;
-    }
-
-    .status-approved {
-      color: var(--green);
-      background: var(--green-bg);
-      border-color: var(--green-line);
-    }
-
-    .status-pending {
-      color: var(--yellow);
-      background: var(--yellow-bg);
-      border-color: var(--yellow-line);
-    }
-
-    .status-cancelled {
-      color: var(--red);
-      background: var(--red-bg);
-      border-color: var(--red-line);
-    }
-
-    .view-btn {
-      border: none;
-      background: transparent;
-      color: #9eb2d1;
-      font-size: .84rem;
-      font-weight: 900;
-      cursor: pointer;
-      text-align: center;
-      padding: 8px 0;
-    }
-
-    .view-btn:active {
-      transform: scale(.96);
-    }
-
-    .empty-state,
-    .loading-state {
-      padding: 24px 18px;
-      border-radius: 22px;
-      border: 1px dashed rgba(255,255,255,.14);
-      background: rgba(255,255,255,.025);
-      color: var(--muted);
-      text-align: center;
-      font-size: .94rem;
+      margin: 0;
+      color: var(--muted-2);
+      font-size: 0.92rem;
       line-height: 1.55;
     }
 
-    .loading-state {
+    .form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .two-cols {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .form-group {
       display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      min-height: 52px;
+      padding: 14px 15px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      outline: none;
+      font-size: 0.97rem;
+      transition: 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: rgba(31,134,255,0.38);
+      box-shadow: 0 0 0 3px rgba(31,134,255,0.10);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .form-group input::placeholder {
+      color: rgba(255,255,255,0.45);
+    }
+
+    .form-group select option {
+      color: #111;
+    }
+
+    .hours-wrap {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .hours-note {
+      margin: 0 0 12px;
+      color: var(--muted-2);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .hours-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
       gap: 10px;
     }
 
-    .spinner {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,.18);
-      border-top-color: #7dbbff;
-      animation: spin .8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .bottom-note {
-      margin-top: 24px;
+    .hours-message {
+      grid-column: 1 / -1;
+      margin: 0;
       color: var(--muted-2);
-      text-align: center;
-      font-size: .84rem;
-      line-height: 1.5;
+      font-size: 0.92rem;
+      line-height: 1.55;
     }
 
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 80;
-      display: none;
-      align-items: flex-end;
-      justify-content: center;
-      padding: 18px;
-      padding-bottom: calc(18px + var(--safe-bottom));
-      background: rgba(0,0,0,.66);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+    .hours-message + .hour-btn,
+    .hours-message + .hours-message {
+      margin-top: 2px;
     }
 
-    .modal-backdrop.open {
-      display: flex;
+    .hour-btn {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 12px 10px;
+      font-size: 0.94rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
     }
 
-    .modal-card {
-      width: min(100%, 520px);
-      max-height: min(82vh, 720px);
-      overflow: auto;
-      border-radius: 28px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: linear-gradient(180deg, #111d2f, #07101d);
-      box-shadow: 0 26px 80px rgba(0,0,0,.55);
+    .hour-btn:hover {
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-1px);
+      border-color: rgba(31,134,255,0.18);
     }
 
-    .modal-header {
-      position: sticky;
-      top: 0;
+    .hour-btn.active {
+      background: linear-gradient(135deg, var(--primary), #61a9ff);
+      color: #08111f;
+      border-color: transparent;
+      box-shadow: 0 10px 22px rgba(31,134,255,0.18);
+    }
+
+    .hour-btn.disabled,
+    .hour-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .anonimo-box {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+    }
+
+    .anonimo-label {
       display: flex;
       align-items: flex-start;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 20px 18px 14px;
-      background: rgba(15,26,43,.96);
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-
-    .modal-header h3 {
-      color: #fff;
-      font-size: 1.25rem;
-      line-height: 1.15;
-      font-weight: 900;
-    }
-
-    .modal-header p {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: .88rem;
-    }
-
-    .close-btn {
-      width: 42px;
-      height: 42px;
-      border: 1px solid rgba(255,255,255,.11);
-      border-radius: 15px;
-      background: rgba(255,255,255,.04);
-      color: #fff;
-      font-size: 1.25rem;
-      line-height: 1;
+      gap: 10px;
+      line-height: 1.55;
       cursor: pointer;
     }
 
-    .modal-body {
-      padding: 18px;
+    .anonimo-label input {
+      width: auto;
+      margin-top: 3px;
+      accent-color: var(--primary);
+    }
+
+    .anonimo-box small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted-2);
+      line-height: 1.45;
+      font-size: 0.88rem;
+    }
+
+    .payment-box {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(31,134,255,0.07);
+      border: 1px solid rgba(31,134,255,0.18);
+    }
+
+    .payment-method {
+      display: grid;
+      gap: 10px;
+    }
+
+    .payment-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .payment-option:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(31,134,255,0.20);
+    }
+
+    .payment-option input {
+      accent-color: var(--primary);
+    }
+
+    .payment-transfer-info {
+      margin-top: 16px;
+    }
+
+    .payment-transfer-info.hidden {
+      display: none;
+    }
+
+    .payment-title {
+      margin: 0 0 12px;
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #8fc0ff;
+    }
+
+    .transfer-accounts {
       display: grid;
       gap: 12px;
     }
 
-    .detail-item {
-      padding: 14px;
+    .transfer-card {
+      display: block;
+      cursor: pointer;
+    }
+
+    .transfer-card input {
+      display: none;
+    }
+
+    .transfer-card-content {
+      padding: 14px 15px;
       border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.035);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      transition: 0.2s ease;
     }
 
-    .detail-item span {
+    .transfer-card-content strong {
       display: block;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .transfer-card-content span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.92rem;
       margin-bottom: 6px;
-      color: #85a7d8;
-      font-size: .70rem;
-      font-weight: 900;
-      letter-spacing: .12em;
-      text-transform: uppercase;
     }
 
-    .detail-item strong {
-      display: block;
-      color: #fff;
-      font-size: .98rem;
-      line-height: 1.35;
+    .transfer-card-content small {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(31,134,255,0.12);
+      color: #8fc0ff;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .transfer-card input:checked + .transfer-card-content {
+      border-color: rgba(31,134,255,0.45);
+      background: rgba(31,134,255,0.10);
+      box-shadow: 0 10px 24px rgba(31,134,255,0.10);
+    }
+
+    .submit-btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 17px 18px;
+      background: linear-gradient(135deg, var(--primary), #61a9ff);
+      color: #07111f;
+      font-weight: 900;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s ease;
+      box-shadow: 0 14px 28px rgba(31,134,255,0.20);
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    .submit-btn:disabled {
+      cursor: wait;
+      opacity: 0.72;
+      transform: none;
+      filter: none;
+    }
+
+    .box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .box + .box {
+      margin-top: 14px;
+    }
+
+    .box h4 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .booking-summary p {
+      margin: 6px 0;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.55;
+      font-size: 0.95rem;
       word-break: break-word;
     }
 
-    @media (min-width: 760px) {
-      body {
-        padding: 26px 0;
-      }
+    .info-list {
+      display: grid;
+      gap: 10px;
+    }
 
-      .app-shell {
-        width: min(100%, 720px);
-        border-radius: 34px;
-        overflow: hidden;
-        box-shadow: 0 35px 100px rgba(0,0,0,.42);
-      }
+    .info-item {
+      padding: 12px 13px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: rgba(255,255,255,0.84);
+      font-size: 0.93rem;
+      line-height: 1.55;
+    }
 
-      .header {
-        top: 26px;
-      }
+    .closed-banner {
+      display: none;
+      margin-bottom: 14px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      background: rgba(120, 23, 23, 0.28);
+      border: 1px solid rgba(255, 90, 90, 0.22);
+      color: #ffcbcb;
+      font-size: 0.93rem;
+      line-height: 1.55;
+    }
 
-      .content {
-        padding: 26px 24px calc(38px + var(--safe-bottom));
-      }
+    .closed-banner.show {
+      display: block;
+    }
 
-      .agenda-grid {
-        grid-template-columns: minmax(150px, 1fr) 86px 124px 56px;
+    .foot-note {
+      margin-top: 14px;
+      text-align: center;
+      color: var(--muted-2);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
       }
     }
 
-    @media (min-width: 980px) {
-      body {
-        padding: 30px 0;
+    @media (max-width: 930px) {
+      .layout {
+        grid-template-columns: 1fr;
       }
 
-      .app-shell {
-        width: min(1220px, 94%);
-        min-height: calc(100vh - 60px);
+      .side-panel {
+        position: static;
       }
+    }
 
-      .header {
-        top: 30px;
-      }
-
-      .nav {
-        min-height: 92px;
-        padding: 16px 28px;
-      }
-
-      .brand-logo-wrap {
-        width: 64px;
-        height: 64px;
-      }
-
-      .brand-text small {
-        font-size: .72rem;
-      }
-
-      .brand-text strong {
-        font-size: 1.55rem;
-      }
-
-      .desktop-links {
+    @media (max-width: 760px) {
+      .brand-copy {
         display: flex;
       }
 
-      .menu-btn,
-      .menu-panel {
-        display: none !important;
+      .brand-copy small {
+        font-size: 0.54rem;
+        letter-spacing: 0.14em;
+        margin-bottom: 3px;
       }
 
-      .content {
-        padding: 32px 32px 44px;
+      .brand-copy strong {
+        font-size: 0.88rem;
+        letter-spacing: 0.02em;
       }
 
-      .top-card {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 330px;
-        align-items: center;
-        gap: 28px;
-        padding: 28px;
-        border-radius: 32px;
+      .topbar-inner {
+        min-height: 76px;
       }
 
-      .top-card h1 {
-        font-size: 2.75rem;
+      .hero {
+        min-height: 380px;
       }
 
-      .top-card p {
-        max-width: 620px;
-        font-size: 1rem;
+      .hero-inner {
+        padding: 46px 0 86px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .two-cols {
+        grid-template-columns: 1fr;
       }
 
-      .quick-stats {
-        margin-top: 0;
-        grid-template-columns: 1fr 1fr;
+      .hours-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
 
-      .quick-stat {
-        min-height: 112px;
-        display: flex;
-        justify-content: center;
-        flex-direction: column;
+      .main-shell {
+        margin-top: -44px;
+      }
+
+      .form-panel,
+      .side-panel {
         padding: 18px;
       }
 
-      .quick-stat strong {
-        font-size: 2.35rem;
-      }
-
-      .agenda-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        gap: 24px;
-        align-items: start;
-      }
-
-      .agenda-section,
-      .agenda-section:first-of-type {
-        margin-top: 0;
-      }
-
-      .section-title h2 {
-        font-size: 1.65rem;
-      }
-
-      .agenda-card {
-        border-radius: 26px;
-      }
-
-      .agenda-grid {
-        grid-template-columns: minmax(170px, 1fr) 92px 132px 62px;
-        column-gap: 12px;
-      }
-
-      .agenda-head {
-        padding: 0 18px;
-      }
-
-      .agenda-row {
-        min-height: 92px;
-        padding: 16px 18px;
-      }
-
-      .client-name {
-        font-size: 1.05rem;
-      }
-
-      .time-cell {
-        font-size: 1.02rem;
-      }
-
-      .status-pill {
-        min-height: 40px;
-        font-size: .70rem;
-      }
-
-      .view-btn {
-        font-size: .88rem;
-      }
-
-      .modal-backdrop {
-        align-items: center;
-      }
-
-      .modal-card {
-        width: min(640px, 92vw);
-      }
-
-      .modal-body {
-        grid-template-columns: 1fr 1fr;
+      .hero p {
+        font-size: 0.96rem;
+        line-height: 1.7;
       }
     }
 
-    @media (min-width: 1180px) {
-      .agenda-grid {
-        grid-template-columns: minmax(210px, 1fr) 102px 140px 66px;
-      }
-    }
-
-    @media (max-width: 390px) {
-      .nav {
-        padding-inline: 14px;
+    @media (max-width: 560px) {
+      .topbar-inner {
+        width: 94%;
+        min-height: 72px;
+        gap: 10px;
       }
 
-      .content {
-        padding-inline: 14px;
+      .brand {
+        gap: 10px;
+        max-width: calc(100% - 88px);
       }
 
       .brand-logo-wrap {
-        width: 50px;
-        height: 50px;
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        padding: 4px;
       }
 
-      .brand-text small {
-        font-size: .54rem;
-        letter-spacing: .18em;
+      .brand-logo {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        object-fit: contain;
       }
 
-      .brand-text strong {
-        font-size: 1.03rem;
+      .brand-copy {
+        display: flex;
       }
 
-      .menu-btn {
-        width: 50px;
-        height: 50px;
-        border-radius: 17px;
+      .brand-copy small {
+        font-size: 0.48rem;
+        letter-spacing: 0.12em;
+        margin-bottom: 3px;
+        white-space: nowrap;
       }
 
-      .agenda-grid {
-        grid-template-columns: minmax(90px, 1fr) 60px 88px 36px;
-        column-gap: 6px;
+      .brand-copy strong {
+        font-size: 0.82rem;
+        white-space: nowrap;
       }
 
-      .agenda-head,
-      .agenda-row {
-        padding-inline: 12px;
+      .topbar-actions {
+        gap: 8px;
       }
 
-      .agenda-head div {
-        font-size: .64rem;
+      .back-btn {
+        padding: 10px 12px;
+        font-size: 0.84rem;
       }
 
-      .client-name {
-        font-size: .94rem;
+      .hero {
+        min-height: 345px;
       }
 
-      .time-cell {
-        font-size: .94rem;
+      .hero-inner {
+        padding: 34px 0 72px;
       }
 
-      .status-pill {
-        min-height: 35px;
-        font-size: .60rem;
-        padding-inline: 6px;
+      .hero h1 {
+        font-size: 2.2rem;
+        line-height: 1.02;
       }
 
-      .view-btn {
-        font-size: .78rem;
+      .hours-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .section-card {
+        padding: 16px;
+      }
+
+      .section-head {
+        gap: 10px;
+      }
+
+      .section-number {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        font-size: 0.9rem;
+      }
+
+      .submit-btn,
+      .payment-option,
+      .hour-btn {
+        font-size: 0.92rem;
       }
     }
+
+
+    /* Versión rápida: menos pasos visibles y más fácil para el cliente */
+    .simple-hidden-fields { display: none !important; }
+
+    .form-panel .panel-head h2 {
+      font-size: 2.15rem;
+    }
+
+    .section-card {
+      padding: 20px;
+    }
+
+    .hours-grid {
+      grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+    }
+
+
+    .horario-panel .panel-head {
+      margin-bottom: 16px;
+    }
+
+    .horario-panel .box {
+      margin-top: 0;
+    }
+
+    @media (max-width: 680px) {
+      .layout {
+        gap: 18px;
+      }
+
+
+      .panel-head h2,
+      .panel-head h3 {
+        font-size: 1.72rem;
+      }
+    }
+
+
+    /* Compatibilidad PC + celular: dos columnas en pantallas grandes y una columna en pantallas pequeñas */
+    .horario-panel {
+      width: 100%;
+    }
+
+    @media (min-width: 931px) {
+      .main-shell {
+        width: min(1180px, 94%);
+      }
+
+      .form-panel {
+        min-width: 0;
+      }
+
+      .horario-panel {
+        align-self: start;
+      }
+    }
+
+    @media (max-width: 930px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        position: static;
+        top: auto;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .main-shell {
+        width: min(100% - 24px, var(--max));
+      }
+
+      .form-panel,
+      .side-panel {
+        border-radius: 22px;
+      }
+    }
+
   </style>
 </head>
-<body>
-  <div class="app-shell">
-    <header class="header">
-      <div class="nav">
-        <a class="brand" href="index.html" aria-label="La Pinta Barber">
-          <div class="brand-logo-wrap">
-            <img src="logo.jpeg" alt="La Pinta Barber" class="brand-logo" />
-          </div>
-          <div class="brand-text">
-            <small>Barbería premium</small>
-            <strong>La Pinta Barber</strong>
-          </div>
-        </a>
+<body class="booking-page">
 
-        <nav class="desktop-links" aria-label="Navegación principal">
-          <a class="desktop-link" href="index.html">Inicio</a>
-          <a class="desktop-link primary" href="cita.html">Agendar cita</a>
-          <a class="desktop-link" href="index2.html">Panel Admin</a>
-        </nav>
+  <header class="topbar" aria-label="Navegación principal">
+    <div class="topbar-inner">
+      <a href="index.html" class="brand" id="logoSecret">
+        <div class="brand-logo-wrap">
+          <img src="logo.jpeg" alt="La Pinta Barber" class="brand-logo" width="96" height="96" decoding="async" />
+        </div>
+        <div class="brand-copy">
+          <small>Barbería premium</small>
+          <strong>La Pinta Barber</strong>
+        </div>
+      </a>
 
-        <button class="menu-btn" type="button" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+      <div class="topbar-actions">
+        <a href="ver-citas.html" class="back-btn view-cita-btn">Ver mi cita</a>
+        <a href="index.html" class="back-btn" aria-label="Volver al inicio">&larr; Volver</a>
       </div>
+    </div>
+  </header>
 
-      <div class="menu-panel" id="menuPanel">
-        <div class="menu-card">
-          <a class="menu-link" href="index.html">Inicio</a>
-          <a class="menu-link primary" href="cita.html">Agendar cita</a>
-          <a class="menu-link" href="index2.html">Panel Admin</a>
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <span class="hero-kicker">Reserva online</span>
+        <div class="status-badge" id="shopStatusBadge">Consultando horario...</div>
+        <h1>Agenda rápido</h1>
+        <p>
+          Elige el servicio, marca el día, selecciona una hora disponible y confirma tu cita en pocos pasos.
+        </p>
+
+        <div class="hidden-admin-btns">
+          <a href="aprobar.html" class="admin-hidden-btn" id="btnAprobarHero">Aprobar citas</a>
         </div>
       </div>
-    </header>
+    </div>
+  </section>
 
-    <main class="content">
-      <section class="top-card" aria-label="Resumen de agenda">
-        <span class="eyebrow">Agenda responsive</span>
-        <h1>Citas programadas</h1>
-        
-
-        <div class="quick-stats">
-          <div class="quick-stat">
-            <span>Hoy</span>
-            <strong id="countToday">0</strong>
-          </div>
-          <div class="quick-stat">
-            <span>Mañana</span>
-            <strong id="countTomorrow">0</strong>
-          </div>
+  <main class="main-shell" id="contenido-principal">
+    <section class="layout">
+      <div class="panel form-panel">
+        <div class="panel-head">
+          <span class="eyebrow">Reserva online</span>
+          <h2>Reserva en pocos pasos</h2>
+          <p>
+            Solo completa lo necesario para apartar tu turno de forma rápida.
+          </p>
         </div>
-      </section>
 
-      <div class="agenda-layout">
-        <section class="agenda-section">
-          <div class="section-title">
-            <h2>Citas de hoy</h2>
-            <p>Reservas programadas para hoy</p>
-            <div class="section-divider"></div>
-          </div>
-          <div id="todayView" class="loading-state"><span class="spinner"></span> Cargando citas...</div>
-        </section>
+        <div class="closed-banner" id="shopClosedBanner">
+          La barbería está cerrada en este momento. Puedes revisar disponibilidad para otro día.
+        </div>
 
-        <section class="agenda-section">
-          <div class="section-title">
-            <h2>Citas de mañana</h2>
-            <p>Reservas programadas para mañana</p>
-            <div class="section-divider"></div>
+        <form id="bookingForm" autocomplete="on">
+          <input type="hidden" id="barbero" name="barbero" value="Chocho la pinta" />
+
+          <div class="simple-hidden-fields" style="display:none;" aria-hidden="true">
+            <input type="checkbox" id="anonimo" name="anonimo" />
+            <input type="radio" name="metodo_pago" id="metodo_efectivo" value="Efectivo" checked />
+            <input type="radio" name="metodo_pago" id="metodo_transferencia" value="Transferencia" />
+            <input type="radio" name="cuenta_transferencia" id="cuenta_banreservas" value="Banreservas - Ahorro - 960200381" checked />
+            <input type="radio" name="cuenta_transferencia" id="cuenta_popular" value="Popular - Ahorro - 853557841" />
+            <div class="payment-transfer-info hidden" id="paymentTransferInfo"></div>
           </div>
-          <div id="tomorrowView" class="loading-state"><span class="spinner"></span> Cargando citas...</div>
-        </section>
+
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">1</div>
+              <div class="section-title">
+                <h3>Elige servicio y fecha</h3>
+                <p>El barbero se asigna automáticamente para que la reserva sea más rápida.</p>
+              </div>
+            </div>
+
+            <div class="form-grid two-cols">
+              <div class="form-group">
+                <label for="servicio">Servicio</label>
+                <select id="servicio" name="servicio" required>
+                  <option value="">Cargando servicios...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fecha">Fecha</label>
+                <input type="date" id="fecha" name="fecha" required />
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">2</div>
+              <div class="section-title">
+                <h3>Selecciona una hora</h3>
+                <p>Solo aparecerán las horas que están libres para ese día.</p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Horas disponibles</label>
+              <div class="hours-wrap">
+                <p class="hours-note">
+                  Elige servicio y fecha para ver las horas disponibles.
+                </p>
+                <div class="hours-grid" id="hoursGrid" role="list" aria-live="polite" aria-label="Horas disponibles"></div>
+              </div>
+              <input type="hidden" id="hora" name="hora" required />
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">3</div>
+              <div class="section-title">
+                <h3>Tus datos</h3>
+                <p>Escribe tu nombre y teléfono para confirmar la cita.</p>
+              </div>
+            </div>
+
+            <div class="form-grid two-cols">
+              <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre" required autocomplete="name" minlength="2" maxlength="80" placeholder="Tu nombre" />
+              </div>
+
+              <div class="form-group">
+                <label for="telefono">Teléfono</label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  name="telefono"
+                  required
+                  autocomplete="tel"
+                  inputmode="tel"
+                  maxlength="16"
+                  placeholder="Tu número"
+                />
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn" id="submitButton">Agendar mi cita</button>
+        </form>
       </div>
 
-      <p class="bottom-note" id="lastUpdated">Actualizando agenda en tiempo real...</p>
-    </main>
-  </div>
-
-  <div class="modal-backdrop" id="detailsModal" aria-hidden="true">
-    <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="modal-header">
-        <div>
-          <h3 id="modalTitle">Detalle de cita</h3>
-          <p id="modalSubtitle">Información completa de la reserva</p>
+      <aside class="panel side-panel horario-panel" aria-label="Horario de atención">
+        <div class="panel-head">
+          <span class="eyebrow">Horario</span>
+          <h3>Horario de atención</h3>
+          <p>Revisa los días y horas disponibles antes de agendar.</p>
         </div>
-        <button class="close-btn" type="button" id="closeModalBtn" aria-label="Cerrar">×</button>
-      </div>
-      <div class="modal-body" id="modalBody"></div>
-    </article>
-  </div>
+
+        <div class="box">
+          <h4>Disponibilidad</h4>
+          <div class="info-list">
+            <div class="info-item"><strong>Lunes, miércoles y jueves:</strong> 8:00 AM a 8:00 PM</div>
+            <div class="info-item"><strong>Viernes y sábado:</strong> 8:00 AM a 9:00 PM</div>
+            <div class="info-item"><strong>Domingo y martes:</strong> disponibles cuando estén habilitados</div>
+            <div class="info-item"><strong>Cortes niños:</strong> 30 minutos</div>
+            <div class="info-item"><strong>Demás servicios:</strong> 1 hora</div>
+            <div class="info-item"><strong>Recomendación:</strong> llega 10 minutos antes</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -966,25 +1219,142 @@
       measurementId: "G-QHN4PX48D4"
     };
 
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
 
     const db = firebase.database();
     const appointmentsRef = db.ref("appointments");
+    const shopStatusRef = db.ref("shopStatus");
+    const customClosuresRef = db.ref("customClosures");
+    const servicesRef = db.ref("services");
+    const dailyOverridesRef = db.ref("dailyOverrides");
 
-    const todayView = document.getElementById("todayView");
-    const tomorrowView = document.getElementById("tomorrowView");
-    const countToday = document.getElementById("countToday");
-    const countTomorrow = document.getElementById("countTomorrow");
-    const lastUpdated = document.getElementById("lastUpdated");
-    const detailsModal = document.getElementById("detailsModal");
-    const closeModalBtn = document.getElementById("closeModalBtn");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalSubtitle = document.getElementById("modalSubtitle");
-    const modalBody = document.getElementById("modalBody");
-    const menuBtn = document.getElementById("menuBtn");
-    const menuPanel = document.getElementById("menuPanel");
+    const bookingForm = document.getElementById("bookingForm");
+    const fechaInput = document.getElementById("fecha");
+    const horaInput = document.getElementById("hora");
+    const hoursGrid = document.getElementById("hoursGrid");
+    const nombreInput = document.getElementById("nombre");
+    const telefonoInput = document.getElementById("telefono");
+    const servicioInput = document.getElementById("servicio");
+    const barberoInput = document.getElementById("barbero");
+    const DEFAULT_BARBER = "Chocho la pinta";
+    const anonimoInput = document.getElementById("anonimo");
 
-    let currentAppointments = [];
+    const metodoEfectivoInput = document.getElementById("metodo_efectivo");
+    const metodoTransferenciaInput = document.getElementById("metodo_transferencia");
+    const paymentTransferInfo = document.getElementById("paymentTransferInfo");
+    const cuentaBanreservasInput = document.getElementById("cuenta_banreservas");
+    const cuentaPopularInput = document.getElementById("cuenta_popular");
+
+    const btnAprobarHero = document.getElementById("btnAprobarHero");
+    const logoSecret = document.getElementById("logoSecret");
+    const shopStatusBadge = document.getElementById("shopStatusBadge");
+    const closedBanner = document.getElementById("shopClosedBanner");
+    const submitButton = document.getElementById("submitButton");
+
+    let appointments = [];
+    let servicesData = {};
+    let shopIsOpen = true;
+    let sundayOpen = false;
+    let tuesdayForcedOpen = false;
+    let extendedHours = false;
+    let customClosures = {};
+    let dailyOverrides = {};
+    let requestedServiceFromURL = "";
+
+    const EMAILJS_PUBLIC_KEY = "TXQSraRTJ0Ro5hhuk";
+    const EMAILJS_SERVICE_ID = "service_15uyzin";
+    const EMAILJS_TEMPLATE_ID = "template_zck2x4i";
+    const BARBER_EMAIL = "castrovictory1@gmail.com";
+
+    if (typeof emailjs !== "undefined") {
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+    }
+
+    const normalWorkingDays = {
+      0: null,
+      1: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      2: null,
+      3: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      4: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      5: { start: "8:00 AM", end: "9:00 PM", breaks: [] },
+      6: { start: "8:00 AM", end: "9:00 PM", breaks: [] }
+    };
+
+    const extendedWorkingDays = {
+      0: null,
+      1: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      2: null,
+      3: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      4: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      5: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      6: { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+    };
+
+    const normalSundaySchedule = {
+      start: "8:00 AM",
+      end: "8:00 PM",
+      breaks: []
+    };
+
+    const extendedSundaySchedule = {
+      start: "8:00 AM",
+      end: "10:00 PM",
+      breaks: []
+    };
+
+    const normalTuesdaySchedule = {
+      start: "8:00 AM",
+      end: "8:00 PM",
+      breaks: []
+    };
+
+    const defaultServicesData = {
+      corteFade: { nombre: "Corte + Fade", precio: 550, duracion: 60 },
+      cortesNinos: { nombre: "Cortes Niños", precio: 350, duracion: 30 },
+      corteClasico: { nombre: "Corte Clásico", precio: 500, duracion: 60 },
+      cerquilloFade: { nombre: "Cerquillo + Fade", precio: 400, duracion: 60 },
+      servicioCompleto: { nombre: "Corte + Fade + Facial + Lavado de cabello", precio: 700, duracion: 60 }
+    };
+
+    const extendedTuesdaySchedule = {
+      start: "8:00 AM",
+      end: "10:00 PM",
+      breaks: []
+    };
+
+    function getServiceByName(serviceName) {
+      if (!serviceName) return null;
+      const services = [
+        ...Object.values(servicesData || {}),
+        ...Object.values(defaultServicesData || {})
+      ];
+      return services.find(s => s && s.nombre === serviceName) || null;
+    }
+
+    function getServiceDuration(serviceName) {
+      const serviceObj = getServiceByName(serviceName);
+      const duration = Number(serviceObj?.duracion || 60);
+      return Number.isFinite(duration) && duration > 0 ? duration : 60;
+    }
+
+    function getServicePrice(serviceName) {
+      const serviceObj = getServiceByName(serviceName);
+      const price = Number(serviceObj?.precio || 0);
+      return Number.isFinite(price) && price >= 0 ? price : 0;
+    }
+
+    function getServicesWithFallback(data) {
+      const savedServices = data && typeof data === "object" ? data : {};
+      return Object.keys(savedServices).length ? savedServices : defaultServicesData;
+    }
+
+    function normalizeStatus(status) {
+      if (status === "approved") return "approved";
+      if (status === "cancelled") return "cancelled";
+      return "pending";
+    }
 
     function escapeHTML(value) {
       return String(value ?? "")
@@ -995,74 +1365,146 @@
         .replace(/'/g, "&#39;");
     }
 
-    function getTodayISO() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
+    function generateApproveToken() {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+      }
+      return Math.random().toString(36).slice(2) + Date.now().toString(36);
     }
 
-    function addDaysISO(dateISO, days) {
-      const [year, month, day] = dateISO.split("-").map(Number);
-      const date = new Date(year, month - 1, day);
-      date.setDate(date.getDate() + days);
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-    }
-
-    function formatDateSafe(dateString) {
-      if (!dateString) return "-";
-      const parts = String(dateString).split("-");
-      if (parts.length !== 3) return dateString;
-      return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-
-    function normalizeStatus(status) {
-      const value = String(status || "pending").toLowerCase();
-      if (["approved", "aprobado", "aprobada"].includes(value)) return "approved";
-      if (["cancelled", "canceled", "cancelado", "cancelada"].includes(value)) return "cancelled";
-      return "pending";
-    }
-
-    function getStatusText(status) {
-      const normalized = normalizeStatus(status);
-      if (normalized === "approved") return "Aprobado";
-      if (normalized === "cancelled") return "Cancelado";
-      return "Pendiente";
-    }
-
-    function convertToMinutes(timeStr) {
-      if (!timeStr) return 0;
-      const value = String(timeStr).trim().toUpperCase();
-
-      if (/^\d{1,2}:\d{2}$/.test(value)) {
-        const [hour24, minute24] = value.split(":").map(Number);
-        return (hour24 * 60) + minute24;
+    function generateClientToken() {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
       }
 
-      const match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-      if (!match) return 0;
+      return Date.now().toString(36) + Math.random().toString(36).substring(2, 12);
+    }
 
-      let hour = Number(match[1]);
-      const minute = Number(match[2]);
+    function rememberClientAppointment(appointmentId, clientToken) {
+      if (!appointmentId || !clientToken) return;
+
+      try {
+        const storageAppointmentId = "lapinta_client_appointment_id";
+        const storageClientToken = "lapinta_client_token";
+        const storageClientAppointments = "lapinta_client_appointments";
+        let savedAppointments = [];
+
+        try {
+          const rawAppointments = localStorage.getItem(storageClientAppointments);
+          savedAppointments = rawAppointments ? JSON.parse(rawAppointments) : [];
+        } catch (error) {
+          savedAppointments = [];
+        }
+
+        if (!Array.isArray(savedAppointments)) savedAppointments = [];
+
+        const alreadySaved = savedAppointments.some(item => {
+          return String(item.id) === String(appointmentId) &&
+                 String(item.token) === String(clientToken);
+        });
+
+        if (!alreadySaved) {
+          savedAppointments.push({ id: appointmentId, token: clientToken });
+        }
+
+        localStorage.setItem(storageAppointmentId, appointmentId);
+        localStorage.setItem(storageClientToken, clientToken);
+        localStorage.setItem(storageClientAppointments, JSON.stringify(savedAppointments));
+      } catch (error) {
+        console.warn("No se pudo guardar la cita en este dispositivo:", error);
+      }
+    }
+
+    function getBaseUrl() {
+      return "https://weblabandres-prog.github.io/lapintabarbershop";
+    }
+
+    function buildApproveLink(appointmentId, approveToken) {
+      if (!appointmentId || !approveToken) {
+        return `${getBaseUrl()}/aprobar.html`;
+      }
+      return `${getBaseUrl()}/aprobar.html?id=${encodeURIComponent(appointmentId)}&token=${encodeURIComponent(approveToken)}`;
+    }
+
+    function showApproveButtons() {
+      if (btnAprobarHero) btnAprobarHero.style.display = "inline-flex";
+    }
+
+    function hideApproveButtons() {
+      if (btnAprobarHero) btnAprobarHero.style.display = "none";
+    }
+
+    function goToApprovePage() {
+      window.location.href = "aprobar.html";
+    }
+
+    function bindHiddenApproveButtons() {
+      if (btnAprobarHero) {
+        btnAprobarHero.addEventListener("click", function (e) {
+          e.preventDefault();
+          goToApprovePage();
+        });
+      }
+    }
+
+    function bindSecretShortcut() {
+      if (!logoSecret) return;
+
+      let tapCount = 0;
+      let tapTimer = null;
+      let lastTriggerTime = 0;
+
+      function resetTaps() {
+        tapCount = 0;
+        if (tapTimer) {
+          clearTimeout(tapTimer);
+          tapTimer = null;
+        }
+      }
+
+      function registerTap(e) {
+        const now = Date.now();
+
+        if (now - lastTriggerTime < 350) return;
+        lastTriggerTime = now;
+
+        if (e) e.preventDefault();
+
+        tapCount++;
+
+        if (tapTimer) clearTimeout(tapTimer);
+
+        tapTimer = setTimeout(() => {
+          resetTaps();
+        }, 2000);
+
+        if (tapCount >= 5) {
+          resetTaps();
+          showApproveButtons();
+
+          setTimeout(() => {
+            goToApprovePage();
+          }, 150);
+        }
+      }
+
+      logoSecret.addEventListener("click", registerTap);
+    }
+
+    function to24Hour(time12) {
+      if (!time12) return "00:00";
+
+      const match = String(time12).match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+      if (!match) return time12;
+
+      let hour = parseInt(match[1], 10);
+      const minutes = match[2];
       const suffix = match[3].toUpperCase();
 
-      if (suffix === "PM" && hour !== 12) hour += 12;
       if (suffix === "AM" && hour === 12) hour = 0;
+      if (suffix === "PM" && hour !== 12) hour += 12;
 
-      return hour * 60 + minute;
-    }
-
-    function splitTime(timeValue) {
-      const value = String(timeValue || "-").trim();
-      const match = value.match(/^(.*?)(AM|PM)$/i);
-      if (!match) return `<span>${escapeHTML(value)}</span>`;
-      return `<span>${escapeHTML(match[1].trim())}</span><span>${escapeHTML(match[2].toUpperCase())}</span>`;
-    }
-
-    function publicClientName(app) {
-      if (app.anonimo === true) return "Anónimo";
-      return app.nombre || "Sin nombre";
+      return `${String(hour).padStart(2, "0")}:${minutes}`;
     }
 
     function normalizeAppointment(id, app) {
@@ -1073,151 +1515,1046 @@
         servicio: app?.servicio || "",
         barbero: app?.barbero || "",
         fecha: app?.fecha || "",
+        agendaDesde: app?.agendaDesde || app?.fecha || "",
+        mostrarEnAgendaDosDiasAntes: Boolean(app?.mostrarEnAgendaDosDiasAntes),
         hora: app?.hora || "",
-        precio: app?.precio || "",
-        duration: app?.duration || app?.duracion || "",
-        metodoPago: app?.metodoPago || app?.metodo_pago || "",
+        duration: app?.duration || getServiceDuration(app?.servicio) || 60,
+        precio: app?.precio || 0,
+        slots: Array.isArray(app?.slots) ? app.slots : [],
         anonimo: Boolean(app?.anonimo),
+        metodoPago: app?.metodoPago || "",
         status: normalizeStatus(app?.status),
-        createdAt: app?.createdAt || ""
+        approveToken: app?.approveToken || "",
+        clientToken: app?.clientToken || "",
+        createdAt: app?.createdAt || new Date().toISOString()
       };
     }
 
-    function getVisibleAppointmentsForDate(dateISO) {
-      return currentAppointments
-        .filter(app => app.fecha === dateISO && app.status !== "cancelled")
-        .sort((a, b) => convertToMinutes(a.hora) - convertToMinutes(b.hora));
+    function getTodayISO() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
     }
 
-    function renderAgenda(target, list, emptyText) {
-      if (!target) return;
+    function formatDateSafe(dateString) {
+      if (!dateString) return "Sin fecha";
 
-      if (!list.length) {
-        target.className = "empty-state";
-        target.innerHTML = escapeHTML(emptyText);
+      const parts = String(dateString).split("-");
+      if (parts.length !== 3) return dateString;
+
+      const [year, month, day] = parts;
+      return `${day}/${month}/${year}`;
+    }
+
+    function formatDateISOForSubject(dateString) {
+      if (!dateString) return "";
+      return String(dateString);
+    }
+
+    function restarDiasAFecha(fechaISO, dias) {
+      if (!fechaISO) return fechaISO;
+
+      const [year, month, day] = fechaISO.split("-").map(Number);
+      const fecha = new Date(year, month - 1, day);
+      fecha.setDate(fecha.getDate() - dias);
+
+      const nuevoYear = fecha.getFullYear();
+      const nuevoMonth = String(fecha.getMonth() + 1).padStart(2, "0");
+      const nuevoDay = String(fecha.getDate()).padStart(2, "0");
+
+      return `${nuevoYear}-${nuevoMonth}-${nuevoDay}`;
+    }
+
+    function diferenciaDiasDesdeHoy(fechaISO) {
+      if (!fechaISO) return 0;
+
+      const hoy = new Date();
+      const hoyLimpio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+
+      const [year, month, day] = fechaISO.split("-").map(Number);
+      const fecha = new Date(year, month - 1, day);
+
+      const diffMs = fecha.getTime() - hoyLimpio.getTime();
+      return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    }
+
+    function necesitaPublicarseDosDiasAntes(fechaISO) {
+      return diferenciaDiasDesdeHoy(fechaISO) > 15;
+    }
+
+    function setMinDate() {
+      if (!fechaInput) return;
+      fechaInput.min = getTodayISO();
+    }
+
+    function convertToMinutes(timeStr) {
+      if (!timeStr) return 0;
+
+      const value = String(timeStr).trim().toUpperCase();
+
+      if (/^\d{2}:\d{2}$/.test(value)) {
+        const [hour24, minute24] = value.split(":").map(Number);
+        return (hour24 * 60) + minute24;
+      }
+
+      const parts = value.split(" ");
+      const time = parts[0];
+      const modifier = parts[1] || "";
+      const [hours, minutes] = time.split(":").map(Number);
+
+      let h = hours;
+      if (modifier === "PM" && hours !== 12) h += 12;
+      if (modifier === "AM" && hours === 12) h = 0;
+
+      return h * 60 + minutes;
+    }
+
+    function convertToTime(minutes) {
+      let hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      const ampm = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12 || 12;
+      return `${hours}:${String(mins).padStart(2, "0")} ${ampm}`;
+    }
+
+    function generateTimeSlots(start, end, interval = 30) {
+      const slots = [];
+      let current = convertToMinutes(start);
+      const finish = convertToMinutes(end);
+
+      while (current < finish) {
+        slots.push(convertToTime(current));
+        current += interval;
+      }
+
+      return slots;
+    }
+
+    function getDayFromDate(dateString) {
+      return new Date(dateString + "T00:00:00").getDay();
+    }
+
+    function normalizeCustomClosure(block, fallbackDate = "") {
+      if (!block || typeof block !== "object") return null;
+
+      const fecha = block.fecha || block.date || fallbackDate;
+      const start = block.start || block.inicio || block.startTime || "";
+      const end = block.end || block.fin || block.endTime || "";
+      const reason = block.reason || block.motivo || "";
+
+      if (!fecha || !end) return null;
+
+      return {
+        fecha,
+        start,
+        end,
+        reason,
+        type: block.type || "timeBlock"
+      };
+    }
+
+    function getCustomClosuresForDate(dateString) {
+      if (!dateString || !customClosures) return [];
+
+      const closures = [];
+
+      Object.entries(customClosures).forEach(([key, value]) => {
+        const fallbackDate = key === dateString ? dateString : "";
+        const closure = normalizeCustomClosure(value, fallbackDate);
+
+        if (closure && closure.fecha === dateString) {
+          closures.push(closure);
+        }
+      });
+
+      return closures;
+    }
+
+    function getTimeBlocksForDate(dateString) {
+      return getCustomClosuresForDate(dateString)
+        .filter(block => block.start && block.end)
+        .sort((a, b) => convertToMinutes(a.start) - convertToMinutes(b.start));
+    }
+
+    function getEarlyClosingForDate(dateString) {
+      return getCustomClosuresForDate(dateString).find(block => {
+        return !block.start && block.end;
+      });
+    }
+
+    function rangesOverlapMinutes(startA, endA, startB, endB) {
+      return startA < endB && endA > startB;
+    }
+
+    function isSlotBlockedByCustomClosure(date, startSlot, serviceName) {
+      const blocks = getTimeBlocksForDate(date);
+      if (!blocks.length) return false;
+
+      const neededBlocks = getServiceBlocks(serviceName);
+      const slotStartMinutes = convertToMinutes(startSlot);
+      const slotEndMinutes = slotStartMinutes + (neededBlocks * 30);
+
+      return blocks.some(block => {
+        const blockStartMinutes = convertToMinutes(block.start);
+        const blockEndMinutes = convertToMinutes(block.end);
+
+        return rangesOverlapMinutes(
+          slotStartMinutes,
+          slotEndMinutes,
+          blockStartMinutes,
+          blockEndMinutes
+        );
+      });
+    }
+
+    function getActiveCustomClosureForNow(dateString) {
+      const blocks = getTimeBlocksForDate(dateString);
+      if (!blocks.length) return null;
+
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+      return blocks.find(block => {
+        const blockStartMinutes = convertToMinutes(block.start);
+        const blockEndMinutes = convertToMinutes(block.end);
+
+        return currentMinutes >= blockStartMinutes && currentMinutes < blockEndMinutes;
+      }) || null;
+    }
+
+    function applySpecialClosingToConfig(dateString, config) {
+      if (!dateString || !config) return config;
+
+      const earlyClosing = getEarlyClosingForDate(dateString);
+      if (!earlyClosing || !earlyClosing.end) return config;
+
+      const specialEndMinutes = convertToMinutes(earlyClosing.end);
+      const normalEndMinutes = convertToMinutes(config.end);
+
+      if (specialEndMinutes >= normalEndMinutes) {
+        return config;
+      }
+
+      return {
+        ...config,
+        end: earlyClosing.end
+      };
+    }
+
+    function getDefaultOpenSchedule() {
+      return extendedHours
+        ? { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+        : { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    }
+
+    function getWorkingConfigByDate(dateString) {
+      if (!dateString) return null;
+
+      const today = getTodayISO();
+      const override = dailyOverrides[dateString] || null;
+
+      if (dateString === today && !shopIsOpen && !override?.forceOpen) {
+        return null;
+      }
+
+      if (override?.forceClosed === true) {
+        return null;
+      }
+
+      const day = getDayFromDate(dateString);
+      let config = null;
+
+      if (day === 0) {
+        if (!sundayOpen && !override?.forceOpen) return null;
+        config = extendedHours ? extendedSundaySchedule : normalSundaySchedule;
+      } else if (day === 2) {
+        if (!tuesdayForcedOpen && !override?.forceOpen) return null;
+        config = extendedHours ? extendedTuesdaySchedule : normalTuesdaySchedule;
+      } else {
+        const source = extendedHours ? extendedWorkingDays : normalWorkingDays;
+        config = source[day] || null;
+      }
+
+      if (!config && override?.forceOpen) {
+        config = getDefaultOpenSchedule();
+      }
+
+      if (!config) return null;
+
+      return applySpecialClosingToConfig(dateString, {
+        start: config.start,
+        end: config.end,
+        breaks: Array.isArray(config.breaks) ? [...config.breaks] : []
+      });
+    }
+
+    function getServiceBlocks(serviceName) {
+      return Math.ceil(getServiceDuration(serviceName) / 30);
+    }
+
+    function normalizeServiceName(serviceName) {
+      return String(serviceName || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    }
+
+    function isKidsService(serviceName) {
+      return normalizeServiceName(serviceName).includes("nino");
+    }
+
+    function shouldShowSlot(slot, serviceName) {
+      if (isKidsService(serviceName)) return true;
+      return convertToMinutes(slot) % 60 === 0;
+    }
+
+    function isPastDateTime(date, slot) {
+      if (!date || !slot) return false;
+
+      const now = new Date();
+      const selectedDate = new Date(date + "T00:00:00");
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      if (selectedDate.getTime() !== today.getTime()) {
+        return false;
+      }
+
+      const slotMinutes = convertToMinutes(slot);
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+      return slotMinutes <= currentMinutes;
+    }
+
+    function isSlotAvailable(date, barber, startSlot, serviceName, list) {
+      const config = getWorkingConfigByDate(date);
+      if (!config) return false;
+
+      const slots = generateTimeSlots(config.start, config.end, 30);
+      const breaks = config.breaks || [];
+      const neededBlocks = getServiceBlocks(serviceName);
+      const startIndex = slots.indexOf(startSlot);
+
+      if (startIndex === -1) return false;
+      if (isPastDateTime(date, startSlot)) return false;
+      if (isSlotBlockedByCustomClosure(date, startSlot, serviceName)) return false;
+
+      for (let i = 0; i < neededBlocks; i++) {
+        const currentSlot = slots[startIndex + i];
+
+        if (!currentSlot || breaks.includes(currentSlot)) return false;
+        if (date === getTodayISO() && isPastDateTime(date, currentSlot)) return false;
+
+        for (const app of list) {
+          if (app.status === "cancelled") continue;
+
+          if (
+            app.fecha === date &&
+            app.barbero === barber &&
+            Array.isArray(app.slots) &&
+            app.slots.includes(currentSlot)
+          ) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    }
+
+    function getCuentaTransferenciaSeleccionada() {
+      if (cuentaPopularInput?.checked) return "Popular - Ahorro - 853557841";
+      return "Banreservas - Ahorro - 960200381";
+    }
+
+    function getMetodoPagoSeleccionado() {
+      if (metodoTransferenciaInput?.checked) {
+        return `Transferencia | ${getCuentaTransferenciaSeleccionada()}`;
+      }
+      return "Efectivo";
+    }
+
+    function updatePaymentMethodUI() {
+      if (!paymentTransferInfo) return;
+
+      if (metodoTransferenciaInput?.checked) {
+        paymentTransferInfo.classList.remove("hidden");
+      } else {
+        paymentTransferInfo.classList.add("hidden");
+      }
+    }
+
+    function limpiarTelefono(valor) {
+      return String(valor || "").replace(/[^\d+]/g, "");
+    }
+
+    function normalizarTelefono(valor) {
+      let limpio = limpiarTelefono(valor).trim();
+
+      if (!limpio) return "";
+
+      if (limpio.includes("+")) {
+        limpio = "+" + limpio.replace(/\+/g, "");
+      }
+
+      return limpio;
+    }
+
+    function telefonoValido(phone) {
+      const valor = normalizarTelefono(phone);
+
+      if (!valor) return false;
+
+      if (/^(809|829|849)\d{7}$/.test(valor)) return true;
+      if (/^\+1\d{10}$/.test(valor)) return true;
+      if (/^\d{10}$/.test(valor)) return true;
+      if (/^\+\d{8,15}$/.test(valor)) return true;
+
+      return false;
+    }
+
+    function telefonoParaGuardar(valor) {
+      return normalizarTelefono(valor);
+    }
+
+    function configurarInputTelefono() {
+      if (!telefonoInput) return;
+
+      telefonoInput.setAttribute("inputmode", "tel");
+      telefonoInput.setAttribute("maxlength", "16");
+      telefonoInput.setAttribute("autocomplete", "tel");
+      telefonoInput.setAttribute("placeholder", "Número obligatorio");
+
+      telefonoInput.addEventListener("input", () => {
+        let valor = telefonoInput.value;
+        valor = valor.replace(/[^\d+]/g, "");
+
+        if (valor.includes("+")) {
+          valor = "+" + valor.replace(/\+/g, "");
+        }
+
+        telefonoInput.value = valor.slice(0, 16);
+        updateSummary();
+      });
+
+      telefonoInput.addEventListener("blur", () => {
+        const valor = telefonoInput.value.trim();
+
+        if (!valor) return;
+
+        if (!telefonoValido(valor)) {
+          telefonoInput.setCustomValidity("Ingresa un número válido. Ejemplo: 8493767710, 3055551234 o +34612345678");
+        } else {
+          telefonoInput.setCustomValidity("");
+        }
+
+        telefonoInput.reportValidity();
+      });
+
+      telefonoInput.addEventListener("focus", () => {
+        telefonoInput.setCustomValidity("");
+      });
+    }
+
+    function populateServicesSelect() {
+      if (!servicioInput) return;
+
+      const currentValue = servicioInput.value || requestedServiceFromURL;
+      const services = Object.values(servicesData || {}).filter(service => service && service.nombre);
+
+      servicioInput.innerHTML = '<option value="">Selecciona un servicio</option>';
+
+      if (!services.length) {
+        servicioInput.innerHTML = '<option value="">No hay servicios disponibles</option>';
         return;
       }
 
-      const rows = list.map(app => {
-        const statusText = getStatusText(app.status);
-        return `
-          <div class="agenda-row agenda-grid">
-            <div class="client-name">${escapeHTML(publicClientName(app))}</div>
-            <div class="time-cell">${splitTime(app.hora)}</div>
-            <div><span class="status-pill status-${escapeHTML(app.status)}">${escapeHTML(statusText)}</span></div>
-            <button class="view-btn" type="button" data-id="${escapeHTML(app.id)}">Ver</button>
-          </div>
-        `;
-      }).join("");
+      services.forEach(servicio => {
+        const option = document.createElement("option");
+        option.value = servicio.nombre;
+        option.textContent = `${servicio.nombre} - RD$${Number(servicio.precio || 0)}`;
+        option.dataset.duracion = String(servicio.duracion || "");
+        servicioInput.appendChild(option);
+      });
 
-      target.className = "agenda-card";
-      target.innerHTML = `
-        <div class="agenda-head agenda-grid">
-          <div>Cliente</div>
-          <div>Hora</div>
-          <div>Estado</div>
-          <div>Acción</div>
-        </div>
-        ${rows}
-      `;
+      if (currentValue) {
+        const exists = services.some(servicio => servicio.nombre === currentValue);
+        if (exists) {
+          servicioInput.value = currentValue;
+        }
+      }
+    }
 
-      target.querySelectorAll(".view-btn").forEach(btn => {
-        btn.addEventListener("click", () => openDetails(btn.dataset.id));
+    function createHoursMessage(text) {
+      const message = document.createElement("p");
+      message.className = "hours-message";
+      message.textContent = text;
+      return message;
+    }
+
+    function showHoursMessage(text) {
+      if (!hoursGrid) return;
+      hoursGrid.replaceChildren(createHoursMessage(text));
+    }
+
+    function renderHours() {
+      if (!hoursGrid) return;
+
+      hoursGrid.replaceChildren();
+
+      const selectedDate = fechaInput?.value || "";
+      const selectedBarber = barberoInput?.value || DEFAULT_BARBER;
+      const selectedService = servicioInput?.value || "";
+
+      if (!selectedDate) {
+        showHoursMessage("Elige una fecha para ver las horas.");
+        return;
+      }
+
+      if (!selectedService) {
+        showHoursMessage("Elige un servicio para ver las horas.");
+        return;
+      }
+
+      const config = getWorkingConfigByDate(selectedDate);
+
+      if (!config) {
+        showHoursMessage("Este día está cerrado.");
+        return;
+      }
+
+      const timeBlocks = getTimeBlocksForDate(selectedDate);
+      if (timeBlocks.length) {
+        hoursGrid.appendChild(
+          createHoursMessage(`Hay ${timeBlocks.length} bloque${timeBlocks.length === 1 ? "" : "s"} de horas cerrado${timeBlocks.length === 1 ? "" : "s"} en esta fecha.`)
+        );
+      }
+
+      const allSlots = generateTimeSlots(config.start, config.end, 30);
+      const visibleSlots = allSlots.filter(slot => shouldShowSlot(slot, selectedService));
+
+      if (isKidsService(selectedService)) {
+        hoursGrid.appendChild(createHoursMessage("Corte de niño usa media hora."));
+      }
+
+      let availableCount = 0;
+
+      visibleSlots.forEach(slot => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.classList.add("hour-btn");
+        btn.textContent = slot;
+        btn.setAttribute("aria-pressed", "false");
+
+        const available = isSlotAvailable(
+          selectedDate,
+          selectedBarber,
+          slot,
+          selectedService,
+          appointments
+        );
+
+        if (!available) {
+          btn.classList.add("disabled");
+          btn.disabled = true;
+          btn.title = "Hora no disponible";
+          btn.setAttribute("aria-disabled", "true");
+        } else {
+          availableCount++;
+          btn.addEventListener("click", () => {
+            hoursGrid.querySelectorAll(".hour-btn").forEach(b => {
+              b.classList.remove("active");
+              b.setAttribute("aria-pressed", "false");
+            });
+            btn.classList.add("active");
+            btn.setAttribute("aria-pressed", "true");
+            if (horaInput) horaInput.value = slot;
+            updateSummary();
+          });
+        }
+
+        hoursGrid.appendChild(btn);
+      });
+
+      if (!availableCount) {
+        hoursGrid.appendChild(createHoursMessage("No quedan horarios disponibles para esta selección."));
+      }
+    }
+    function updateSummary() {
+      // Resumen quitado: se mantiene esta función vacía para no afectar otros procesos.
+    }
+
+    function listenAppointments() {
+      appointmentsRef.on("value", snapshot => {
+        const data = snapshot.val() || {};
+        appointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+        renderHours();
+        updateSummary();
       });
     }
 
-    function renderAll() {
-      const today = getTodayISO();
-      const tomorrow = addDaysISO(today, 1);
+    function listenShopStatus() {
+      shopStatusRef.on("value", snapshot => {
+        const data = snapshot.val() || {};
+        shopIsOpen = data.isOpen !== false;
+        sundayOpen = data.sundayOpen === true;
+        tuesdayForcedOpen = data.tuesdayOpen === true;
+        extendedHours = data.extendedHours === true;
 
-      const todayList = getVisibleAppointmentsForDate(today);
-      const tomorrowList = getVisibleAppointmentsForDate(tomorrow);
+        updateShopStatusBadge();
+        renderHours();
+        updateSummary();
+      });
+    }
 
-      countToday.textContent = String(todayList.length);
-      countTomorrow.textContent = String(tomorrowList.length);
+    function listenDailyOverrides() {
+      dailyOverridesRef.on("value", snapshot => {
+        dailyOverrides = snapshot.val() || {};
+        updateShopStatusBadge();
+        renderHours();
+        updateSummary();
+      });
+    }
 
-      renderAgenda(todayView, todayList, "No hay citas programadas para hoy.");
-      renderAgenda(tomorrowView, tomorrowList, "No hay citas programadas para mañana.");
+    function listenCustomClosures() {
+      customClosuresRef.on("value", snapshot => {
+        customClosures = snapshot.val() || {};
+        renderHours();
+        updateShopStatusBadge();
+        updateSummary();
+      });
+    }
+
+    function listenServices() {
+      servicesRef.on("value", snapshot => {
+        servicesData = getServicesWithFallback(snapshot.val() || {});
+        populateServicesSelect();
+        updateSummary();
+        renderHours();
+      });
+    }
+
+    async function sendAppointmentEmail(appointment, appointmentId) {
+      if (typeof emailjs === "undefined") {
+        throw new Error("EmailJS no está cargado.");
+      }
+
+      const approvalLink = buildApproveLink(appointmentId, appointment.approveToken);
+
+      const templateParams = {
+        to_email: BARBER_EMAIL,
+        nombre: appointment.nombre || "",
+        telefono: appointment.telefono || "",
+        servicio: appointment.servicio || "",
+        barbero: appointment.barbero || "",
+        fecha: formatDateSafe(appointment.fecha) || "",
+        fecha_iso: formatDateISOForSubject(appointment.fecha) || "",
+        hora: appointment.hora || "",
+        duration: `${appointment.duration || 0} min`,
+        precio: `RD$${appointment.precio || getServicePrice(appointment.servicio)}`,
+        metodo_pago: appointment.metodoPago || "Efectivo",
+        approval_link: approvalLink
+      };
+
+      return emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams
+      );
+    }
+
+    function formatStatusTime(time24or12) {
+      if (!time24or12) return "";
+
+      if (/AM|PM/i.test(time24or12)) {
+        return time24or12;
+      }
+
+      const [hourStr, minute] = time24or12.split(":");
+      let hour = parseInt(hourStr, 10);
+      const suffix = hour >= 12 ? "PM" : "AM";
+
+      if (hour === 0) hour = 12;
+      else if (hour > 12) hour -= 12;
+
+      return `${hour}:${minute} ${suffix}`;
+    }
+
+    function getNextOpenInfoFromDate(baseDate = new Date()) {
+      const dayNames = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+
+      for (let i = 1; i <= 7; i++) {
+        const nextDate = new Date(baseDate);
+        nextDate.setDate(baseDate.getDate() + i);
+
+        const year = nextDate.getFullYear();
+        const month = String(nextDate.getMonth() + 1).padStart(2, "0");
+        const dayNum = String(nextDate.getDate()).padStart(2, "0");
+        const iso = `${year}-${month}-${dayNum}`;
+
+        const config = getWorkingConfigByDate(iso);
+
+        if (config) {
+          const dayName = dayNames[nextDate.getDay()];
+          return {
+            dayName,
+            open: formatStatusTime(config.start)
+          };
+        }
+      }
+
+      return null;
+    }
+
+    function getShopStatus() {
+      if (!shopIsOpen) {
+        return {
+          type: "closed",
+          text: "Barbería cerrada • Puedes agendar para otro día u hora disponible"
+        };
+      }
 
       const now = new Date();
-      lastUpdated.textContent = `Agenda actualizada ${now.toLocaleTimeString("es-DO", { hour: "numeric", minute: "2-digit" })}`;
+      const todayISO = getTodayISO();
+      const config = getWorkingConfigByDate(todayISO);
+
+      if (!config) {
+        const nextOpen = getNextOpenInfoFromDate(now);
+
+        return {
+          type: "closed",
+          text: nextOpen
+            ? `Cerrado hoy • Puedes agendar para otro día • Abrimos ${nextOpen.dayName} a las ${nextOpen.open}`
+            : "Cerrado hoy • Puedes agendar para otro día disponible"
+        };
+      }
+
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const startMinutes = convertToMinutes(config.start);
+      const endMinutes = convertToMinutes(config.end);
+
+      if (currentMinutes < startMinutes) {
+        return {
+          type: "closed",
+          text: `Cerrado ahora • Abrimos hoy a las ${formatStatusTime(config.start)}`
+        };
+      }
+
+      if (currentMinutes >= endMinutes) {
+        const nextOpen = getNextOpenInfoFromDate(now);
+
+        return {
+          type: "closed",
+          text: nextOpen
+            ? `Cerrado • Puedes agendar para otro día • Abrimos ${nextOpen.dayName} a las ${nextOpen.open}`
+            : "Cerrado • Puedes agendar para otro horario disponible"
+        };
+      }
+
+      const activeBlock = getActiveCustomClosureForNow(todayISO);
+      if (activeBlock) {
+        return {
+          type: "closed",
+          text: `Cerrado por bloque de horas • Volvemos a las ${formatStatusTime(activeBlock.end)}`
+        };
+      }
+
+      const breaks = Array.isArray(config.breaks) ? config.breaks : [];
+      if (breaks.length) {
+        const breakMinutes = breaks.map(convertToMinutes);
+        const minBreak = Math.min(...breakMinutes);
+        const maxBreak = Math.max(...breakMinutes) + 30;
+
+        if (currentMinutes >= minBreak && currentMinutes < maxBreak) {
+          return {
+            type: "break",
+            text: `En descanso • Volvemos a la ${convertToTime(maxBreak)}`
+          };
+        }
+      }
+
+      return {
+        type: "open",
+        text: `Abierto hoy • ${config.start} - ${config.end}`
+      };
     }
 
-    function detailRow(label, value) {
-      return `
-        <div class="detail-item">
-          <span>${escapeHTML(label)}</span>
-          <strong>${escapeHTML(value || "-")}</strong>
-        </div>
-      `;
+    function updateShopStatusBadge() {
+      if (!shopStatusBadge) return;
+
+      const status = getShopStatus();
+
+      shopStatusBadge.classList.remove("open", "break", "closed");
+      shopStatusBadge.classList.add(status.type);
+      shopStatusBadge.textContent = status.text;
+
+      if (closedBanner) {
+        closedBanner.textContent = status.text;
+        closedBanner.classList.toggle("show", status.type !== "open");
+      }
     }
 
-    function openDetails(id) {
-      const app = currentAppointments.find(item => String(item.id) === String(id));
-      if (!app) return;
+    function applyServiceFromURL() {
+      if (!servicioInput) return;
 
-      modalTitle.textContent = publicClientName(app);
-      modalSubtitle.textContent = `${formatDateSafe(app.fecha)} · ${app.hora || "Sin hora"}`;
-      modalBody.innerHTML = [
-        detailRow("Nombre real", app.nombre || "Sin nombre"),
-        detailRow("Teléfono", app.telefono || "-"),
-        detailRow("Servicio", app.servicio || "-"),
-        detailRow("Barbero", app.barbero || "-"),
-        detailRow("Fecha", formatDateSafe(app.fecha)),
-        detailRow("Hora", app.hora || "-"),
-        detailRow("Estado", getStatusText(app.status)),
-        detailRow("Precio", app.precio ? `RD$${app.precio}` : "-"),
-        detailRow("Duración", app.duration ? `${app.duration} minutos` : "-"),
-        detailRow("Método de pago", app.metodoPago || "-")
-      ].join("");
-
-      detailsModal.classList.add("open");
-      detailsModal.setAttribute("aria-hidden", "false");
-      document.body.style.overflow = "hidden";
+      const params = new URLSearchParams(window.location.search);
+      requestedServiceFromURL = params.get("servicio") || "";
+      if (requestedServiceFromURL) {
+        servicioInput.value = requestedServiceFromURL;
+      }
     }
 
-    function closeDetails() {
-      detailsModal.classList.remove("open");
-      detailsModal.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-    }
+    if (bookingForm) {
+      bookingForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
 
-    closeModalBtn.addEventListener("click", closeDetails);
+        const telefonoLimpio = telefonoParaGuardar(telefonoInput?.value || "");
+        const nombre = nombreInput?.value.trim() || "";
 
-    detailsModal.addEventListener("click", event => {
-      if (event.target === detailsModal) closeDetails();
-    });
+        if (!nombre) {
+          alert("Por favor escribe tu nombre.");
+          nombreInput?.focus();
+          return;
+        }
 
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape") closeDetails();
-    });
+        if (!telefonoLimpio) {
+          alert("Por favor escribe tu número de teléfono.");
+          telefonoInput?.focus();
+          return;
+        }
 
-    menuBtn.addEventListener("click", () => {
-      const isOpen = menuPanel.classList.toggle("open");
-      menuBtn.classList.toggle("active", isOpen);
-      menuBtn.setAttribute("aria-expanded", String(isOpen));
-    });
+        if (!telefonoValido(telefonoLimpio)) {
+          alert("Ingresa un número válido. Ejemplo RD: 8493767710, USA: 3055551234, Europa: +34612345678");
+          telefonoInput?.focus();
+          return;
+        }
 
-    document.querySelectorAll(".menu-panel a").forEach(link => {
-      link.addEventListener("click", () => {
-        menuPanel.classList.remove("open");
-        menuBtn.classList.remove("active");
-        menuBtn.setAttribute("aria-expanded", "false");
+        if (telefonoInput) {
+          telefonoInput.value = telefonoLimpio;
+          telefonoInput.setCustomValidity("");
+        }
+
+        if (!horaInput?.value) {
+          alert("Por favor selecciona una hora disponible.");
+          return;
+        }
+
+        const selectedService = servicioInput?.value || "";
+        const selectedDate = fechaInput?.value || "";
+        const selectedBarber = barberoInput?.value || DEFAULT_BARBER;
+        const selectedHour = horaInput?.value || "";
+
+        const mostrarEnAgendaDosDiasAntes = necesitaPublicarseDosDiasAntes(selectedDate);
+        const agendaDesde = mostrarEnAgendaDosDiasAntes
+          ? restarDiasAFecha(selectedDate, 2)
+          : selectedDate;
+
+        if (!selectedService || !selectedDate) {
+          alert("Completa todos los campos requeridos.");
+          return;
+        }
+
+        if (!isSlotAvailable(selectedDate, selectedBarber, selectedHour, selectedService, appointments)) {
+          alert("Esa hora ya no está disponible. Por favor elige otra.");
+          renderHours();
+          return;
+        }
+
+        const config = getWorkingConfigByDate(selectedDate);
+
+        if (!config) {
+          alert("Ese día no está disponible.");
+          return;
+        }
+
+        const slots = generateTimeSlots(config.start, config.end, 30);
+        const neededBlocks = getServiceBlocks(selectedService);
+        const startIndex = slots.indexOf(selectedHour);
+
+        if (startIndex === -1) {
+          alert("La hora seleccionada no es válida.");
+          renderHours();
+          return;
+        }
+
+        const reservedSlots = [];
+        for (let i = 0; i < neededBlocks; i++) {
+          if (slots[startIndex + i]) {
+            reservedSlots.push(slots[startIndex + i]);
+          }
+        }
+
+        const clientToken = generateClientToken();
+
+        const newAppointment = {
+          nombre: nombre,
+          telefono: telefonoLimpio,
+          servicio: selectedService,
+          barbero: selectedBarber,
+          fecha: selectedDate,
+          agendaDesde: agendaDesde,
+          mostrarEnAgendaDosDiasAntes: mostrarEnAgendaDosDiasAntes,
+          hora: selectedHour,
+          duration: getServiceDuration(selectedService),
+          precio: getServicePrice(selectedService),
+          slots: reservedSlots,
+          anonimo: anonimoInput?.checked || false,
+          metodoPago: getMetodoPagoSeleccionado(),
+          status: "pending",
+          approveToken: generateApproveToken(),
+          clientToken: clientToken,
+          createdAt: new Date().toISOString(),
+          recordatorioEnviado: false
+        };
+
+        const originalButtonText = submitButton ? submitButton.textContent : "Confirmar cita";
+
+        try {
+          if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = "Procesando...";
+            submitButton.setAttribute("aria-busy", "true");
+          }
+
+          const newRef = appointmentsRef.push();
+          await newRef.set(newAppointment);
+
+          const appointmentId = newRef.key;
+
+          rememberClientAppointment(appointmentId, clientToken);
+
+          try {
+            await sendAppointmentEmail(newAppointment, appointmentId);
+
+            if (mostrarEnAgendaDosDiasAntes) {
+              alert(
+                `Cita agendada correctamente. Quedó pendiente de aprobación. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
+              );
+            } else {
+              alert("Cita agendada correctamente. Quedó pendiente de aprobación.");
+            }
+          } catch (emailError) {
+            console.error("Error enviando correo:", emailError);
+
+            if (mostrarEnAgendaDosDiasAntes) {
+              alert(
+                `La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
+              );
+            } else {
+              alert(
+                "La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar: " +
+                (emailError?.text || emailError?.message || "Error desconocido")
+              );
+            }
+          }
+
+          bookingForm.reset();
+          if (barberoInput) barberoInput.value = DEFAULT_BARBER;
+          if (horaInput) horaInput.value = "";
+          if (metodoEfectivoInput) metodoEfectivoInput.checked = true;
+          if (cuentaBanreservasInput) cuentaBanreservasInput.checked = true;
+          if (servicioInput) servicioInput.value = "";
+
+          updatePaymentMethodUI();
+          updateSummary();
+          renderHours();
+
+          window.location.href = "ver-citas.html";
+        } catch (firebaseError) {
+          console.error("Error guardando cita:", firebaseError);
+          alert("No se pudo guardar la cita en Firebase.");
+        } finally {
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+            submitButton.removeAttribute("aria-busy");
+          }
+        }
       });
+    }
+
+    fechaInput?.addEventListener("change", () => {
+      if (horaInput) horaInput.value = "";
+      renderHours();
+      updateSummary();
     });
 
-    appointmentsRef.on("value", snapshot => {
-      const data = snapshot.val() || {};
-      currentAppointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
-      renderAll();
-    }, error => {
-      todayView.className = "empty-state";
-      tomorrowView.className = "empty-state";
-      todayView.textContent = "No se pudo cargar la agenda.";
-      tomorrowView.textContent = "Revisa la conexión o la configuración de Firebase.";
-      lastUpdated.textContent = "Error al cargar los datos.";
-      console.error(error);
+    barberoInput?.addEventListener("change", () => {
+      if (horaInput) horaInput.value = "";
+      renderHours();
+      updateSummary();
     });
+
+    servicioInput?.addEventListener("change", () => {
+      if (horaInput) horaInput.value = "";
+      renderHours();
+      updateSummary();
+    });
+
+    [nombreInput].forEach(input => {
+      input?.addEventListener("input", updateSummary);
+    });
+
+    anonimoInput?.addEventListener("change", updateSummary);
+
+    metodoEfectivoInput?.addEventListener("change", () => {
+      updatePaymentMethodUI();
+      updateSummary();
+    });
+
+    metodoTransferenciaInput?.addEventListener("change", () => {
+      updatePaymentMethodUI();
+      updateSummary();
+    });
+
+    cuentaBanreservasInput?.addEventListener("change", updateSummary);
+    cuentaPopularInput?.addEventListener("change", updateSummary);
+
+    function boot() {
+      applyServiceFromURL();
+      if (barberoInput) barberoInput.value = DEFAULT_BARBER;
+      setMinDate();
+      if (fechaInput && !fechaInput.value) fechaInput.value = getTodayISO();
+      hideApproveButtons();
+      bindHiddenApproveButtons();
+      bindSecretShortcut();
+      configurarInputTelefono();
+      listenAppointments();
+      listenShopStatus();
+      listenDailyOverrides();
+      listenCustomClosures();
+      listenServices();
+      updatePaymentMethodUI();
+      renderHours();
+      updateSummary();
+      updateShopStatusBadge();
+
+      setInterval(() => {
+        updateShopStatusBadge();
+
+        const selectedDate = fechaInput?.value || "";
+        const selectedBarber = barberoInput?.value || DEFAULT_BARBER;
+        const selectedService = servicioInput?.value || "";
+        const selectedHour = horaInput?.value || "";
+
+        if (!selectedDate || !selectedBarber || !selectedService) return;
+
+        if (selectedDate === getTodayISO()) {
+          renderHours();
+
+          if (
+            selectedHour &&
+            !isSlotAvailable(selectedDate, selectedBarber, selectedHour, selectedService, appointments)
+          ) {
+            if (horaInput) horaInput.value = "";
+            updateSummary();
+          }
+        }
+      }, 30000);
+    }
+
+    boot();
   </script>
 </body>
 </html>
