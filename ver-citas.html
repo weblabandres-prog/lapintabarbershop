@@ -470,18 +470,49 @@
     }
 
     .view-btn {
-      border: none;
-      background: transparent;
-      color: #9eb2d1;
-      font-size: .84rem;
+      min-height: 38px;
+      border: 1px solid rgba(229,57,53,.34);
+      border-radius: 999px;
+      background: rgba(229,57,53,.14);
+      color: #ffb4ae;
+      font-size: .78rem;
       font-weight: 900;
       cursor: pointer;
       text-align: center;
-      padding: 8px 0;
+      padding: 8px 14px;
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
     }
 
     .view-btn:active {
       transform: scale(.96);
+    }
+
+    .view-btn:hover {
+      background: rgba(229,57,53,.22);
+      border-color: rgba(229,57,53,.48);
+    }
+
+    .row-note {
+      color: var(--muted-2);
+      font-size: .78rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .mine-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 7px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(31,134,255,.12);
+      border: 1px solid rgba(31,134,255,.24);
+      color: #cfe5ff;
+      font-size: .67rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
     }
 
     .empty-state,
@@ -716,6 +747,16 @@
       padding: 0 18px 18px;
       display: grid;
       gap: 12px;
+    }
+
+    .owner-note {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.035);
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.5;
     }
 
     .cancel-box {
@@ -1071,7 +1112,7 @@
       <section class="top-card" aria-label="Resumen de agenda">
         <span class="eyebrow">Agenda pública</span>
         <h1>Citas programadas</h1>
-        <p>Vista rápida y cómoda para celular y PC, organizada por hoy y mañana. Puedes ver, cancelar o solicitar cambio de día y hora. Todo cambio queda pendiente de aprobación.</p>
+        <p>Vista rápida y cómoda para celular y PC, organizada por hoy y mañana. Las citas pendientes también aparecen aquí para que su dueño pueda gestionarlas desde el dispositivo donde las creó.</p>
 
         <div class="quick-stats">
           <div class="quick-stat">
@@ -1105,7 +1146,7 @@
         </section>
       </div>
 
-      <p class="bottom-note" id="lastUpdated">Actualizando agenda pública en tiempo real. Los cambios de día u hora quedan pendientes de aprobación.</p>
+      <p class="bottom-note" id="lastUpdated">Actualizando agenda pública en tiempo real. Las citas pendientes se muestran, pero solo su dueño puede editarlas.</p>
     </main>
   </div>
 
@@ -1142,11 +1183,15 @@
 
     const db = firebase.database();
     const appointmentsRef = db.ref("appointments");
+    const slotLocksRef = db.ref("slotLocks");
+    const shopStatusRef = db.ref("shopStatus");
+    const customClosuresRef = db.ref("customClosures");
+    const dailyOverridesRef = db.ref("dailyOverrides");
 
     // IMPORTANTE: coloca aquí el WhatsApp real del barbero en formato internacional.
     // Ejemplo RD: 18095551234. Sin espacios, sin guiones y sin el signo +.
     // Si lo dejas vacío, WhatsApp abrirá para compartir el mensaje y elegir el contacto manualmente.
-    const BARBER_WHATSAPP_NUMBER = "";
+    const BARBER_WHATSAPP_NUMBER = "18493757710";
 
     const todayView = document.getElementById("todayView");
     const tomorrowView = document.getElementById("tomorrowView");
@@ -1161,9 +1206,46 @@
     const modalActions = document.getElementById("modalActions");
     const menuBtn = document.getElementById("menuBtn");
     const menuPanel = document.getElementById("menuPanel");
+    const STORAGE_APPOINTMENT_ID = "lapinta_client_appointment_id";
+    const STORAGE_CLIENT_TOKEN = "lapinta_client_token";
+    const STORAGE_CLIENT_APPOINTMENTS = "lapinta_client_appointments";
 
     let currentAppointments = [];
     let currentModalAppointmentId = "";
+    let myAppointmentId = localStorage.getItem(STORAGE_APPOINTMENT_ID);
+    let myClientToken = localStorage.getItem(STORAGE_CLIENT_TOKEN);
+    let myAppointments = [];
+    let shopIsOpen = true;
+    let sundayOpen = false;
+    let tuesdayForcedOpen = false;
+    let extendedHours = false;
+    let customClosures = {};
+    let dailyOverrides = {};
+
+    const normalWorkingDays = {
+      0: null,
+      1: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      2: null,
+      3: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      4: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      5: { start: "8:00 AM", end: "9:00 PM", breaks: [] },
+      6: { start: "8:00 AM", end: "9:00 PM", breaks: [] }
+    };
+
+    const extendedWorkingDays = {
+      0: null,
+      1: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      2: null,
+      3: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      4: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      5: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      6: { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+    };
+
+    const normalSundaySchedule = { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    const extendedSundaySchedule = { start: "8:00 AM", end: "10:00 PM", breaks: [] };
+    const normalTuesdaySchedule = { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    const extendedTuesdaySchedule = { start: "8:00 AM", end: "10:00 PM", breaks: [] };
 
     function escapeHTML(value) {
       return String(value ?? "")
@@ -1187,6 +1269,58 @@
 
     function phoneLast4(value) {
       return normalizePhone(value).replace(/\D/g, "").slice(-4) || "----";
+    }
+
+    function refreshMyAppointmentData() {
+      myAppointmentId = localStorage.getItem(STORAGE_APPOINTMENT_ID);
+      myClientToken = localStorage.getItem(STORAGE_CLIENT_TOKEN);
+
+      try {
+        myAppointments = JSON.parse(localStorage.getItem(STORAGE_CLIENT_APPOINTMENTS)) || [];
+      } catch (error) {
+        myAppointments = [];
+      }
+
+      if (myAppointmentId && myClientToken) {
+        const exists = myAppointments.some(item => {
+          return String(item.id) === String(myAppointmentId) &&
+                 String(item.token) === String(myClientToken);
+        });
+
+        if (!exists) {
+          myAppointments.push({
+            id: myAppointmentId,
+            token: myClientToken
+          });
+
+          localStorage.setItem(STORAGE_CLIENT_APPOINTMENTS, JSON.stringify(myAppointments));
+        }
+      }
+    }
+
+    function forgetClientAppointment(appointmentId) {
+      if (!appointmentId) return;
+
+      try {
+        const rawAppointments = localStorage.getItem(STORAGE_CLIENT_APPOINTMENTS);
+        const savedAppointments = rawAppointments ? JSON.parse(rawAppointments) : [];
+        const filteredAppointments = Array.isArray(savedAppointments)
+          ? savedAppointments.filter(item => String(item.id) !== String(appointmentId))
+          : [];
+
+        localStorage.setItem(STORAGE_CLIENT_APPOINTMENTS, JSON.stringify(filteredAppointments));
+
+        if (String(localStorage.getItem(STORAGE_APPOINTMENT_ID)) === String(appointmentId)) {
+          localStorage.removeItem(STORAGE_APPOINTMENT_ID);
+          localStorage.removeItem(STORAGE_CLIENT_TOKEN);
+          myAppointmentId = "";
+          myClientToken = "";
+        }
+
+        myAppointments = filteredAppointments;
+      } catch (error) {
+        console.warn("No se pudo limpiar la cita cancelada de este dispositivo:", error);
+      }
     }
 
     function buildWhatsAppUrl(message) {
@@ -1223,6 +1357,109 @@
       if (["approved", "aprobado", "aprobada"].includes(value)) return "approved";
       if (["cancelled", "canceled", "cancelado", "cancelada"].includes(value)) return "cancelled";
       return "pending";
+    }
+
+    function lockKey(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    function getLockEntries(appointmentId, appointment) {
+      const slots = Array.isArray(appointment?.slots) && appointment.slots.length
+        ? appointment.slots
+        : getAppointmentSlots(appointment);
+
+      return slots.map(slot => ({
+        appointmentId,
+        clientToken: appointment.clientToken || "",
+        fecha: appointment.fecha,
+        barbero: appointment.barbero,
+        barberKey: lockKey(appointment.barbero),
+        slot,
+        slotKey: lockKey(slot)
+      })).filter(entry => entry.fecha && entry.barberKey && entry.slotKey);
+    }
+
+    function getLockNode(tree, entry) {
+      return tree?.[entry.fecha]?.[entry.barberKey]?.[entry.slotKey] || null;
+    }
+
+    function ensureLockBranch(tree, entry) {
+      tree[entry.fecha] ||= {};
+      tree[entry.fecha][entry.barberKey] ||= {};
+      return tree[entry.fecha][entry.barberKey];
+    }
+
+    function canReuseLock(lock, appointmentId) {
+      if (!lock || String(lock.appointmentId) === String(appointmentId)) return true;
+      const owner = currentAppointments.find(app => String(app.id) === String(lock.appointmentId));
+      return Boolean(owner && normalizeStatus(owner.status) === "cancelled");
+    }
+
+    async function replaceAppointmentLocks(appointmentId, oldAppointment, newAppointment) {
+      const oldEntries = getLockEntries(appointmentId, oldAppointment);
+      const newEntries = getLockEntries(appointmentId, newAppointment);
+      const result = await slotLocksRef.transaction(current => {
+        const tree = current || {};
+
+        if (newEntries.some(entry => !canReuseLock(getLockNode(tree, entry), appointmentId))) {
+          return;
+        }
+
+        oldEntries.forEach(entry => {
+          const lock = getLockNode(tree, entry);
+          if (!lock || String(lock.appointmentId) !== String(appointmentId)) return;
+          delete tree[entry.fecha][entry.barberKey][entry.slotKey];
+          if (!Object.keys(tree[entry.fecha][entry.barberKey]).length) {
+            delete tree[entry.fecha][entry.barberKey];
+          }
+          if (!Object.keys(tree[entry.fecha]).length) {
+            delete tree[entry.fecha];
+          }
+        });
+
+        newEntries.forEach(entry => {
+          const branch = ensureLockBranch(tree, entry);
+          branch[entry.slotKey] = {
+            appointmentId,
+            clientToken: newAppointment.clientToken,
+            fecha: entry.fecha,
+            barbero: entry.barbero,
+            slot: entry.slot,
+            updatedAt: new Date().toISOString()
+          };
+        });
+
+        return tree;
+      });
+
+      return result.committed;
+    }
+
+    async function releaseAppointmentLocks(appointmentId, appointment) {
+      const entries = getLockEntries(appointmentId, appointment);
+
+      await slotLocksRef.transaction(current => {
+        const tree = current || {};
+
+        entries.forEach(entry => {
+          const lock = getLockNode(tree, entry);
+          if (!lock || String(lock.appointmentId) !== String(appointmentId)) return;
+          delete tree[entry.fecha][entry.barberKey][entry.slotKey];
+          if (!Object.keys(tree[entry.fecha][entry.barberKey]).length) {
+            delete tree[entry.fecha][entry.barberKey];
+          }
+          if (!Object.keys(tree[entry.fecha]).length) {
+            delete tree[entry.fecha];
+          }
+        });
+
+        return tree;
+      });
     }
 
     function getStatusText(status) {
@@ -1262,19 +1499,6 @@
       return `${hours}:${String(mins).padStart(2, "0")} ${suffix}`;
     }
 
-    function getSimpleHourOptions(selectedHour = "") {
-      const start = 8 * 60;
-      const end = 21 * 60;
-      const options = [];
-
-      for (let current = start; current <= end; current += 30) {
-        const label = convertToTime(current);
-        options.push(`<option value="${escapeHTML(label)}" ${label === selectedHour ? "selected" : ""}>${escapeHTML(label)}</option>`);
-      }
-
-      return options.join("");
-    }
-
     function buildSlotsFromStart(startHour, duration) {
       const totalMinutes = Number(duration || 60);
       const blocks = Math.max(1, Math.ceil(totalMinutes / 30));
@@ -1288,9 +1512,236 @@
       return slots;
     }
 
+    function generateTimeSlots(start, end, interval = 30) {
+      const slots = [];
+      let current = convertToMinutes(start);
+      const finish = convertToMinutes(end);
+
+      while (current < finish) {
+        slots.push(convertToTime(current));
+        current += interval;
+      }
+
+      return slots;
+    }
+
+    function getDayFromDate(dateString) {
+      return new Date(`${dateString}T00:00:00`).getDay();
+    }
+
+    function normalizeCustomClosure(block, fallbackDate = "") {
+      if (!block || typeof block !== "object") return null;
+
+      const fecha = block.fecha || block.date || fallbackDate;
+      const start = block.start || block.inicio || block.startTime || "";
+      const end = block.end || block.fin || block.endTime || "";
+
+      if (!fecha || !end) return null;
+
+      return {
+        fecha,
+        start,
+        end,
+        reason: block.reason || block.motivo || "",
+        type: block.type || "timeBlock"
+      };
+    }
+
+    function getCustomClosuresForDate(dateString) {
+      if (!dateString || !customClosures) return [];
+
+      return Object.entries(customClosures)
+        .map(([key, value]) => normalizeCustomClosure(value, key === dateString ? dateString : ""))
+        .filter(block => block && block.fecha === dateString);
+    }
+
+    function getTimeBlocksForDate(dateString) {
+      return getCustomClosuresForDate(dateString)
+        .filter(block => block.start && block.end)
+        .sort((a, b) => convertToMinutes(a.start) - convertToMinutes(b.start));
+    }
+
+    function getEarlyClosingForDate(dateString) {
+      return getCustomClosuresForDate(dateString).find(block => {
+        return !block.start && block.end;
+      });
+    }
+
+    function rangesOverlapMinutes(startA, endA, startB, endB) {
+      return startA < endB && endA > startB;
+    }
+
+    function cloneSchedule(config) {
+      if (!config) return null;
+
+      return {
+        start: config.start,
+        end: config.end,
+        breaks: Array.isArray(config.breaks) ? [...config.breaks] : []
+      };
+    }
+
+    function getDefaultOpenSchedule() {
+      return extendedHours
+        ? { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+        : { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    }
+
+    function applySpecialClosingToConfig(dateString, config) {
+      if (!dateString || !config) return config;
+
+      const earlyClosing = getEarlyClosingForDate(dateString);
+      if (!earlyClosing?.end) return config;
+
+      const specialEndMinutes = convertToMinutes(earlyClosing.end);
+      const normalEndMinutes = convertToMinutes(config.end);
+
+      if (specialEndMinutes >= normalEndMinutes) return config;
+
+      return {
+        ...config,
+        end: earlyClosing.end
+      };
+    }
+
+    function getWorkingConfigByDate(dateString) {
+      if (!dateString) return null;
+
+      const override = dailyOverrides[dateString] || null;
+
+      if (dateString === getTodayISO() && !shopIsOpen && !override?.forceOpen) {
+        return null;
+      }
+
+      if (override?.forceClosed === true) {
+        return null;
+      }
+
+      const day = getDayFromDate(dateString);
+      let config = null;
+
+      if (day === 0) {
+        if (!sundayOpen && !override?.forceOpen) return null;
+        config = extendedHours ? extendedSundaySchedule : normalSundaySchedule;
+      } else if (day === 2) {
+        if (!tuesdayForcedOpen && !override?.forceOpen) return null;
+        config = extendedHours ? extendedTuesdaySchedule : normalTuesdaySchedule;
+      } else {
+        const source = extendedHours ? extendedWorkingDays : normalWorkingDays;
+        config = source[day] || null;
+      }
+
+      if (!config && override?.forceOpen) {
+        config = getDefaultOpenSchedule();
+      }
+
+      if (!config) return null;
+
+      return applySpecialClosingToConfig(dateString, cloneSchedule(config));
+    }
+
+    function getServiceDurationForAppointment(app) {
+      const duration = Number(app?.duration || 60);
+      return Number.isFinite(duration) && duration > 0 ? duration : 60;
+    }
+
+    function isKidsService(serviceName) {
+      return String(serviceName || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .includes("nino");
+    }
+
+    function shouldShowSlot(slot, app) {
+      if (isKidsService(app?.servicio)) return true;
+      return convertToMinutes(slot) % 60 === 0;
+    }
+
+    function isPastDateTime(dateISO, slot) {
+      if (!dateISO || !slot) return false;
+      if (dateISO !== getTodayISO()) return false;
+
+      const now = new Date();
+      const currentMinutes = (now.getHours() * 60) + now.getMinutes();
+      return convertToMinutes(slot) <= currentMinutes;
+    }
+
+    function isSlotBlockedByCustomClosure(dateISO, startSlot, duration) {
+      const blocks = getTimeBlocksForDate(dateISO);
+      if (!blocks.length) return false;
+
+      const slotStartMinutes = convertToMinutes(startSlot);
+      const slotEndMinutes = slotStartMinutes + Number(duration || 60);
+
+      return blocks.some(block => {
+        return rangesOverlapMinutes(
+          slotStartMinutes,
+          slotEndMinutes,
+          convertToMinutes(block.start),
+          convertToMinutes(block.end)
+        );
+      });
+    }
+
+    function getAppointmentSlots(app) {
+      if (Array.isArray(app?.slots) && app.slots.length) return app.slots;
+      return buildSlotsFromStart(app?.hora, getServiceDurationForAppointment(app));
+    }
+
+    function isEditSlotAvailable(app, dateISO, startSlot) {
+      const config = getWorkingConfigByDate(dateISO);
+      if (!config) return false;
+
+      const allSlots = generateTimeSlots(config.start, config.end, 30);
+      const startIndex = allSlots.indexOf(startSlot);
+      const neededBlocks = Math.max(1, Math.ceil(getServiceDurationForAppointment(app) / 30));
+
+      if (startIndex === -1) return false;
+      if (isPastDateTime(dateISO, startSlot)) return false;
+      if (isSlotBlockedByCustomClosure(dateISO, startSlot, getServiceDurationForAppointment(app))) return false;
+
+      for (let i = 0; i < neededBlocks; i++) {
+        const currentSlot = allSlots[startIndex + i];
+        if (!currentSlot || (config.breaks || []).includes(currentSlot)) return false;
+        if (dateISO === getTodayISO() && isPastDateTime(dateISO, currentSlot)) return false;
+
+        const hasConflict = currentAppointments.some(otherApp => {
+          if (String(otherApp.id) === String(app.id)) return false;
+          if (otherApp.status === "cancelled") return false;
+          if (otherApp.fecha !== dateISO || otherApp.barbero !== app.barbero) return false;
+          return getAppointmentSlots(otherApp).includes(currentSlot);
+        });
+
+        if (hasConflict) return false;
+      }
+
+      return true;
+    }
+
+    function getAvailableEditHourOptions(app, dateISO, selectedHour = "") {
+      const config = getWorkingConfigByDate(dateISO);
+      if (!config) {
+        return '<option value="">No hay horas disponibles</option>';
+      }
+
+      const options = generateTimeSlots(config.start, config.end, 30)
+        .filter(slot => shouldShowSlot(slot, app))
+        .filter(slot => isEditSlotAvailable(app, dateISO, slot));
+
+      if (!options.length) {
+        return '<option value="">No hay horas disponibles</option>';
+      }
+
+      return options.map(label => {
+        const selected = label === selectedHour ? "selected" : "";
+        return `<option value="${escapeHTML(label)}" ${selected}>${escapeHTML(label)}</option>`;
+      }).join("");
+    }
+
     function buildEditWhatsAppMessage(app, oldDate, oldHour, newDate, newHour) {
       return [
-        "Hola, se solicitó un cambio de cita desde la agenda pública.",
+        "Hola, edité mi cita y quiero que me la apruebes de nuevo.",
         "",
         `Cliente: ${app.nombre || publicClientName(app) || "Sin nombre"}`,
         `Teléfono registrado: ${app.telefono || "No disponible"}`,
@@ -1300,7 +1751,19 @@
         `Cita anterior: ${formatDateSafe(oldDate)} a las ${oldHour || "Sin hora"}`,
         `Nueva solicitud: ${formatDateSafe(newDate)} a las ${newHour || "Sin hora"}`,
         "",
-        "La cita quedó en estado PENDIENTE para revisión y aprobación."
+        "La cita quedó en estado PENDIENTE y necesita aprobación nuevamente."
+      ].join("\n");
+    }
+
+    function buildCancelWhatsAppMessage(app) {
+      return [
+        "Hola, cancelé mi cita. Será en otro momento.",
+        "",
+        `Cliente: ${app.nombre || publicClientName(app) || "Sin nombre"}`,
+        `Teléfono registrado: ${app.telefono || "No disponible"}`,
+        `Servicio: ${app.servicio || "No indicado"}`,
+        `Fecha: ${formatDateSafe(app.fecha)}`,
+        `Hora: ${app.hora || "Sin hora"}`
       ].join("\n");
     }
 
@@ -1330,13 +1793,40 @@
         metodoPago: app?.metodoPago || app?.metodo_pago || "",
         anonimo: Boolean(app?.anonimo),
         status: normalizeStatus(app?.status),
-        createdAt: app?.createdAt || ""
+        clientToken: app?.clientToken || "",
+        createdAt: app?.createdAt || "",
+        slots: Array.isArray(app?.slots) ? app.slots : []
       };
+    }
+
+    function isMine(app) {
+      refreshMyAppointmentData();
+
+      if (!app?.clientToken) return false;
+
+      return myAppointments.some(item => {
+        return String(item.id) === String(app.id) &&
+               String(item.token) === String(app.clientToken);
+      });
+    }
+
+    function isPastAppointment(dateISO, hour) {
+      if (!dateISO) return false;
+
+      const todayISO = getTodayISO();
+      if (dateISO < todayISO) return true;
+      if (dateISO > todayISO) return false;
+
+      return convertToMinutes(hour) < ((new Date().getHours() * 60) + new Date().getMinutes());
+    }
+
+    function canManageAppointment(app) {
+      return isMine(app) && app.status !== "cancelled" && !isPastAppointment(app.fecha, app.hora);
     }
 
     function getVisibleAppointmentsForDate(dateISO) {
       return currentAppointments
-        .filter(app => app.fecha === dateISO && app.status === "approved")
+        .filter(app => app.fecha === dateISO && app.status !== "cancelled")
         .sort((a, b) => {
           const byTime = convertToMinutes(a.hora) - convertToMinutes(b.hora);
           if (byTime !== 0) return byTime;
@@ -1355,12 +1845,16 @@
 
       const rows = list.map(app => {
         const statusText = getStatusText(app.status);
+        const mineBadge = isMine(app) ? '<span class="mine-pill">Tu cita</span>' : "";
+        const actionHTML = canManageAppointment(app)
+          ? `<button class="view-btn edit-row-btn" type="button" data-id="${escapeHTML(app.id)}">Editar</button>`
+          : '<span class="row-note">Solo ver</span>';
         return `
           <div class="agenda-row agenda-grid">
-            <div class="client-name">${escapeHTML(publicClientName(app))}</div>
+            <div class="client-name">${escapeHTML(publicClientName(app))}${mineBadge}</div>
             <div class="time-cell">${splitTime(app.hora)}</div>
             <div><span class="status-pill status-${escapeHTML(app.status)}">${escapeHTML(statusText)}</span></div>
-            <button class="view-btn" type="button" data-id="${escapeHTML(app.id)}">Ver</button>
+            ${actionHTML}
           </div>
         `;
       }).join("");
@@ -1376,7 +1870,7 @@
         ${rows}
       `;
 
-      target.querySelectorAll(".view-btn").forEach(btn => {
+      target.querySelectorAll(".edit-row-btn").forEach(btn => {
         btn.addEventListener("click", () => openDetails(btn.dataset.id));
       });
     }
@@ -1391,11 +1885,11 @@
       countToday.textContent = String(todayList.length);
       countTomorrow.textContent = String(tomorrowList.length);
 
-      renderAgenda(todayView, todayList, "No hay citas aprobadas para hoy.");
-      renderAgenda(tomorrowView, tomorrowList, "No hay citas aprobadas para mañana.");
+      renderAgenda(todayView, todayList, "No hay citas programadas para hoy.");
+      renderAgenda(tomorrowView, tomorrowList, "No hay citas programadas para mañana.");
 
       const now = new Date();
-      lastUpdated.textContent = `Agenda actualizada ${now.toLocaleTimeString("es-DO", { hour: "numeric", minute: "2-digit" })}`;
+      lastUpdated.textContent = `Agenda actualizada ${now.toLocaleTimeString("es-DO", { hour: "numeric", minute: "2-digit" })}. Las pendientes se muestran; solo su dueño puede editarlas.`;
     }
 
     function detailRow(label, value) {
@@ -1425,12 +1919,13 @@
         detailRow("Duración", app.duration ? `${app.duration} minutos` : "-")
       ].join("");
 
-      modalActions.innerHTML = `
+      const canManage = canManageAppointment(app);
+
+      modalActions.innerHTML = canManage ? `
         <div class="edit-box">
           <h4>Cambiar día u hora</h4>
-          <p>Por seguridad, escribe el mismo teléfono usado al agendar. Al cambiar la cita, quedará pendiente hasta que el barbero la apruebe.</p>
+          <p>Como esta cita es tuya, puedes cambiar el día o la hora. El nuevo cambio quedará pendiente hasta que el barbero lo apruebe.</p>
           <div class="edit-form">
-            <input type="tel" id="editPhoneInput" placeholder="Teléfono usado al agendar" inputmode="tel" autocomplete="tel" />
             <label>
               Nuevo día
               <input type="date" id="editDateInput" min="${getTodayISO()}" value="${escapeHTML(app.fecha || getTodayISO())}" />
@@ -1438,7 +1933,7 @@
             <label>
               Nueva hora
               <select id="editHourInput">
-                ${getSimpleHourOptions(app.hora)}
+                ${getAvailableEditHourOptions(app, app.fecha, app.hora)}
               </select>
             </label>
             <button class="edit-btn" type="button" id="editAppointmentBtn">Solicitar cambio</button>
@@ -1448,22 +1943,28 @@
 
         <div class="cancel-box">
           <h4>Cancelar mi cita</h4>
-          <p>Por seguridad, escribe el mismo teléfono usado al agendar. El número no se muestra públicamente.</p>
+          <p>Solo tú puedes cancelar esta cita desde este dispositivo.</p>
           <div class="cancel-form">
-            <input type="tel" id="cancelPhoneInput" placeholder="Teléfono usado al agendar" inputmode="tel" autocomplete="tel" />
             <button class="cancel-btn" type="button" id="cancelAppointmentBtn">Cancelar cita</button>
           </div>
           <div class="cancel-message" id="cancelMessage"></div>
         </div>
+      ` : `
+        <div class="owner-note">
+          Solo quien creó esta cita puede editarla o cancelarla desde el dispositivo donde la reservó.
+        </div>
       `;
 
-      const editPhoneInput = document.getElementById("editPhoneInput");
       const editDateInput = document.getElementById("editDateInput");
       const editHourInput = document.getElementById("editHourInput");
       const editAppointmentBtn = document.getElementById("editAppointmentBtn");
       const editMessage = document.getElementById("editMessage");
 
-      editAppointmentBtn.addEventListener("click", async () => {
+      editDateInput?.addEventListener("change", () => {
+        editHourInput.innerHTML = getAvailableEditHourOptions(app, editDateInput.value, "");
+      });
+
+      editAppointmentBtn?.addEventListener("click", async () => {
         const freshApp = currentAppointments.find(item => String(item.id) === String(currentModalAppointmentId));
         if (!freshApp) return;
 
@@ -1473,15 +1974,22 @@
         const newDate = editDateInput.value;
         const newHour = editHourInput.value;
 
-        if (!phoneMatches(freshApp.telefono, editPhoneInput.value)) {
+        if (!canManageAppointment(freshApp)) {
           editMessage.className = "edit-message error";
-          editMessage.textContent = "El teléfono no coincide con el registrado en la cita.";
+          editMessage.textContent = "Solo el dueño de esta cita puede editarla.";
           return;
         }
 
         if (!newDate || !newHour) {
           editMessage.className = "edit-message error";
           editMessage.textContent = "Selecciona el nuevo día y la nueva hora.";
+          return;
+        }
+
+        if (!isEditSlotAvailable(freshApp, newDate, newHour)) {
+          editMessage.className = "edit-message error";
+          editMessage.textContent = "Esa hora ya no está disponible. Elige otra.";
+          editHourInput.innerHTML = getAvailableEditHourOptions(freshApp, newDate, "");
           return;
         }
 
@@ -1503,23 +2011,44 @@
           editAppointmentBtn.disabled = true;
           editAppointmentBtn.textContent = "Guardando...";
 
-          await appointmentsRef.child(freshApp.id).update({
+          const nextAppointment = {
+            ...freshApp,
             fecha: newDate,
             hora: newHour,
-            slots,
-            status: "pending",
-            editedAt: requestedAt,
-            editedFrom: "public-agenda",
-            editPendingReview: true,
-            editRequest: {
-              previousFecha: oldDate,
-              previousHora: oldHour,
-              requestedFecha: newDate,
-              requestedHora: newHour,
-              requestedAt,
-              phoneLast4: phoneLast4(freshApp.telefono)
-            }
-          });
+            slots
+          };
+          const locksMoved = await replaceAppointmentLocks(freshApp.id, freshApp, nextAppointment);
+
+          if (!locksMoved) {
+            editMessage.className = "edit-message error";
+            editMessage.textContent = "Esa hora acaba de ocuparse. Elige otra.";
+            editAppointmentBtn.disabled = false;
+            editAppointmentBtn.textContent = "Solicitar cambio";
+            return;
+          }
+
+          try {
+            await appointmentsRef.child(freshApp.id).update({
+              fecha: newDate,
+              hora: newHour,
+              slots,
+              status: "pending",
+              editedAt: requestedAt,
+              editedFrom: "public-agenda",
+              editPendingReview: true,
+              editRequest: {
+                previousFecha: oldDate,
+                previousHora: oldHour,
+                requestedFecha: newDate,
+                requestedHora: newHour,
+                requestedAt,
+                phoneLast4: phoneLast4(freshApp.telefono)
+              }
+            });
+          } catch (error) {
+            await replaceAppointmentLocks(freshApp.id, nextAppointment, freshApp);
+            throw error;
+          }
 
           const whatsappMessage = buildEditWhatsAppMessage(freshApp, oldDate, oldHour, newDate, newHour);
           window.open(buildWhatsAppUrl(whatsappMessage), "_blank", "noopener");
@@ -1536,20 +2065,19 @@
         }
       });
 
-      const cancelPhoneInput = document.getElementById("cancelPhoneInput");
       const cancelAppointmentBtn = document.getElementById("cancelAppointmentBtn");
       const cancelMessage = document.getElementById("cancelMessage");
 
-      cancelAppointmentBtn.addEventListener("click", async () => {
+      cancelAppointmentBtn?.addEventListener("click", async () => {
         const freshApp = currentAppointments.find(item => String(item.id) === String(currentModalAppointmentId));
         if (!freshApp) return;
 
         cancelMessage.className = "cancel-message";
         cancelMessage.textContent = "";
 
-        if (!phoneMatches(freshApp.telefono, cancelPhoneInput.value)) {
+        if (!canManageAppointment(freshApp)) {
           cancelMessage.className = "cancel-message error";
-          cancelMessage.textContent = "El teléfono no coincide con el registrado en la cita.";
+          cancelMessage.textContent = "Solo el dueño de esta cita puede cancelarla.";
           return;
         }
 
@@ -1564,8 +2092,11 @@
             cancelledAt: new Date().toISOString(),
             cancelledFrom: "public-agenda"
           });
+          await releaseAppointmentLocks(freshApp.id, freshApp);
+          window.open(buildWhatsAppUrl(buildCancelWhatsAppMessage(freshApp)), "_blank", "noopener");
+          forgetClientAppointment(freshApp.id);
           cancelMessage.className = "cancel-message ok";
-          cancelMessage.textContent = "Cita cancelada correctamente.";
+          cancelMessage.textContent = "Cita cancelada correctamente. Se abrió WhatsApp para avisarle al barbero.";
           setTimeout(closeDetails, 900);
         } catch (error) {
           console.error(error);
@@ -1624,6 +2155,22 @@
       tomorrowView.textContent = "Revisa la conexión o la configuración de Firebase.";
       lastUpdated.textContent = "Error al cargar los datos.";
       console.error(error);
+    });
+
+    shopStatusRef.on("value", snapshot => {
+      const data = snapshot.val() || {};
+      shopIsOpen = data.isOpen !== false;
+      sundayOpen = data.sundayOpen === true;
+      tuesdayForcedOpen = data.tuesdayOpen === true;
+      extendedHours = data.extendedHours === true;
+    });
+
+    customClosuresRef.on("value", snapshot => {
+      customClosures = snapshot.val() || {};
+    });
+
+    dailyOverridesRef.on("value", snapshot => {
+      dailyOverrides = snapshot.val() || {};
     });
   </script>
 </body>
