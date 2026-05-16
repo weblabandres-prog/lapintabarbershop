@@ -2,323 +2,693 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>La Pinta Barber | Reserva tu cita</title>
-  <meta
-    name="description"
-    content="Barbería profesional con cortes modernos, experiencia premium y reservas online."
-  />
+  <meta name="description" content="Agenda tu cita en La Pinta Barber de forma rápida y sencilla." />
 
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=20260515" />
+  <style>
+    :root {
+      --bg: #050912;
+      --card: rgba(9, 16, 27, .82);
+      --card-2: rgba(13, 23, 38, .94);
+      --line: rgba(255,255,255,.12);
+      --text: #f7f9ff;
+      --muted: #aebdd4;
+      --muted-2: #8293ac;
+      --blue: #1f86ff;
+      --blue-2: #72baff;
+      --green: #8ff0bc;
+      --red: #ffaaa5;
+      --yellow: #ffd27a;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --shadow: 0 26px 76px rgba(0,0,0,.40);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100svh;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(31,134,255,.22), transparent 34%),
+        linear-gradient(180deg, #050912 0%, #07101d 48%, #03060c 100%);
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 28px));
+      min-height: 100svh;
+      margin: 0 auto;
+      padding: calc(16px + var(--safe-top)) 0 calc(16px + var(--safe-bottom));
+      display: grid;
+      grid-template-rows: auto auto auto;
+      gap: 14px;
+    }
+
+    .topbar {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: rgba(5, 9, 18, .82);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 18px 48px rgba(0,0,0,.28);
+    }
+
+    .brand {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo-wrap {
+      width: 52px;
+      height: 52px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #fff;
+      padding: 5px;
+      overflow: hidden;
+    }
+
+    .brand-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .brand small {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted-2);
+      font-size: .64rem;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .brand strong {
+      display: block;
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(1.15rem, 2.2vw, 1.55rem);
+      line-height: .95;
+      white-space: nowrap;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .btn,
+    .mini-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.13);
+      background: rgba(255,255,255,.07);
+      color: #fff;
+      font-weight: 900;
+      white-space: nowrap;
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+    }
+
+    .mini-btn {
+      min-height: 42px;
+      padding: 10px 14px;
+      font-size: .86rem;
+    }
+
+    .btn {
+      min-height: 52px;
+      padding: 14px 20px;
+      font-size: .94rem;
+    }
+
+    .btn:hover,
+    .mini-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.11);
+      border-color: rgba(255,255,255,.22);
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--blue), var(--blue-2));
+      color: #04101d;
+      border-color: transparent;
+      box-shadow: 0 18px 34px rgba(31,134,255,.22);
+    }
+
+    .hero {
+      min-height: 430px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(315px, .95fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .hero-main,
+    .photo-card,
+    .compact-card {
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      background: var(--card);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero-main {
+      position: relative;
+      min-height: 100%;
+      padding: clamp(24px, 4vw, 46px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background:
+        linear-gradient(180deg, rgba(12,21,35,.86), rgba(6,11,20,.90)),
+        radial-gradient(circle at bottom right, rgba(31,134,255,.20), transparent 45%);
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .kicker,
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: .72rem;
+      font-weight: 900;
+    }
+
+    .kicker {
+      color: #cce6ff;
+      background: rgba(31,134,255,.15);
+      border: 1px solid rgba(31,134,255,.25);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .status-badge {
+      color: var(--yellow);
+      background: rgba(255, 210, 122, .12);
+      border: 1px solid rgba(255, 210, 122, .23);
+    }
+
+    .status-badge.open {
+      color: var(--green);
+      background: rgba(43,198,130,.12);
+      border-color: rgba(43,198,130,.25);
+    }
+
+    .status-badge.closed {
+      color: var(--red);
+      background: rgba(229,57,53,.12);
+      border-color: rgba(229,57,53,.24);
+    }
+
+    h1 {
+      max-width: 700px;
+      margin-bottom: 12px;
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(2.8rem, 6.5vw, 5.6rem);
+      line-height: .84;
+      letter-spacing: -.055em;
+    }
+
+    .lead {
+      max-width: 610px;
+      margin-bottom: 22px;
+      color: var(--muted);
+      font-size: clamp(.96rem, 1.5vw, 1.08rem);
+      line-height: 1.5;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .photo-card {
+      min-height: 100%;
+      position: relative;
+      background: #08111f;
+    }
+
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      min-height: 430px;
+      object-fit: cover;
+      display: block;
+      filter: saturate(1.06) contrast(1.02);
+    }
+
+    .photo-badge {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      padding: 14px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(4,8,15,.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .photo-badge strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: .98rem;
+    }
+
+    .photo-badge span {
+      display: block;
+      color: var(--muted);
+      font-size: .84rem;
+      line-height: 1.35;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr .95fr;
+      gap: 14px;
+    }
+
+    .compact-card {
+      padding: 16px;
+      background: var(--card-2);
+    }
+
+    .card-title {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-title span {
+      color: #7dbbff;
+      font-size: .7rem;
+      font-weight: 900;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .card-title h2 {
+      margin-top: 4px;
+      font-size: 1.08rem;
+      line-height: 1.1;
+    }
+
+    .services {
+      display: grid;
+      gap: 8px;
+    }
+
+    .service,
+    .bank-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 11px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.045);
+    }
+
+    .service strong,
+    .bank-row strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: .86rem;
+      line-height: 1.14;
+    }
+
+    .service small,
+    .bank-row small {
+      color: var(--muted);
+      font-size: .74rem;
+      font-weight: 700;
+    }
+
+    .price,
+    .copy-number {
+      color: #dcecff;
+      font-size: .82rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .bank-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: .78rem;
+      line-height: 1.35;
+    }
+
+    .map-card {
+      padding: 0;
+      min-height: 245px;
+    }
+
+    .map-card iframe {
+      width: 100%;
+      height: 100%;
+      min-height: 245px;
+      border: 0;
+      display: block;
+      filter: saturate(.92) contrast(.98);
+    }
+
+    @media (max-width: 980px) {
+      body {
+        overflow-y: auto;
+      }
+
+      .page {
+        width: min(100% - 22px, 760px);
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .photo-card img {
+        min-height: 260px;
+        max-height: 290px;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .map-card iframe {
+        min-height: 260px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .page {
+        width: min(100% - 18px, 760px);
+        padding-top: calc(10px + var(--safe-top));
+        gap: 10px;
+      }
+
+      .topbar {
+        min-height: 60px;
+        border-radius: 22px;
+        padding: 8px;
+      }
+
+      .brand-logo-wrap {
+        width: 43px;
+        height: 43px;
+      }
+
+      .brand small {
+        display: none;
+      }
+
+      .brand strong {
+        font-size: 1.12rem;
+      }
+
+      .mini-btn {
+        min-height: 38px;
+        padding: 9px 11px;
+        font-size: .78rem;
+      }
+
+      .mini-btn.hide-mobile {
+        display: none;
+      }
+
+      .hero-main {
+        border-radius: 26px;
+        padding: 20px;
+      }
+
+      .label-row {
+        margin-bottom: 10px;
+      }
+
+      .kicker,
+      .status-badge {
+        min-height: 30px;
+        padding: 7px 10px;
+        font-size: .66rem;
+      }
+
+      h1 {
+        margin-bottom: 9px;
+        font-size: clamp(2.32rem, 14vw, 3.8rem);
+      }
+
+      .lead {
+        margin-bottom: 15px;
+        font-size: .9rem;
+        line-height: 1.38;
+      }
+
+      .btn {
+        min-height: 45px;
+        padding: 12px 13px;
+        font-size: .84rem;
+      }
+
+      .photo-card img {
+        min-height: 210px;
+        max-height: 230px;
+      }
+
+      .photo-badge {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        padding: 12px;
+        border-radius: 18px;
+      }
+
+      .compact-card {
+        padding: 12px;
+        border-radius: 24px;
+      }
+
+      .services {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .service {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        padding: 9px;
+      }
+
+      .service strong {
+        font-size: .76rem;
+      }
+
+      .service small {
+        display: none;
+      }
+
+      .price {
+        font-size: .76rem;
+      }
+
+      .service.hide-mobile {
+        display: none;
+      }
+
+      .bank-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .map-card iframe {
+        min-height: 220px;
+      }
+    }
+  </style>
 </head>
-<body>
 
-  <header class="header">
-    <div class="container nav">
-      <a href="#inicio" class="brand" id="logoSecret" aria-label="La Pinta Barber">
-        <div class="brand-badge">
-          <div class="brand-ring"></div>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="index.html" id="logoSecret" aria-label="La Pinta Barber">
+        <div class="brand-logo-wrap">
           <img src="logo.jpeg" alt="La Pinta Barber" class="brand-logo" />
         </div>
-
-        <div class="brand-text">
-          <span class="brand-top">Barbería premium</span>
-          <span class="brand-bottom">La Pinta Barber</span>
+        <div>
+          <small>Barbería premium</small>
+          <strong>La Pinta Barber</strong>
         </div>
       </a>
 
-      <nav class="nav-desktop">
-        <div class="nav-links">
-          <a href="#inicio">Inicio</a>
-          <a href="#nosotros">Nosotros</a>
-          <a href="#servicios">Servicios</a>
-          <a href="#contacto">Contacto</a>
-          <a href="ver-citas.html">Ver citas</a>
-        </div>
-
-        <div class="nav-actions">
-          <a href="cita.html" class="btn btn-primary nav-btn-main">Agendar cita</a>
-
-          <a href="aprobar.html" class="btn btn-secondary btn-oculto" id="btnAprobarMenu">
-            Ir a aprobar
-          </a>
-        </div>
+      <nav class="nav-actions" aria-label="Accesos rápidos">
+        <a class="mini-btn hide-mobile" href="ver-citas.html">Ver citas</a>
+        
+        <a class="mini-btn primary" href="cita.html">Agendar</a>
       </nav>
+    </header>
 
-      <button
-        class="menu-toggle"
-        id="menuToggle"
-        aria-label="Abrir menú"
-        aria-expanded="false"
-        type="button"
-      >
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-
-      <nav class="nav-panel" id="navPanel">
-        <div class="nav-mobile-links">
-          <a href="#inicio">Inicio</a>
-          <a href="#nosotros">Nosotros</a>
-          <a href="#servicios">Servicios</a>
-          <a href="#contacto">Contacto</a>
-          <a href="ver-citas.html">Ver citas</a>
+    <main class="hero" id="inicio">
+      <section class="hero-main">
+        <div class="label-row">
+          <span class="kicker">Reserva en minutos</span>
+          <div class="status-badge" id="shopStatusBadge">Consultando horario...</div>
         </div>
 
-        <div class="nav-mobile-actions">
-          <a href="cita.html" class="btn btn-primary">Agendar cita</a>
-
-          <a href="aprobar.html" class="btn btn-secondary btn-oculto" id="btnAprobarMobile">
-            Ir a aprobar
-          </a>
-        </div>
-      </nav>
-    </div>
-  </header>
-
-  <section class="hero" id="inicio">
-    <div class="hero-overlay"></div>
-
-    <div class="container hero-content">
-      <div class="hero-copy">
-        <span class="hero-kicker">Reserva en minutos</span>
-
-        <div class="status-badge" id="shopStatusBadge">
-          Consultando horario...
-        </div>
-
-        <h1>Reserva tu corte sin dar vueltas</h1>
-
-        <p>
-          Elige servicio, hora y confirma desde tu celular.
+        <h1>Tu corte, tu hora, sin vueltas.</h1>
+        <p class="lead">
+          Agenda rápido, revisa tus citas y paga como prefieras. Todo más claro desde el celular o la PC.
         </p>
-
-        <div id="shopClosedBanner" class="shop-closed-banner">
-          Cerrado por el momento, agenda para otra hora o día.
-        </div>
 
         <div class="hero-buttons">
-          <a href="cita.html" class="btn btn-primary">Agendar cita</a>
-          <a href="#servicios" class="btn btn-secondary">Ver servicios</a>
-
-          <a href="aprobar.html" class="btn btn-secondary btn-oculto" id="btnAprobarHero">
-            Aprobar cita
-          </a>
+          <a href="cita.html" class="btn primary">Agendar cita</a>
+          <a href="ver-citas.html" class="btn">Ver citas</a>
+    
         </div>
+      </section>
 
-        <div class="quick-booking" aria-label="Reserva rápida">
-          <span>Reserva rápida</span>
-          <div class="quick-booking-links">
-            <a href="cita.html?servicio=Corte%20%2B%20Fade">Corte + Fade</a>
-            <a href="cita.html?servicio=Corte%20Cl%C3%A1sico">Corte clásico</a>
-            <a href="cita.html?servicio=Cortes%20Ni%C3%B1os">Cortes niños</a>
-          </div>
+      <aside class="photo-card" aria-label="Foto de la barbería">
+        <img src="interior.jpeg" alt="Interior de La Pinta Barber" />
+        <div class="photo-badge">
+          <strong>La Pinta Barber</strong>
+          <span>Ambiente cómodo, cortes limpios y reserva online.</span>
         </div>
-      </div>
+      </aside>
+    </main>
 
-      <div class="hero-card">
-        <div class="hero-card-top">
-          <span class="hero-card-label">Experiencia La Pinta</span>
-          <span class="hero-card-chip">Premium</span>
-        </div>
-
-        <h3>Claro, rápido y bien hecho</h3>
-
-        <div class="hero-card-list">
-          <div class="hero-card-item">
-            <strong>Reservas rápidas</strong>
-            <span>Agenda en pocos pasos</span>
-          </div>
-
-          <div class="hero-card-item">
-            <strong>Precios visibles</strong>
-            <span>Sabes cuánto pagas antes de reservar</span>
-          </div>
-
-          <div class="hero-card-item">
-            <strong>Buen acabado</strong>
-            <span>Corte limpio y atención cuidada</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section-soft" id="nosotros">
-    <div class="container about-grid">
-      <div class="about-image">
-        <img src="interior.jpeg" alt="Interior de la barbería" />
-      </div>
-
-      <div class="about-text">
-        <span class="section-tag">Sobre nosotros</span>
-        <h2>Buen corte, trato claro</h2>
-        <p>
-          Cortes modernos, atención cuidada y una reserva simple desde el primer clic.
-        </p>
-
-        <div class="about-points">
-          <article class="point-card">
-            <strong>Cortes con precisión</strong>
-            <span>Fade, clásicos y acabados limpios.</span>
-          </article>
-
-          <article class="point-card">
-            <strong>Reserva sin llamadas</strong>
-            <span>Elige servicio, hora y confirma online.</span>
-          </article>
-
-          <article class="point-card">
-            <strong>Atención cómoda</strong>
-            <span>Llegas con tu cita ya lista.</span>
-          </article>
-        </div>
-
-        <a href="#servicios" class="btn btn-primary">Ver servicios</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="servicios">
-    <div class="container">
-      <div class="section-heading">
-        <span class="section-tag">Servicios</span>
-        <h2>Elige y agenda</h2>
-        <p>
-          Mira el precio, escoge tu servicio y reserva al momento.
-        </p>
-      </div>
-
-      <div class="services-grid">
-        <article class="service-card">
-          <div class="service-top">
-            <span class="service-number">01</span>
-            <span class="service-time">1 hora</span>
-          </div>
-          <h3>Corte + Fade</h3>
-          <p>Corte moderno con degradado limpio.</p>
-          <div class="service-meta">
-            <span>RD$550</span>
-          </div>
-          <a href="cita.html?servicio=Corte%20%2B%20Fade" class="btn btn-small">Reservar</a>
-        </article>
-
-        <article class="service-card">
-          <div class="service-top">
-            <span class="service-number">02</span>
-            <span class="service-time">30 min</span>
-          </div>
-          <h3>Cortes Niños</h3>
-          <p>Corte cómodo para los más pequeños.</p>
-          <div class="service-meta">
-            <span>RD$350</span>
-          </div>
-          <a href="cita.html?servicio=Cortes%20Ni%C3%B1os" class="btn btn-small">Reservar</a>
-        </article>
-
-        <article class="service-card">
-          <div class="service-top">
-            <span class="service-number">03</span>
-            <span class="service-time">1 hora</span>
-          </div>
-          <h3>Corte Clásico</h3>
-          <p>Estilo limpio y clásico.</p>
-          <div class="service-meta">
-            <span>RD$500</span>
-          </div>
-          <a href="cita.html?servicio=Corte%20Cl%C3%A1sico" class="btn btn-small">Reservar</a>
-        </article>
-
-        <article class="service-card">
-          <div class="service-top">
-            <span class="service-number">04</span>
-            <span class="service-time">1 hora</span>
-          </div>
-          <h3>Cerquillo + Fade</h3>
-          <p>Perfilado definido con fade.</p>
-          <div class="service-meta">
-            <span>RD$400</span>
-          </div>
-          <a href="cita.html?servicio=Cerquillo%20%2B%20Fade" class="btn btn-small">Reservar</a>
-        </article>
-
-        <article class="service-card">
-          <div class="service-top">
-            <span class="service-number">05</span>
-            <span class="service-time">1 hora</span>
-          </div>
-          <h3>Corte + Fade + Facial + Lavado</h3>
-          <p>Servicio completo para salir fresco.</p>
-          <div class="service-meta">
-            <span>RD$700</span>
-          </div>
-          <a href="cita.html?servicio=Corte%20%2B%20Fade%20%2B%20Facial%20%2B%20Lavado%20de%20cabello" class="btn btn-small">Reservar</a>
-        </article>
-      </div>
-    </div>
-  </section>
-
-
-  <section class="section" id="contacto">
-    <div class="container contact-grid">
-      <div class="contact-box">
-        <span class="section-tag">Contacto</span>
-        <h2>¿Prefieres escribirnos?</h2>
-        <p>
-          Reserva online o háblanos por WhatsApp.
-        </p>
-
-        <div class="contact-info">
-          <div class="contact-item">
-            <small>Ubicación</small>
-            <p>La Pinta Barber, Los Llanos, San Pedro de Macorís, RD</p>
-          </div>
-
-          <div class="contact-item">
-            <small>Teléfono</small>
-            <p>
-              <a href="tel:+18493757710">+1 (849) 375-7710</a>
-            </p>
-          </div>
-
-          <div class="contact-item">
-            <small>Instagram</small>
-            <p>
-              <a href="https://www.instagram.com/lapinta_barber/" target="_blank" rel="noopener noreferrer">
-                @lapinta_barber
-              </a>
-            </p>
+    <section class="info-grid" aria-label="Información rápida">
+      <article class="compact-card">
+        <div class="card-title">
+          <div>
+            <span>Servicios</span>
+            <h2>Elige y reserva</h2>
           </div>
         </div>
 
-        <div class="contact-actions">
-          <a
-            href="https://wa.me/18493757710"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-primary"
-          >
-            Escribir por WhatsApp
+        <div class="services">
+          <a class="service" href="cita.html?servicio=Corte%20%2B%20Fade">
+            <span>
+              <strong>Corte + Fade</strong>
+              <small>Degradado limpio · 1 hora</small>
+            </span>
+            <span class="price">RD$550</span>
           </a>
 
-          <a href="cita.html" class="btn btn-secondary">
-            Reservar cita
+          <a class="service" href="cita.html?servicio=Corte%20Cl%C3%A1sico">
+            <span>
+              <strong>Corte clásico</strong>
+              <small>Estilo limpio · 1 hora</small>
+            </span>
+            <span class="price">RD$500</span>
+          </a>
+
+          <a class="service" href="cita.html?servicio=Cortes%20Ni%C3%B1os">
+            <span>
+              <strong>Cortes niños</strong>
+              <small>Cómodo y rápido · 30 min</small>
+            </span>
+            <span class="price">RD$350</span>
+          </a>
+
+          <a class="service hide-mobile" href="cita.html?servicio=Corte%20%2B%20Fade%20%2B%20Facial%20%2B%20Lavado%20de%20cabello">
+            <span>
+              <strong>Servicio completo</strong>
+              <small>Corte + facial + lavado</small>
+            </span>
+            <span class="price">RD$700</span>
           </a>
         </div>
-      </div>
+      </article>
 
-      <div class="map-box">
+      <article class="compact-card">
+        <div class="card-title">
+          <div>
+            <span>Cuentas</span>
+            <h2>Pago por transferencia</h2>
+          </div>
+        </div>
+
+        <div class="services">
+          <div class="bank-row">
+            <span>
+              <strong>Banreservas</strong>
+              <small>Cuenta de ahorro</small>
+            </span>
+            <span class="copy-number">9602003811</span>
+          </div>
+
+          <div class="bank-row">
+            <span>
+              <strong>Popular</strong>
+              <small>Cuenta de ahorro</small>
+            </span>
+            <span class="copy-number">853557841</span>
+          </div>
+        </div>
+
+        <p class="bank-note">También puedes pagar en efectivo al llegar.</p>
+      </article>
+
+      <article class="compact-card map-card" aria-label="Mapa de ubicación">
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3781.0045146839834!2d-69.49556079999999!3d18.618866699999998!2m3!1f0!3f0!0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8eaf710073f004cf%3A0xba6e8449aff7acca!2sLa%20Pinta%20Barber!5e0!3m2!1ses-419!2sdo!4v1775521244096!5m2!1ses-419!2sdo"
           allowfullscreen
@@ -326,50 +696,66 @@
           referrerpolicy="no-referrer-when-downgrade"
           title="Mapa de La Pinta Barber"
         ></iframe>
-      </div>
-    </div>
-  </section>
-
-  <section class="cta-section">
-    <div class="container cta-content">
-      <span class="section-tag">Reserva hoy</span>
-      <h2>Tu próxima cita empieza aquí</h2>
-
-      <div class="cta-buttons">
-        <a href="cita.html" class="btn btn-primary">Agendar ahora</a>
-        <a
-          href="https://wa.me/18493757710"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn btn-secondary"
-        >
-          WhatsApp
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <footer class="footer">
-    <div class="container footer-content">
-      <div>
-        <h3>LA PINTA <span>BARBER</span></h3>
-        <p>Cortes y reservas en línea.</p>
-      </div>
-
-      <div class="footer-copy">
-        <p>© 2026 Todos los derechos reservados</p>
-      </div>
-    </div>
-  </footer>
-
-  <div class="mobile-booking-bar">
-    <a href="cita.html" class="btn btn-primary">Agendar cita</a>
+      </article>
+    </section>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script src="script.js?v=20260515"></script>
 
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4WCEUcsgfjK_LgNkY5rexqvPMxQ-RdEE",
+      authDomain: "barberia2-bb033.firebaseapp.com",
+      databaseURL: "https://barberia2-bb033-default-rtdb.firebaseio.com",
+      projectId: "barberia2-bb033",
+      storageBucket: "barberia2-bb033.firebasestorage.app",
+      messagingSenderId: "763008264452",
+      appId: "1:763008264452:web:4adb64267606266deb4851",
+      measurementId: "G-QHN4PX48D4"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+    const db = firebase.database();
+    const shopStatusRef = db.ref("shopStatus");
+    const statusBadge = document.getElementById("shopStatusBadge");
+    const logoSecret = document.getElementById("logoSecret");
+
+    function updateStatus(data = {}) {
+      if (!statusBadge) return;
+
+      const isOpen = data.isOpen !== false;
+      statusBadge.classList.toggle("open", isOpen);
+      statusBadge.classList.toggle("closed", !isOpen);
+      statusBadge.textContent = isOpen
+        ? "Abierto · agenda tu cita"
+        : "Cerrado por el momento · agenda para otro día";
+    }
+
+    shopStatusRef.on("value", snapshot => {
+      updateStatus(snapshot.val() || {});
+    }, () => {
+      statusBadge.textContent = "Agenda disponible";
+    });
+
+    let logoTaps = 0;
+    let logoTimer = null;
+
+    logoSecret?.addEventListener("click", event => {
+      if (logoTimer) clearTimeout(logoTimer);
+      logoTaps += 1;
+
+      logoTimer = setTimeout(() => {
+        logoTaps = 0;
+      }, 1600);
+
+      if (logoTaps >= 5) {
+        event.preventDefault();
+        logoTaps = 0;
+        window.location.href = "aprobar.html";
+      }
+    });
+  </script>
 </body>
 </html>
