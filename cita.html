@@ -547,6 +547,7 @@
       font-weight: 800;
       cursor: pointer;
       transition: 0.2s ease;
+      white-space: nowrap;
     }
 
     .hour-btn:hover {
@@ -711,7 +712,7 @@
     }
 
     .copy-account-btn {
-      min-width: 96px;
+      min-width: 126px;
       min-height: 44px;
       border-radius: 14px;
       border: 1px solid rgba(31,134,255,0.22);
@@ -720,6 +721,7 @@
       font-weight: 800;
       cursor: pointer;
       transition: 0.2s ease;
+      white-space: nowrap;
     }
 
     .copy-account-btn:hover {
@@ -1358,7 +1360,7 @@
                     <span>Cuenta de ahorro</span>
                     <span class="transfer-card-row">
                       <small>9602003811</small>
-                      <button type="button" class="copy-account-btn" data-copy="9602003811">Copiar</button>
+                      <button type="button" class="copy-account-btn" data-copy="9602003811" data-bank="banreservas">Copiar y abrir</button>
                     </span>
                   </span>
                 </label>
@@ -1370,7 +1372,7 @@
                     <span>Cuenta de ahorro</span>
                     <span class="transfer-card-row">
                       <small>853557841</small>
-                      <button type="button" class="copy-account-btn" data-copy="853557841">Copiar</button>
+                      <button type="button" class="copy-account-btn" data-copy="853557841" data-bank="popular">Copiar y abrir</button>
                     </span>
                   </span>
                 </label>
@@ -2197,32 +2199,102 @@
       }
     }
 
-    async function copyAccountNumber(button) {
-      const accountNumber = button?.dataset.copy || "";
-      if (!accountNumber) return;
+    function copyTextFallback(text) {
+      const tempInput = document.createElement("textarea");
+      tempInput.value = text;
+      tempInput.setAttribute("readonly", "");
+      tempInput.style.position = "fixed";
+      tempInput.style.top = "-9999px";
+      tempInput.style.left = "-9999px";
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand("copy");
+      tempInput.remove();
+    }
+
+    async function copyAccountValue(accountNumber) {
+      if (!accountNumber) return false;
 
       try {
-        await navigator.clipboard.writeText(accountNumber);
-        button.textContent = "Copiado";
-        button.classList.add("copied");
-        setTimeout(() => {
-          button.textContent = "Copiar";
-          button.classList.remove("copied");
-        }, 1400);
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(accountNumber);
+        } else {
+          copyTextFallback(accountNumber);
+        }
+
+        return true;
       } catch (error) {
-        const tempInput = document.createElement("input");
-        tempInput.value = accountNumber;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand("copy");
-        tempInput.remove();
-        button.textContent = "Copiado";
-        button.classList.add("copied");
-        setTimeout(() => {
-          button.textContent = "Copiar";
-          button.classList.remove("copied");
-        }, 1400);
+        try {
+          copyTextFallback(accountNumber);
+          return true;
+        } catch (fallbackError) {
+          return false;
+        }
       }
+    }
+
+    function setCopyButtonStatus(button, text, copied = false) {
+      if (!button) return;
+
+      button.textContent = text;
+      button.classList.toggle("copied", copied);
+
+      setTimeout(() => {
+        button.textContent = "Copiar y abrir";
+        button.classList.remove("copied");
+      }, 1600);
+    }
+
+    function openBankApp(bank) {
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isAndroid = /Android/i.test(navigator.userAgent);
+
+      if (bank === "popular") {
+        if (isAndroid) {
+          window.location.href = "intent://dashboard#Intent;scheme=https;package=com.popular.app.android;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.popular.app.android;end";
+          return;
+        }
+
+        if (isIOS) {
+          window.location.href = "https://deeplink.popularenlinea.com/dashboard";
+          return;
+        }
+
+        window.location.href = "https://deeplink.popularenlinea.com/dashboard";
+        return;
+      }
+
+      if (bank === "banreservas") {
+        if (isAndroid) {
+          window.location.href = "intent://open#Intent;package=com.banreservas.tubancoappmobile;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.banreservas.tubancoappmobile;end";
+          return;
+        }
+
+        if (isIOS) {
+          window.location.href = "https://apps.apple.com/us/app/banreservas/id1170610154";
+          return;
+        }
+
+        window.location.href = "https://www.banreservas.com/canales-banreservas/app-personas/";
+      }
+    }
+
+    async function copyAndOpenBank(button) {
+      const accountNumber = button?.dataset.copy || "";
+      const bank = button?.dataset.bank || "";
+
+      if (!accountNumber || !bank) return;
+
+      const copied = await copyAccountValue(accountNumber);
+
+      if (copied) {
+        setCopyButtonStatus(button, "Copiado", true);
+        alert("Cuenta copiada: " + accountNumber + "\nAhora se abrirá el banco para que puedas pegarla.");
+      } else {
+        alert("Cuenta: " + accountNumber + "\nCópiala manualmente antes de hacer la transferencia.");
+      }
+
+      openBankApp(bank);
     }
 
     function limpiarTelefono(valor) {
@@ -2982,7 +3054,7 @@
       button.addEventListener("click", event => {
         event.preventDefault();
         event.stopPropagation();
-        copyAccountNumber(button);
+        copyAndOpenBank(button);
       });
     });
 
