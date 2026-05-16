@@ -358,6 +358,10 @@
       gap: 8px;
     }
 
+    .bank-services {
+      grid-template-columns: 1fr;
+    }
+
     .service,
     .bank-row {
       display: grid;
@@ -391,6 +395,27 @@
       font-size: .82rem;
       font-weight: 900;
       white-space: nowrap;
+    }
+
+    .bank-pay-btn {
+      border: none;
+      outline: none;
+      cursor: pointer;
+      color: #dcecff;
+      background: rgba(31,134,255,.14);
+      border: 1px solid rgba(31,134,255,.24);
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-size: .78rem;
+      font-weight: 900;
+      white-space: nowrap;
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+    }
+
+    .bank-pay-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(31,134,255,.22);
+      border-color: rgba(31,134,255,.36);
     }
 
     .bank-note {
@@ -533,6 +558,10 @@
         grid-template-columns: 1fr 1fr;
       }
 
+      .bank-services {
+        grid-template-columns: 1fr;
+      }
+
       .service {
         grid-template-columns: 1fr;
         gap: 4px;
@@ -557,7 +586,13 @@
 
       .bank-row {
         grid-template-columns: 1fr;
-        gap: 4px;
+        gap: 7px;
+      }
+
+      .bank-pay-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 12px;
       }
 
       .map-card iframe {
@@ -582,7 +617,6 @@
 
       <nav class="nav-actions" aria-label="Accesos rápidos">
         <a class="mini-btn hide-mobile" href="ver-citas.html">Ver citas</a>
-        
         <a class="mini-btn primary" href="cita.html">Agendar</a>
       </nav>
     </header>
@@ -595,6 +629,7 @@
         </div>
 
         <h1>Tu corte, tu hora, sin vueltas.</h1>
+
         <p class="lead">
           Agenda rápido, revisa tus citas y paga como prefieras. Todo más claro desde el celular o la PC.
         </p>
@@ -602,7 +637,6 @@
         <div class="hero-buttons">
           <a href="cita.html" class="btn primary">Agendar cita</a>
           <a href="ver-citas.html" class="btn">Ver citas</a>
-    
         </div>
       </section>
 
@@ -667,13 +701,19 @@
           </div>
         </div>
 
-        <div class="services">
+        <div class="services bank-services">
           <div class="bank-row">
             <span>
               <strong>Banreservas</strong>
               <small>Cuenta de ahorro</small>
             </span>
-            <span class="copy-number">9602003811</span>
+
+            <button
+              type="button"
+              class="bank-pay-btn"
+              onclick="copyAndOpenBank('9602003811', 'banreservas')">
+              9602003811
+            </button>
           </div>
 
           <div class="bank-row">
@@ -681,11 +721,19 @@
               <strong>Popular</strong>
               <small>Cuenta de ahorro</small>
             </span>
-            <span class="copy-number">853557841</span>
+
+            <button
+              type="button"
+              class="bank-pay-btn"
+              onclick="copyAndOpenBank('853557841', 'popular')">
+              853557841
+            </button>
           </div>
         </div>
 
-        <p class="bank-note">También puedes pagar en efectivo al llegar.</p>
+        <p class="bank-note">
+          Toca la cuenta: se copia el número y se abre la app del banco. También puedes pagar en efectivo al llegar.
+        </p>
       </article>
 
       <article class="compact-card map-card" aria-label="Mapa de ubicación">
@@ -699,6 +747,68 @@
       </article>
     </section>
   </div>
+
+  <script>
+    function copyTextFallback(text) {
+      const input = document.createElement("textarea");
+      input.value = text;
+      input.setAttribute("readonly", "");
+      input.style.position = "fixed";
+      input.style.top = "-9999px";
+      input.style.left = "-9999px";
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+    }
+
+    async function copyAccountNumber(accountNumber) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(accountNumber);
+        } else {
+          copyTextFallback(accountNumber);
+        }
+
+        return true;
+      } catch (error) {
+        try {
+          copyTextFallback(accountNumber);
+          return true;
+        } catch (fallbackError) {
+          return false;
+        }
+      }
+    }
+
+    async function copyAndOpenBank(accountNumber, bank) {
+      const copied = await copyAccountNumber(accountNumber);
+
+      if (copied) {
+        alert("Cuenta copiada: " + accountNumber + "\nAhora se abrirá el banco para que puedas pegarla.");
+      } else {
+        alert("Cuenta: " + accountNumber + "\nCópiala manualmente antes de hacer la transferencia.");
+      }
+
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isAndroid = /Android/i.test(navigator.userAgent);
+
+      if (bank === "popular") {
+        window.location.href = "https://deeplink.popularenlinea.com/dashboard";
+        return;
+      }
+
+      if (bank === "banreservas") {
+        if (isIOS) {
+          window.location.href = "https://apps.apple.com/us/app/banreservas/id1170610154";
+        } else if (isAndroid) {
+          window.location.href = "https://play.google.com/store/apps/details?id=com.banreservas.tubancoappmobile";
+        } else {
+          window.location.href = "https://www.banreservas.com/canales-banreservas/app-personas/";
+        }
+      }
+    }
+  </script>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -726,8 +836,10 @@
       if (!statusBadge) return;
 
       const isOpen = data.isOpen !== false;
+
       statusBadge.classList.toggle("open", isOpen);
       statusBadge.classList.toggle("closed", !isOpen);
+
       statusBadge.textContent = isOpen
         ? "Abierto · agenda tu cita"
         : "Cerrado por el momento · agenda para otro día";
@@ -744,6 +856,7 @@
 
     logoSecret?.addEventListener("click", event => {
       if (logoTimer) clearTimeout(logoTimer);
+
       logoTaps += 1;
 
       logoTimer = setTimeout(() => {
