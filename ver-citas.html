@@ -1329,17 +1329,64 @@
     function buildWhatsAppUrl(message) {
       const phone = String(BARBER_WHATSAPP_NUMBER || "").replace(/\D/g, "");
       const encodedMessage = encodeURIComponent(message);
-      if (phone) return `https://wa.me/${phone}?text=${encodedMessage}`;
-      return `https://wa.me/?text=${encodedMessage}`;
+
+      if (phone) {
+        return `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMessage}`;
+      }
+
+      return `https://api.whatsapp.com/send?text=${encodedMessage}`;
     }
 
-    function openWhatsAppMessage(message) {
+    function isMobileDevice() {
+      return /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(navigator.userAgent || "");
+    }
+
+    function openWhatsAppPlaceholder() {
+      if (isMobileDevice()) return null;
+
+      try {
+        const whatsappWindow = window.open("about:blank", "_blank");
+        if (whatsappWindow) {
+          whatsappWindow.document.write("<p style='font-family:Arial,sans-serif;padding:20px;'>Preparando WhatsApp...</p>");
+          whatsappWindow.document.close();
+        }
+        return whatsappWindow;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function openWhatsAppMessage(message, preparedWindow = null) {
       const url = buildWhatsAppUrl(message);
-      const whatsappWindow = window.open(url, "_blank", "noopener,noreferrer");
+
+      if (isMobileDevice()) {
+        window.location.href = url;
+        return;
+      }
+
+      if (preparedWindow && !preparedWindow.closed) {
+        preparedWindow.location.href = url;
+        return;
+      }
+
+      const whatsappWindow = window.open(url, "_blank");
 
       if (!whatsappWindow) {
         window.location.href = url;
       }
+    }
+
+    function closePreparedWhatsAppWindow(preparedWindow) {
+      try {
+        if (preparedWindow && !preparedWindow.closed) preparedWindow.close();
+      } catch (error) {
+        console.warn("No se pudo cerrar la ventana temporal de WhatsApp:", error);
+      }
+    }
+
+    function buildWhatsAppManualLink(message, label = "Abrir WhatsApp manualmente") {
+      const url = buildWhatsAppUrl(message);
+      return `<a href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer" style="color:#8fc8ff;font-weight:900;text-decoration:underline;">${escapeHTML(label)}</a>`;
     }
 
     function getTodayISO() {
@@ -2051,6 +2098,8 @@
         const oldHour = freshApp.hora;
         const requestedAt = new Date().toISOString();
         const slots = buildSlotsFromStart(newHour, freshApp.duration || 60);
+        const whatsappMessage = buildEditWhatsAppMessage(freshApp, oldDate, oldHour, newDate, newHour);
+        const whatsappWindow = openWhatsAppPlaceholder();
 
         try {
           editAppointmentBtn.disabled = true;
@@ -2095,13 +2144,13 @@
             throw error;
           }
 
-          const whatsappMessage = buildEditWhatsAppMessage(freshApp, oldDate, oldHour, newDate, newHour);
-          openWhatsAppMessage(whatsappMessage);
+          openWhatsAppMessage(whatsappMessage, whatsappWindow);
 
           editMessage.className = "edit-message ok";
-          editMessage.textContent = "Cambio solicitado. La cita quedó pendiente y se abrió WhatsApp para avisarle al barbero.";
-          setTimeout(closeDetails, 1400);
+          editMessage.innerHTML = `Cambio solicitado. Si WhatsApp no abre solo, toca aquí: ${buildWhatsAppManualLink(whatsappMessage)}`;
+          setTimeout(closeDetails, isMobileDevice() ? 2600 : 1600);
         } catch (error) {
+          closePreparedWhatsAppWindow(whatsappWindow);
           console.error(error);
           editMessage.className = "edit-message error";
           editMessage.textContent = "No se pudo solicitar el cambio. Intenta nuevamente.";
@@ -2129,6 +2178,9 @@
         const accepted = window.confirm("¿Seguro que deseas cancelar esta cita?");
         if (!accepted) return;
 
+        const whatsappMessage = buildCancelWhatsAppMessage(freshApp);
+        const whatsappWindow = openWhatsAppPlaceholder();
+
         try {
           cancelAppointmentBtn.disabled = true;
           cancelAppointmentBtn.textContent = "Cancelando...";
@@ -2138,12 +2190,13 @@
             cancelledFrom: "public-agenda"
           });
           await releaseAppointmentLocks(freshApp.id, freshApp);
-          openWhatsAppMessage(buildCancelWhatsAppMessage(freshApp));
+          openWhatsAppMessage(whatsappMessage, whatsappWindow);
           forgetClientAppointment(freshApp.id);
           cancelMessage.className = "cancel-message ok";
-          cancelMessage.textContent = "Cita cancelada correctamente. Se abrió WhatsApp para avisarle al barbero.";
-          setTimeout(closeDetails, 900);
+          cancelMessage.innerHTML = `Cita cancelada correctamente. Si WhatsApp no abre solo, toca aquí: ${buildWhatsAppManualLink(whatsappMessage)}`;
+          setTimeout(closeDetails, isMobileDevice() ? 2600 : 1200);
         } catch (error) {
+          closePreparedWhatsAppWindow(whatsappWindow);
           console.error(error);
           cancelMessage.className = "cancel-message error";
           cancelMessage.textContent = "No se pudo cancelar la cita. Intenta nuevamente.";
