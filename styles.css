@@ -380,8 +380,8 @@ select {
   inset: 0;
   z-index: 1;
   background:
-    linear-gradient(90deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.50) 46%, rgba(0,0,0,0.26) 100%),
-    linear-gradient(180deg, rgba(0,0,0,0.16), rgba(0,0,0,0.64)),
+    linear-gradient(90deg, rgba(0,0,0,0.84) 0%, rgba(0,0,0,0.58) 46%, rgba(0,0,0,0.34) 100%),
+    linear-gradient(180deg, rgba(0,0,0,0.24), rgba(0,0,0,0.70)),
     radial-gradient(circle at 78% 82%, rgba(31,134,255,0.14), transparent 26%);
 }
 
@@ -468,8 +468,8 @@ select {
 
 .hero p {
   max-width: 560px;
-  color: rgba(255,255,255,0.82);
-  font-size: 1.02rem;
+  color: rgba(255,255,255,0.94);
+  font-size: 1.06rem;
   margin-bottom: 26px;
 }
 
@@ -478,6 +478,48 @@ select {
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
+}
+
+.quick-booking {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.quick-booking > span {
+  color: rgba(255,255,255,0.76);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.quick-booking-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.quick-booking-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  color: var(--white);
+  font-size: 0.92rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.24s ease, background 0.24s ease, border-color 0.24s ease;
+}
+
+.quick-booking-links a:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(31, 134, 255, 0.34);
 }
 
 .hero-card {
@@ -822,6 +864,10 @@ select {
   text-align: right;
 }
 
+.mobile-booking-bar {
+  display: none;
+}
+
 /* RESPONSIVE */
 @media (max-width: 1180px) {
   .hero-content {
@@ -934,6 +980,31 @@ select {
     width: 100%;
   }
 
+  .quick-booking-links {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-booking-bar {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 1200;
+    display: block;
+    padding: 10px;
+    border-radius: 999px;
+    background: rgba(5, 8, 14, 0.82);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  body {
+    padding-bottom: 92px;
+  }
+
   .map-box iframe {
     min-height: 320px;
   }
@@ -994,6 +1065,12 @@ select {
     background-position: center 22%;
   }
 
+  .hero-overlay {
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.44), rgba(0,0,0,0.78)),
+      linear-gradient(90deg, rgba(0,0,0,0.48), rgba(0,0,0,0.48));
+  }
+
   .hero-copy,
   .hero-card {
     text-align: center;
@@ -1004,6 +1081,10 @@ select {
   .shop-closed-banner {
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .quick-booking {
+    margin-top: 18px;
   }
 
   .hero-card-top {
