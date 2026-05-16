@@ -1209,6 +1209,7 @@
     const STORAGE_APPOINTMENT_ID = "lapinta_client_appointment_id";
     const STORAGE_CLIENT_TOKEN = "lapinta_client_token";
     const STORAGE_CLIENT_APPOINTMENTS = "lapinta_client_appointments";
+    const AUTO_DELETE_AFTER_MINUTES = 60;
 
     let currentAppointments = [];
     let currentModalAppointmentId = "";
@@ -1824,9 +1825,42 @@
       return isMine(app) && app.status !== "cancelled" && !isPastAppointment(app.fecha, app.hora);
     }
 
+    function isAppointmentExpiredForAutoDelete(app) {
+      if (!app?.fecha || !app?.hora) return false;
+
+      const todayISO = getTodayISO();
+
+      if (app.fecha < todayISO) return true;
+      if (app.fecha > todayISO) return false;
+
+      const now = new Date();
+      const currentMinutes = (now.getHours() * 60) + now.getMinutes();
+      const deleteAtMinutes = convertToMinutes(app.hora) + AUTO_DELETE_AFTER_MINUTES;
+
+      return currentMinutes >= deleteAtMinutes;
+    }
+
+    async function cleanupExpiredAppointments(apps = currentAppointments) {
+      const expiredAppointments = apps.filter(app => {
+        return app.status !== "cancelled" && isAppointmentExpiredForAutoDelete(app);
+      });
+
+      if (!expiredAppointments.length) return;
+
+      await Promise.all(expiredAppointments.map(async app => {
+        try {
+          await releaseAppointmentLocks(app.id, app);
+          await appointmentsRef.child(app.id).remove();
+          forgetClientAppointment(app.id);
+        } catch (error) {
+          console.warn("No se pudo eliminar automáticamente la cita vencida:", app.id, error);
+        }
+      }));
+    }
+
     function getVisibleAppointmentsForDate(dateISO) {
       return currentAppointments
-        .filter(app => app.fecha === dateISO && app.status !== "cancelled")
+        .filter(app => app.fecha === dateISO && app.status !== "cancelled" && !isAppointmentExpiredForAutoDelete(app))
         .sort((a, b) => {
           const byTime = convertToMinutes(a.hora) - convertToMinutes(b.hora);
           if (byTime !== 0) return byTime;
@@ -2144,9 +2178,15 @@
       });
     });
 
+    setInterval(() => {
+      cleanupExpiredAppointments(currentAppointments);
+      renderAll();
+    }, 30000);
+
     appointmentsRef.on("value", snapshot => {
       const data = snapshot.val() || {};
       currentAppointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+      cleanupExpiredAppointments(currentAppointments);
       renderAll();
     }, error => {
       todayView.className = "empty-state";
