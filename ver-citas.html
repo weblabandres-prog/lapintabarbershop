@@ -1104,7 +1104,7 @@
       <div class="menu-panel" id="menuPanel">
         <div class="menu-card">
           <a class="menu-link" href="index.html">Inicio</a>
-          <a class="menu-link" href="index2.html">Abrir panel</a>
+          <a class="menu-link" href="aprobar.html">Abrir panel</a>
           <a class="menu-link primary" href="cita.html">Agendar cita</a>
         </div>
       </div>
@@ -1331,6 +1331,15 @@
       const encodedMessage = encodeURIComponent(message);
       if (phone) return `https://wa.me/${phone}?text=${encodedMessage}`;
       return `https://wa.me/?text=${encodedMessage}`;
+    }
+
+    function openWhatsAppMessage(message) {
+      const url = buildWhatsAppUrl(message);
+      const whatsappWindow = window.open(url, "_blank", "noopener,noreferrer");
+
+      if (!whatsappWindow) {
+        window.location.href = url;
+      }
     }
 
     function getTodayISO() {
@@ -2087,7 +2096,7 @@
           }
 
           const whatsappMessage = buildEditWhatsAppMessage(freshApp, oldDate, oldHour, newDate, newHour);
-          window.open(buildWhatsAppUrl(whatsappMessage), "_blank", "noopener");
+          openWhatsAppMessage(whatsappMessage);
 
           editMessage.className = "edit-message ok";
           editMessage.textContent = "Cambio solicitado. La cita quedó pendiente y se abrió WhatsApp para avisarle al barbero.";
@@ -2129,7 +2138,7 @@
             cancelledFrom: "public-agenda"
           });
           await releaseAppointmentLocks(freshApp.id, freshApp);
-          window.open(buildWhatsAppUrl(buildCancelWhatsAppMessage(freshApp)), "_blank", "noopener");
+          openWhatsAppMessage(buildCancelWhatsAppMessage(freshApp));
           forgetClientAppointment(freshApp.id);
           cancelMessage.className = "cancel-message ok";
           cancelMessage.textContent = "Cita cancelada correctamente. Se abrió WhatsApp para avisarle al barbero.";
