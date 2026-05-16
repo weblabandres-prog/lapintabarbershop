@@ -635,6 +635,11 @@
       accent-color: var(--primary);
     }
 
+    .payment-options {
+      display: grid;
+      gap: 12px;
+    }
+
     .payment-transfer-info {
       margin-top: 16px;
     }
@@ -665,6 +670,7 @@
     }
 
     .transfer-card-content {
+      display: block;
       padding: 14px 15px;
       border-radius: 18px;
       background: rgba(255,255,255,0.04);
@@ -694,6 +700,37 @@
       color: #8fc0ff;
       font-size: 0.88rem;
       font-weight: 700;
+    }
+
+    .transfer-card-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .copy-account-btn {
+      min-width: 96px;
+      min-height: 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(31,134,255,0.22);
+      background: rgba(31,134,255,0.08);
+      color: #dbeaff;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .copy-account-btn:hover {
+      background: rgba(31,134,255,0.16);
+      border-color: rgba(31,134,255,0.34);
+    }
+
+    .copy-account-btn.copied {
+      color: #07111f;
+      background: linear-gradient(135deg, var(--primary), #61a9ff);
+      border-color: transparent;
     }
 
     .transfer-card input:checked + .transfer-card-content {
@@ -744,11 +781,46 @@
       font-size: 1rem;
     }
 
+    .booking-summary {
+      display: grid;
+      gap: 10px;
+    }
+
     .booking-summary p {
-      margin: 6px 0;
+      margin: 0;
       color: rgba(255,255,255,0.84);
       line-height: 1.55;
       font-size: 0.95rem;
+      word-break: break-word;
+    }
+
+    .summary-empty {
+      padding: 13px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+    }
+
+    .summary-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 13px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+    }
+
+    .summary-row span {
+      color: var(--muted);
+      font-size: 0.91rem;
+    }
+
+    .summary-row strong {
+      color: var(--text);
+      font-size: 0.94rem;
+      text-align: right;
       word-break: break-word;
     }
 
@@ -781,6 +853,34 @@
 
     .closed-banner.show {
       display: block;
+    }
+
+    .booking-notice {
+      display: none;
+      margin-bottom: 14px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(31,134,255,0.22);
+      background: rgba(31,134,255,0.08);
+      color: #dbeaff;
+      font-size: 0.93rem;
+      line-height: 1.55;
+    }
+
+    .booking-notice.show {
+      display: block;
+    }
+
+    .booking-notice.warning {
+      border-color: rgba(255,196,92,0.28);
+      background: rgba(255,196,92,0.10);
+      color: #ffe1a6;
+    }
+
+    .booking-notice.error {
+      border-color: rgba(255,90,90,0.24);
+      background: rgba(120,23,23,0.28);
+      color: #ffcbcb;
     }
 
     .foot-note {
@@ -1089,16 +1189,13 @@
           La barbería está cerrada en este momento. Puedes revisar disponibilidad para otro día.
         </div>
 
+        <div class="booking-notice" id="bookingNotice" role="status" aria-live="polite"></div>
+
         <form id="bookingForm" autocomplete="on">
           <input type="hidden" id="barbero" name="barbero" value="Chocho la pinta" />
 
           <div class="simple-hidden-fields" style="display:none;" aria-hidden="true">
             <input type="checkbox" id="anonimo" name="anonimo" />
-            <input type="radio" name="metodo_pago" id="metodo_efectivo" value="Efectivo" checked />
-            <input type="radio" name="metodo_pago" id="metodo_transferencia" value="Transferencia" />
-            <input type="radio" name="cuenta_transferencia" id="cuenta_banreservas" value="Banreservas - Ahorro - 960200381" checked />
-            <input type="radio" name="cuenta_transferencia" id="cuenta_popular" value="Popular - Ahorro - 853557841" />
-            <div class="payment-transfer-info hidden" id="paymentTransferInfo"></div>
           </div>
 
           <div class="section-card">
@@ -1177,19 +1274,78 @@
             </div>
           </div>
 
-          <button type="submit" class="submit-btn" id="submitButton">Agendar mi cita</button>
+          <div class="section-card">
+            <div class="section-head">
+              <div class="section-number">4</div>
+              <div class="section-title">
+                <h3>Método de pago</h3>
+                <p>Selecciona cómo vas a pagar tu cita.</p>
+              </div>
+            </div>
+
+            <div class="payment-options">
+              <label class="payment-option">
+                <input type="radio" name="metodo_pago" id="metodo_efectivo" value="Efectivo" checked />
+                <span>Efectivo</span>
+              </label>
+
+              <label class="payment-option">
+                <input type="radio" name="metodo_pago" id="metodo_transferencia" value="Transferencia" />
+                <span>Transferencia bancaria</span>
+              </label>
+            </div>
+
+            <div class="payment-transfer-info hidden" id="paymentTransferInfo">
+              <p class="payment-title">Cuentas disponibles para transferencia</p>
+
+              <div class="transfer-accounts">
+                <label class="transfer-card">
+                  <input type="radio" name="cuenta_transferencia" id="cuenta_banreservas" value="Banreservas - Ahorro - 9602003811" checked />
+                  <span class="transfer-card-content">
+                    <strong>Banreservas</strong>
+                    <span>Cuenta de ahorro</span>
+                    <span class="transfer-card-row">
+                      <small>9602003811</small>
+                      <button type="button" class="copy-account-btn" data-copy="9602003811">Copiar</button>
+                    </span>
+                  </span>
+                </label>
+
+                <label class="transfer-card">
+                  <input type="radio" name="cuenta_transferencia" id="cuenta_popular" value="Popular - Ahorro - 853557841" />
+                  <span class="transfer-card-content">
+                    <strong>Popular</strong>
+                    <span>Cuenta de ahorro</span>
+                    <span class="transfer-card-row">
+                      <small>853557841</small>
+                      <button type="button" class="copy-account-btn" data-copy="853557841">Copiar</button>
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn" id="submitButton">Confirmar cita</button>
         </form>
       </div>
 
-      <aside class="panel side-panel horario-panel" aria-label="Horario de atención">
+      <aside class="panel side-panel horario-panel" aria-label="Resumen y horario de atención">
         <div class="panel-head">
-          <span class="eyebrow">Horario</span>
-          <h3>Horario de atención</h3>
-          <p>Revisa los días y horas disponibles antes de agendar.</p>
+          <span class="eyebrow">Resumen</span>
+          <h3>Revisa antes de confirmar</h3>
+          <p>Un vistazo rápido antes de enviar la cita.</p>
         </div>
 
         <div class="box">
-          <h4>Disponibilidad</h4>
+          <h4>Tu cita</h4>
+          <div class="booking-summary" id="bookingSummary">
+            <p class="summary-empty">Completa el formulario para ver el detalle de tu cita.</p>
+          </div>
+        </div>
+
+        <div class="box">
+          <h4>Horario</h4>
           <div class="info-list">
             <div class="info-item"><strong>Lunes, miércoles y jueves:</strong> 8:00 AM a 8:00 PM</div>
             <div class="info-item"><strong>Viernes y sábado:</strong> 8:00 AM a 9:00 PM</div>
@@ -1225,6 +1381,7 @@
 
     const db = firebase.database();
     const appointmentsRef = db.ref("appointments");
+    const slotLocksRef = db.ref("slotLocks");
     const shopStatusRef = db.ref("shopStatus");
     const customClosuresRef = db.ref("customClosures");
     const servicesRef = db.ref("services");
@@ -1234,6 +1391,7 @@
     const fechaInput = document.getElementById("fecha");
     const horaInput = document.getElementById("hora");
     const hoursGrid = document.getElementById("hoursGrid");
+    const bookingSummary = document.getElementById("bookingSummary");
     const nombreInput = document.getElementById("nombre");
     const telefonoInput = document.getElementById("telefono");
     const servicioInput = document.getElementById("servicio");
@@ -1251,6 +1409,7 @@
     const logoSecret = document.getElementById("logoSecret");
     const shopStatusBadge = document.getElementById("shopStatusBadge");
     const closedBanner = document.getElementById("shopClosedBanner");
+    const bookingNotice = document.getElementById("bookingNotice");
     const submitButton = document.getElementById("submitButton");
 
     let appointments = [];
@@ -1262,6 +1421,8 @@
     let customClosures = {};
     let dailyOverrides = {};
     let requestedServiceFromURL = "";
+    let appointmentsReady = false;
+    let isSubmitting = false;
 
     const EMAILJS_PUBLIC_KEY = "TXQSraRTJ0Ro5hhuk";
     const EMAILJS_SERVICE_ID = "service_15uyzin";
@@ -1348,6 +1509,20 @@
     function getServicesWithFallback(data) {
       const savedServices = data && typeof data === "object" ? data : {};
       return Object.keys(savedServices).length ? savedServices : defaultServicesData;
+    }
+
+    function showBookingNotice(message = "", type = "info") {
+      if (!bookingNotice) return;
+
+      bookingNotice.textContent = message;
+      bookingNotice.classList.remove("show", "warning", "error");
+
+      if (!message) return;
+
+      bookingNotice.classList.add("show");
+      if (type === "warning" || type === "error") {
+        bookingNotice.classList.add(type);
+      }
     }
 
     function normalizeStatus(status) {
@@ -1798,7 +1973,10 @@
       return String(serviceName || "")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase();
+        .toLowerCase()
+        .replace(/\s*\+\s*/g, "+")
+        .replace(/\s+/g, " ")
+        .trim();
     }
 
     function isKidsService(serviceName) {
@@ -1865,7 +2043,7 @@
 
     function getCuentaTransferenciaSeleccionada() {
       if (cuentaPopularInput?.checked) return "Popular - Ahorro - 853557841";
-      return "Banreservas - Ahorro - 960200381";
+      return "Banreservas - Ahorro - 9602003811";
     }
 
     function getMetodoPagoSeleccionado() {
@@ -1875,6 +2053,97 @@
       return "Efectivo";
     }
 
+    function lockKey(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    function getLockEntries(appointmentId, appointment) {
+      const slots = Array.isArray(appointment?.slots) && appointment.slots.length
+        ? appointment.slots
+        : [];
+
+      return slots.map(slot => ({
+        appointmentId,
+        clientToken: appointment.clientToken || "",
+        fecha: appointment.fecha,
+        barbero: appointment.barbero,
+        barberKey: lockKey(appointment.barbero),
+        slot,
+        slotKey: lockKey(slot)
+      })).filter(entry => entry.fecha && entry.barberKey && entry.slotKey);
+    }
+
+    function getLockNode(tree, entry) {
+      return tree?.[entry.fecha]?.[entry.barberKey]?.[entry.slotKey] || null;
+    }
+
+    function ensureLockBranch(tree, entry) {
+      tree[entry.fecha] ||= {};
+      tree[entry.fecha][entry.barberKey] ||= {};
+      return tree[entry.fecha][entry.barberKey];
+    }
+
+    function canReuseLock(lock, appointmentId) {
+      if (!lock || lock.appointmentId === appointmentId) return true;
+      const owner = appointments.find(app => String(app.id) === String(lock.appointmentId));
+      return Boolean(owner && normalizeStatus(owner.status) === "cancelled");
+    }
+
+    async function reserveAppointmentLocks(appointmentId, appointment) {
+      const entries = getLockEntries(appointmentId, appointment);
+      const result = await slotLocksRef.transaction(current => {
+        const tree = current || {};
+
+        if (entries.some(entry => !canReuseLock(getLockNode(tree, entry), appointmentId))) {
+          return;
+        }
+
+        entries.forEach(entry => {
+          const branch = ensureLockBranch(tree, entry);
+          branch[entry.slotKey] = {
+            appointmentId,
+            clientToken: appointment.clientToken,
+            fecha: entry.fecha,
+            barbero: entry.barbero,
+            slot: entry.slot,
+            updatedAt: new Date().toISOString()
+          };
+        });
+
+        return tree;
+      });
+
+      return result.committed;
+    }
+
+    async function releaseAppointmentLocks(appointmentId, appointment) {
+      const entries = getLockEntries(appointmentId, appointment);
+
+      await slotLocksRef.transaction(current => {
+        const tree = current || {};
+
+        entries.forEach(entry => {
+          const lock = getLockNode(tree, entry);
+          if (!lock || String(lock.appointmentId) !== String(appointmentId)) return;
+
+          delete tree[entry.fecha][entry.barberKey][entry.slotKey];
+          if (!Object.keys(tree[entry.fecha][entry.barberKey]).length) {
+            delete tree[entry.fecha][entry.barberKey];
+          }
+          if (!Object.keys(tree[entry.fecha]).length) {
+            delete tree[entry.fecha];
+          }
+        });
+
+        return tree;
+      });
+    }
+
     function updatePaymentMethodUI() {
       if (!paymentTransferInfo) return;
 
@@ -1882,6 +2151,34 @@
         paymentTransferInfo.classList.remove("hidden");
       } else {
         paymentTransferInfo.classList.add("hidden");
+      }
+    }
+
+    async function copyAccountNumber(button) {
+      const accountNumber = button?.dataset.copy || "";
+      if (!accountNumber) return;
+
+      try {
+        await navigator.clipboard.writeText(accountNumber);
+        button.textContent = "Copiado";
+        button.classList.add("copied");
+        setTimeout(() => {
+          button.textContent = "Copiar";
+          button.classList.remove("copied");
+        }, 1400);
+      } catch (error) {
+        const tempInput = document.createElement("input");
+        tempInput.value = accountNumber;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        tempInput.remove();
+        button.textContent = "Copiado";
+        button.classList.add("copied");
+        setTimeout(() => {
+          button.textContent = "Copiar";
+          button.classList.remove("copied");
+        }, 1400);
       }
     }
 
@@ -1979,9 +2276,21 @@
       });
 
       if (currentValue) {
-        const exists = services.some(servicio => servicio.nombre === currentValue);
-        if (exists) {
-          servicioInput.value = currentValue;
+        const normalizedCurrentValue = normalizeServiceName(currentValue);
+        const serviceAliases = {
+          "corte clasico": ["corte clasico", "corte normal"],
+          "cortes ninos": ["cortes ninos", "corte ninos"]
+        };
+        const acceptedNames = new Set([
+          normalizedCurrentValue,
+          ...(serviceAliases[normalizedCurrentValue] || [])
+        ]);
+        const matchingService = services.find(servicio => {
+          return acceptedNames.has(normalizeServiceName(servicio.nombre));
+        });
+
+        if (matchingService) {
+          servicioInput.value = matchingService.nombre;
         }
       }
     }
@@ -2014,6 +2323,11 @@
 
       if (!selectedService) {
         showHoursMessage("Elige un servicio para ver las horas.");
+        return;
+      }
+
+      if (!appointmentsReady) {
+        showHoursMessage("Cargando agenda para confirmar las horas disponibles...");
         return;
       }
 
@@ -2082,15 +2396,56 @@
       }
     }
     function updateSummary() {
-      // Resumen quitado: se mantiene esta función vacía para no afectar otros procesos.
+      if (!bookingSummary) return;
+
+      const nombre = nombreInput?.value.trim() || "-";
+      const servicio = servicioInput?.value || "-";
+      const fecha = fechaInput?.value ? formatDateSafe(fechaInput.value) : "-";
+      const hora = horaInput?.value || "-";
+      const precio = getServicePrice(servicio);
+      const metodoPago = metodoTransferenciaInput?.checked ? "Transferencia bancaria" : "Efectivo";
+
+      bookingSummary.innerHTML = `
+        <div class="summary-row">
+          <span>Cliente</span>
+          <strong>${escapeHTML(nombre)}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Servicio</span>
+          <strong>${escapeHTML(servicio)}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Fecha</span>
+          <strong>${escapeHTML(fecha)}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Hora</span>
+          <strong>${escapeHTML(hora)}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Pago</span>
+          <strong>${escapeHTML(metodoPago)}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Precio</span>
+          <strong>${precio ? `RD$${escapeHTML(String(precio))}` : "-"}</strong>
+        </div>
+      `;
     }
 
     function listenAppointments() {
       appointmentsRef.on("value", snapshot => {
         const data = snapshot.val() || {};
         appointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+        appointmentsReady = true;
+        showBookingNotice("");
         renderHours();
         updateSummary();
+      }, error => {
+        appointmentsReady = false;
+        console.error("No se pudo cargar la agenda:", error);
+        showBookingNotice("No pudimos actualizar la agenda ahora mismo. Recarga la página antes de reservar.", "error");
+        renderHours();
       });
     }
 
@@ -2105,6 +2460,8 @@
         updateShopStatusBadge();
         renderHours();
         updateSummary();
+      }, error => {
+        console.warn("No se pudo cargar el estado de la barbería:", error);
       });
     }
 
@@ -2114,6 +2471,8 @@
         updateShopStatusBadge();
         renderHours();
         updateSummary();
+      }, error => {
+        console.warn("No se pudieron cargar los ajustes del día:", error);
       });
     }
 
@@ -2123,6 +2482,8 @@
         renderHours();
         updateShopStatusBadge();
         updateSummary();
+      }, error => {
+        console.warn("No se pudieron cargar los cierres especiales:", error);
       });
     }
 
@@ -2132,6 +2493,13 @@
         populateServicesSelect();
         updateSummary();
         renderHours();
+      }, error => {
+        console.warn("No se pudieron cargar los servicios guardados; usando respaldo local:", error);
+        servicesData = defaultServicesData;
+        populateServicesSelect();
+        updateSummary();
+        renderHours();
+        showBookingNotice("Estamos usando la lista de servicios de respaldo mientras vuelve la conexión.", "warning");
       });
     }
 
@@ -2162,6 +2530,15 @@
         EMAILJS_TEMPLATE_ID,
         templateParams
       );
+    }
+
+    function withTimeout(promise, milliseconds, message) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error(message)), milliseconds);
+        })
+      ]);
     }
 
     function formatStatusTime(time24or12) {
@@ -2309,6 +2686,8 @@
       bookingForm.addEventListener("submit", async function (e) {
         e.preventDefault();
 
+        if (isSubmitting) return;
+
         const telefonoLimpio = telefonoParaGuardar(telefonoInput?.value || "");
         const nombre = nombreInput?.value.trim() || "";
 
@@ -2355,6 +2734,11 @@
           return;
         }
 
+        if (!appointmentsReady) {
+          showBookingNotice("Todavía no hemos confirmado la agenda. Espera unos segundos o recarga la página antes de reservar.", "error");
+          return;
+        }
+
         if (!isSlotAvailable(selectedDate, selectedBarber, selectedHour, selectedService, appointments)) {
           alert("Esa hora ya no está disponible. Por favor elige otra.");
           renderHours();
@@ -2385,8 +2769,6 @@
           }
         }
 
-        const clientToken = generateClientToken();
-
         const newAppointment = {
           nombre: nombre,
           telefono: telefonoLimpio,
@@ -2401,31 +2783,65 @@
           slots: reservedSlots,
           anonimo: anonimoInput?.checked || false,
           metodoPago: getMetodoPagoSeleccionado(),
-          status: "pending",
-          approveToken: generateApproveToken(),
-          clientToken: clientToken,
-          createdAt: new Date().toISOString(),
-          recordatorioEnviado: false
+          status: "pending"
         };
 
         const originalButtonText = submitButton ? submitButton.textContent : "Confirmar cita";
 
         try {
+          isSubmitting = true;
           if (submitButton) {
             submitButton.disabled = true;
             submitButton.textContent = "Procesando...";
             submitButton.setAttribute("aria-busy", "true");
           }
 
-          const newRef = appointmentsRef.push();
-          await newRef.set(newAppointment);
+          const latestSnapshot = await appointmentsRef.once("value");
+          const latestAppointmentsData = latestSnapshot.val() || {};
+          const latestAppointments = Object.entries(latestAppointmentsData).map(([id, app]) => normalizeAppointment(id, app));
+          appointments = latestAppointments;
 
+          if (!isSlotAvailable(selectedDate, selectedBarber, selectedHour, selectedService, latestAppointments)) {
+            alert("Esa hora acaba de ocuparse. Por favor elige otra.");
+            if (horaInput) horaInput.value = "";
+            renderHours();
+            updateSummary();
+            return;
+          }
+
+          const newRef = appointmentsRef.push();
           const appointmentId = newRef.key;
+          const clientToken = generateClientToken();
+          const appointmentToSave = {
+            ...newAppointment,
+            approveToken: generateApproveToken(),
+            clientToken,
+            createdAt: new Date().toISOString(),
+            recordatorioEnviado: false
+          };
+
+          const locksReserved = await reserveAppointmentLocks(appointmentId, appointmentToSave);
+          if (!locksReserved) {
+            const error = new Error("Esa hora acaba de ocuparse.");
+            error.code = "SLOT_TAKEN";
+            throw error;
+          }
+
+          try {
+            await newRef.set(appointmentToSave);
+          } catch (error) {
+            await releaseAppointmentLocks(appointmentId, appointmentToSave);
+            throw error;
+          }
 
           rememberClientAppointment(appointmentId, clientToken);
 
           try {
-            await sendAppointmentEmail(newAppointment, appointmentId);
+            await withTimeout(
+              sendAppointmentEmail(appointmentToSave, appointmentId),
+              12000,
+              "El correo tardó demasiado en responder."
+            );
 
             if (mostrarEnAgendaDosDiasAntes) {
               alert(
@@ -2463,8 +2879,16 @@
           window.location.href = "ver-citas.html";
         } catch (firebaseError) {
           console.error("Error guardando cita:", firebaseError);
-          alert("No se pudo guardar la cita en Firebase.");
+          if (firebaseError?.code === "SLOT_TAKEN") {
+            alert("Esa hora acaba de ocuparse. Por favor elige otra.");
+            if (horaInput) horaInput.value = "";
+            renderHours();
+            updateSummary();
+          } else {
+            alert(firebaseError?.message || "No se pudo guardar la cita.");
+          }
         } finally {
+          isSubmitting = false;
           if (submitButton) {
             submitButton.disabled = false;
             submitButton.textContent = originalButtonText;
@@ -2492,7 +2916,7 @@
       updateSummary();
     });
 
-    [nombreInput].forEach(input => {
+    [nombreInput, telefonoInput].forEach(input => {
       input?.addEventListener("input", updateSummary);
     });
 
@@ -2511,8 +2935,18 @@
     cuentaBanreservasInput?.addEventListener("change", updateSummary);
     cuentaPopularInput?.addEventListener("change", updateSummary);
 
+    document.querySelectorAll(".copy-account-btn").forEach(button => {
+      button.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        copyAccountNumber(button);
+      });
+    });
+
     function boot() {
       applyServiceFromURL();
+      servicesData = defaultServicesData;
+      populateServicesSelect();
       if (barberoInput) barberoInput.value = DEFAULT_BARBER;
       setMinDate();
       if (fechaInput && !fechaInput.value) fechaInput.value = getTodayISO();
