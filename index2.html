@@ -203,6 +203,373 @@
       .service-view-mode,.time-block-item{flex-direction:column;align-items:flex-start;}
       .mobile-service-title{font-size:1rem;}
     }
+
+    /* Vista compacta de citas: igual para teléfono, tablet y PC */
+    .table-card {
+      overflow: hidden;
+    }
+
+    .table-card .table-actions {
+      width: 100%;
+    }
+
+    .table-card .table-actions .ghost-btn {
+      width: min(100%, 620px);
+      justify-content: center;
+      margin: 0 auto;
+      min-height: 58px;
+      border-radius: 999px;
+      font-size: 1rem;
+      border-color: rgba(143, 192, 255, .35);
+      background: rgba(143, 192, 255, .06);
+    }
+
+    .table-wrap {
+      border-radius: 24px;
+      overflow: hidden;
+      background: rgba(255,255,255,.025);
+      border-color: rgba(255,255,255,.11);
+    }
+
+    .appointments-compact-table {
+      min-width: 620px;
+      table-layout: fixed;
+    }
+
+    .appointments-compact-table thead th {
+      padding: 18px 18px;
+      font-size: .82rem;
+      color: #d4e3f7;
+      letter-spacing: .08em;
+    }
+
+    .appointments-compact-table tbody td {
+      padding: 18px 18px;
+      vertical-align: middle;
+    }
+
+    .appointments-compact-table tbody tr {
+      min-height: 92px;
+    }
+
+    .appointment-client strong,
+    .appointment-turn strong {
+      display: block;
+      color: #fff;
+      font-size: 1rem;
+      line-height: 1.22;
+      font-weight: 900;
+      word-break: break-word;
+    }
+
+    .appointment-client small,
+    .appointment-turn small {
+      display: block;
+      margin-top: 6px;
+      color: #c4d6ed;
+      font-size: .86rem;
+      line-height: 1.35;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .compact-detail-btn {
+      min-height: 46px;
+      padding: 10px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(143,192,255,.36);
+      background: rgba(143,192,255,.09);
+      color: #fff;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .compact-detail-btn:hover {
+      background: rgba(143,192,255,.16);
+      transform: translateY(-1px);
+    }
+
+    .status-pill {
+      min-width: 120px;
+      min-height: 42px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .compact-phone-table {
+      display: grid;
+      gap: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 24px;
+      background: rgba(255,255,255,.025);
+    }
+
+    .compact-phone-head,
+    .compact-phone-row {
+      display: grid;
+      grid-template-columns: minmax(95px, 1.15fr) minmax(92px, 1fr) minmax(98px, .95fr) minmax(90px, .92fr);
+      align-items: center;
+      column-gap: 8px;
+    }
+
+    .compact-phone-head {
+      min-height: 54px;
+      padding: 0 14px;
+      border-bottom: 1px solid rgba(255,255,255,.11);
+      background: rgba(255,255,255,.025);
+    }
+
+    .compact-phone-head div {
+      color: #d4e3f7;
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .compact-phone-row {
+      min-height: 104px;
+      padding: 14px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .compact-phone-row:last-child {
+      border-bottom: none;
+    }
+
+    .compact-phone-client strong,
+    .compact-phone-turn strong {
+      display: block;
+      color: #fff;
+      font-size: .88rem;
+      line-height: 1.18;
+      font-weight: 900;
+      word-break: break-word;
+    }
+
+    .compact-phone-client small,
+    .compact-phone-turn small {
+      display: block;
+      margin-top: 5px;
+      color: #c4d6ed;
+      font-size: .74rem;
+      line-height: 1.25;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .compact-phone-table .status-pill {
+      min-width: 0;
+      width: 100%;
+      min-height: 38px;
+      padding: 7px 8px;
+      font-size: .68rem;
+    }
+
+    .compact-phone-table .compact-detail-btn {
+      width: 100%;
+      min-height: 38px;
+      padding: 8px 9px;
+      font-size: .76rem;
+    }
+
+    .appointment-detail-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(10px);
+    }
+
+    .appointment-detail-card {
+      width: min(100%, 560px);
+      max-height: 88vh;
+      overflow: auto;
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,.13);
+      background: linear-gradient(180deg,#121c2b,#0b121f);
+      box-shadow: 0 26px 80px rgba(0,0,0,.55);
+    }
+
+    .appointment-detail-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 20px;
+      border-bottom: 1px solid rgba(255,255,255,.09);
+      background: rgba(15,24,38,.96);
+      backdrop-filter: blur(10px);
+    }
+
+    .appointment-detail-head h2 {
+      margin: 0;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .detail-close-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 15px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      color: #fff;
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .appointment-detail-body {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .detail-info-box {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.04);
+    }
+
+    .detail-info-box span {
+      display: block;
+      margin-bottom: 7px;
+      color: #8fb2e7;
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .detail-info-box strong {
+      display: block;
+      color: #fff;
+      font-size: 1rem;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .detail-modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .detail-modal-actions button {
+      min-height: 46px;
+      border-radius: 14px;
+      color: #fff;
+      border: 1px solid var(--line-strong);
+      padding: 10px 12px;
+      font-weight: 800;
+      background: rgba(255,255,255,.03);
+    }
+
+    .detail-modal-actions button:nth-child(1) {
+      background: rgba(62,207,142,.12);
+      border-color: rgba(62,207,142,.24);
+    }
+
+    .detail-modal-actions button:nth-child(2) {
+      background: rgba(245,158,11,.12);
+      border-color: rgba(245,158,11,.24);
+    }
+
+    .detail-modal-actions button:nth-child(3) {
+      background: rgba(220,38,38,.12);
+      border-color: rgba(220,38,38,.24);
+    }
+
+    @media (max-width: 920px) {
+      .table-wrap {
+        display: none;
+      }
+
+      .mobile-cards {
+        display: grid;
+      }
+
+      .table-card {
+        padding: 18px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .table-card {
+        padding: 14px;
+        border-radius: 24px;
+      }
+
+      .table-header {
+        margin-bottom: 14px;
+      }
+
+      .table-header h3 {
+        font-size: 1.2rem;
+      }
+
+      .table-subtext {
+        font-size: .86rem;
+      }
+
+      .compact-phone-head,
+      .compact-phone-row {
+        grid-template-columns: minmax(80px, 1.1fr) minmax(80px, .96fr) minmax(84px, .88fr) minmax(78px, .82fr);
+        column-gap: 6px;
+      }
+
+      .compact-phone-head {
+        padding: 0 10px;
+      }
+
+      .compact-phone-head div {
+        font-size: .61rem;
+      }
+
+      .compact-phone-row {
+        min-height: 96px;
+        padding: 12px 10px;
+      }
+
+      .compact-phone-client strong,
+      .compact-phone-turn strong {
+        font-size: .76rem;
+      }
+
+      .compact-phone-client small,
+      .compact-phone-turn small {
+        font-size: .66rem;
+      }
+
+      .compact-phone-table .status-pill {
+        min-height: 34px;
+        font-size: .58rem;
+        padding-inline: 5px;
+      }
+
+      .compact-phone-table .compact-detail-btn {
+        min-height: 34px;
+        font-size: .66rem;
+        padding-inline: 6px;
+      }
+
+      .detail-modal-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -390,7 +757,7 @@
           <div>
             <span class="eyebrow">Citas</span>
             <h3>Reservas guardadas</h3>
-            <p class="table-subtext">Vista completa de las citas agendadas en el sistema.</p>
+            <p class="table-subtext">Vista rápida de las citas agendadas.</p>
           </div>
           <div class="table-actions"><button id="exportBtn" class="ghost-btn">Exportar JSON</button></div>
         </div>
@@ -404,7 +771,10 @@
           <table>
             <thead>
               <tr>
-                <th>Cliente</th><th>Servicio</th><th>Barbero</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Acciones</th>
+                <th>Cliente</th>
+                <th>Turno</th>
+                <th>Estado</th>
+                <th>Detalle</th>
               </tr>
             </thead>
             <tbody id="appointmentsTableBody"></tbody>
@@ -432,6 +802,20 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="appointment-detail-overlay hidden" id="appointmentDetailOverlay" role="dialog" aria-modal="true" aria-labelledby="appointmentDetailTitle">
+    <div class="appointment-detail-card">
+      <div class="appointment-detail-head">
+        <div>
+          <span class="eyebrow">Detalle</span>
+          <h2 id="appointmentDetailTitle">Datos de la cita</h2>
+        </div>
+        <button class="detail-close-btn" id="closeAppointmentDetailBtn" type="button" aria-label="Cerrar detalle">×</button>
+      </div>
+      <div class="appointment-detail-body" id="appointmentDetailBody"></div>
+    </div>
+  </div>
+
 
   <div class="modal-overlay hidden" id="servicesModalOverlay" role="dialog" aria-modal="true" aria-labelledby="servicesModalTitle">
     <div class="login-card services-modal">
@@ -490,6 +874,9 @@
     const mobileCards = document.getElementById("mobileCards");
     const emptyState = document.getElementById("emptyState");
     const toast = document.getElementById("toast");
+    const appointmentDetailOverlay = document.getElementById("appointmentDetailOverlay");
+    const appointmentDetailBody = document.getElementById("appointmentDetailBody");
+    const closeAppointmentDetailBtn = document.getElementById("closeAppointmentDetailBtn");
     const loginOverlay = document.getElementById("loginOverlay");
     const servicesModalOverlay = document.getElementById("servicesModalOverlay");
     const openServicesModalBtn = document.getElementById("openServicesModalBtn");
@@ -1473,59 +1860,111 @@
 
       emptyState.classList.add("hidden");
 
-      appointmentsTableBody.innerHTML = data.map(appointment => {
-        const precioText = getServicePriceText(appointment.servicio);
+      const tableElement = appointmentsTableBody.closest("table");
+      if (tableElement) tableElement.classList.add("appointments-compact-table");
 
-        return `
-          <tr>
-            <td><div class="client-box"><strong>${escapeHTML(appointment.nombre)}</strong><small>${escapeHTML(appointment.telefono)}</small></div></td>
-            <td><div class="service-box"><strong>${escapeHTML(appointment.servicio)}</strong><small class="price-text">${escapeHTML(precioText)}</small><br><small>${appointment.anonimo ? "Publico: Anonimo" : "Publico: Nombre visible"}</small></div></td>
-            <td>${escapeHTML(appointment.barbero)}</td>
-            <td>${escapeHTML(formatDate(appointment.fecha))}</td>
-            <td>${escapeHTML(appointment.hora || "Sin hora")}<br><small class="meta-text">${escapeHTML(String(appointment.duration || 0))} min</small></td>
-            <td><span class="status-pill ${escapeHTML(appointment.status)}">${escapeHTML(getStatusLabel(appointment.status))}</span></td>
-            <td>
-              <div class="row-actions">
-                <button type="button" data-action="approve" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Aprobar</button>
-                <button type="button" data-action="cancel" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Cancelar</button>
-                <button type="button" data-action="delete" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Eliminar</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join("");
+      appointmentsTableBody.innerHTML = data.map(appointment => `
+        <tr>
+          <td>
+            <div class="appointment-client">
+              <strong>${escapeHTML(appointment.nombre)}</strong>
+              <small>${escapeHTML(appointment.telefono)}</small>
+            </div>
+          </td>
+          <td>
+            <div class="appointment-turn">
+              <strong>${escapeHTML(formatDate(appointment.fecha))}</strong>
+              <small>${escapeHTML(appointment.hora || "Sin hora")} - ${escapeHTML(String(appointment.duration || 0))} min</small>
+            </div>
+          </td>
+          <td>
+            <span class="status-pill ${escapeHTML(appointment.status)}">${escapeHTML(getStatusLabel(appointment.status))}</span>
+          </td>
+          <td>
+            <button class="compact-detail-btn" type="button" data-action="details" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Ver datos</button>
+          </td>
+        </tr>
+      `).join("");
     }
 
     function renderMobileCards(data) {
       if (!mobileCards) return;
 
-      mobileCards.innerHTML = data.map(appointment => {
-        const precioText = getServicePriceText(appointment.servicio);
+      if (!data.length) {
+        mobileCards.innerHTML = "";
+        return;
+      }
 
-        let mobileStatusClass = "mobile-status-pending";
-        if (appointment.status === "approved") mobileStatusClass = "mobile-status-approved";
-        if (appointment.status === "cancelled") mobileStatusClass = "mobile-status-cancelled";
+      mobileCards.innerHTML = `
+        <div class="compact-phone-table" role="table" aria-label="Citas guardadas">
+          <div class="compact-phone-head" role="row">
+            <div>Cliente</div>
+            <div>Turno</div>
+            <div>Estado</div>
+            <div>Detalle</div>
+          </div>
+          ${data.map(appointment => `
+            <div class="compact-phone-row" role="row">
+              <div class="compact-phone-client">
+                <strong>${escapeHTML(appointment.nombre)}</strong>
+                <small>${escapeHTML(appointment.telefono)}</small>
+              </div>
+              <div class="compact-phone-turn">
+                <strong>${escapeHTML(formatDate(appointment.fecha))}</strong>
+                <small>${escapeHTML(appointment.hora || "Sin hora")} - ${escapeHTML(String(appointment.duration || 0))} min</small>
+              </div>
+              <div>
+                <span class="status-pill ${escapeHTML(appointment.status)}">${escapeHTML(getStatusLabel(appointment.status))}</span>
+              </div>
+              <div>
+                <button class="compact-detail-btn" type="button" data-action="details" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Ver datos</button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
 
-        return `
-          <article class="mobile-card">
-            <h4 class="mobile-service-title">${escapeHTML(appointment.servicio)}</h4>
-            <div class="mobile-status-pill ${mobileStatusClass}">${escapeHTML(getStatusLabel(appointment.status))}</div>
-            <div class="mobile-fields">
-              <div class="mobile-field-box"><span class="mobile-field-label">Cliente</span><span class="mobile-field-value">${escapeHTML(appointment.nombre)}</span></div>
-              <div class="mobile-field-box"><span class="mobile-field-label">Barbero</span><span class="mobile-field-value">${escapeHTML(appointment.barbero)}</span></div>
-              <div class="mobile-field-box"><span class="mobile-field-label">Hora</span><span class="mobile-field-value">${escapeHTML(appointment.hora || "Sin hora")}</span></div>
-              <div class="mobile-field-box"><span class="mobile-field-label">Duracion</span><span class="mobile-field-value">${escapeHTML(String(appointment.duration || 0))} min</span></div>
-              <div class="mobile-field-box"><span class="mobile-field-label">Precio</span><span class="mobile-field-value">${escapeHTML(precioText)}</span></div>
-              <div class="mobile-field-box"><span class="mobile-field-label">Fecha</span><span class="mobile-field-value">${escapeHTML(formatDate(appointment.fecha))}</span></div>
-            </div>
-            <div class="mobile-actions">
-              <button type="button" data-action="approve" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Aprobar</button>
-              <button type="button" data-action="cancel" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Cancelar</button>
-              <button type="button" data-action="delete" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Eliminar</button>
-            </div>
-          </article>
-        `;
-      }).join("");
+    function detailInfo(label, value) {
+      return `
+        <div class="detail-info-box">
+          <span>${escapeHTML(label)}</span>
+          <strong>${escapeHTML(value || "-")}</strong>
+        </div>
+      `;
+    }
+
+    function openAppointmentDetails(id) {
+      const appointment = appointments.find(item => String(item.id) === String(id));
+      if (!appointment || !appointmentDetailOverlay || !appointmentDetailBody) return;
+
+      const precioText = getServicePriceText(appointment.servicio);
+
+      appointmentDetailBody.innerHTML = `
+        ${detailInfo("Cliente", appointment.nombre)}
+        ${detailInfo("Teléfono", appointment.telefono)}
+        ${detailInfo("Servicio", appointment.servicio)}
+        ${detailInfo("Precio", precioText)}
+        ${detailInfo("Barbero", appointment.barbero)}
+        ${detailInfo("Fecha", formatDate(appointment.fecha))}
+        ${detailInfo("Hora", `${appointment.hora || "Sin hora"} - ${String(appointment.duration || 0)} min`)}
+        ${detailInfo("Estado", getStatusLabel(appointment.status))}
+        <div class="detail-modal-actions">
+          <button type="button" data-action="approve" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Aprobar</button>
+          <button type="button" data-action="cancel" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Cancelar</button>
+          <button type="button" data-action="delete" data-appointment-id="${escapeHTMLAttr(appointment.id)}">Eliminar</button>
+        </div>
+      `;
+
+      appointmentDetailOverlay.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeAppointmentDetails() {
+      if (!appointmentDetailOverlay) return;
+      appointmentDetailOverlay.classList.add("hidden");
+      document.body.style.overflow = "";
+      if (appointmentDetailBody) appointmentDetailBody.innerHTML = "";
     }
 
     function handleAppointmentActionClick(event) {
@@ -1535,12 +1974,17 @@
       const appointmentId = button.dataset.appointmentId;
       const action = button.dataset.action;
 
-      if (action === "approve") {
+      if (action === "details") {
+        openAppointmentDetails(appointmentId);
+      } else if (action === "approve") {
         updateAppointmentStatus(appointmentId, "approved");
+        closeAppointmentDetails();
       } else if (action === "cancel") {
         updateAppointmentStatus(appointmentId, "cancelled");
+        closeAppointmentDetails();
       } else if (action === "delete") {
         deleteAppointment(appointmentId);
+        closeAppointmentDetails();
       }
     }
 
@@ -1749,6 +2193,11 @@
       timeBlocksList?.addEventListener("click", handleTimeBlocksListClick);
       appointmentsTableBody?.addEventListener("click", handleAppointmentActionClick);
       mobileCards?.addEventListener("click", handleAppointmentActionClick);
+      appointmentDetailBody?.addEventListener("click", handleAppointmentActionClick);
+      closeAppointmentDetailBtn?.addEventListener("click", closeAppointmentDetails);
+      appointmentDetailOverlay?.addEventListener("click", event => {
+        if (event.target === appointmentDetailOverlay) closeAppointmentDetails();
+      });
       servicesContainer?.addEventListener("click", handleServicesContainerClick);
 
       openServicesModalBtn?.addEventListener("click", openServicesModal);
@@ -1759,6 +2208,9 @@
       document.addEventListener("keydown", event => {
         if (event.key === "Escape" && !servicesModalOverlay?.classList.contains("hidden")) {
           closeServicesModal();
+        }
+        if (event.key === "Escape" && !appointmentDetailOverlay?.classList.contains("hidden")) {
+          closeAppointmentDetails();
         }
       });
 
