@@ -839,6 +839,33 @@
       line-height: 1.55;
     }
 
+
+    .simple-guide {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+      margin-bottom: 16px;
+    }
+
+    .guide-step {
+      padding: 12px 10px;
+      border-radius: 16px;
+      background: rgba(31,134,255,0.08);
+      border: 1px solid rgba(31,134,255,0.17);
+      color: rgba(255,255,255,0.88);
+      font-size: 0.86rem;
+      line-height: 1.35;
+    }
+
+    .guide-step strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #8fc0ff;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
     .closed-banner {
       display: none;
       margin-bottom: 14px;
@@ -942,6 +969,15 @@
     }
 
     @media (max-width: 680px) {
+
+      .simple-guide {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .guide-step {
+        font-size: 0.82rem;
+      }
+
       .two-cols {
         grid-template-columns: 1fr;
       }
@@ -1081,6 +1117,15 @@
     }
 
     @media (max-width: 680px) {
+
+      .simple-guide {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .guide-step {
+        font-size: 0.82rem;
+      }
+
       .layout {
         gap: 18px;
       }
@@ -1162,9 +1207,9 @@
       <div class="hero-content">
         <span class="hero-kicker">Reserva online</span>
         <div class="status-badge" id="shopStatusBadge">Consultando horario...</div>
-        <h1>Agenda rápido</h1>
+        <h1>Reserva tu cita</h1>
         <p>
-          Elige el servicio, marca el día, selecciona una hora disponible y confirma tu cita en pocos pasos.
+          Escoge el servicio, toca una hora libre y confirma. Rápido y fácil.
         </p>
 
         <div class="hidden-admin-btns">
@@ -1179,9 +1224,9 @@
       <div class="panel form-panel">
         <div class="panel-head">
           <span class="eyebrow">Reserva online</span>
-          <h2>Reserva en pocos pasos</h2>
+          <h2>Agenda tu cita</h2>
           <p>
-            Solo completa lo necesario para apartar tu turno de forma rápida.
+            Hazlo simple: servicio, día, hora, nombre y teléfono.
           </p>
         </div>
 
@@ -1190,6 +1235,13 @@
         </div>
 
         <div class="booking-notice" id="bookingNotice" role="status" aria-live="polite"></div>
+
+        <div class="simple-guide" aria-label="Pasos para reservar">
+          <div class="guide-step"><strong>Paso 1</strong>Elige servicio y día.</div>
+          <div class="guide-step"><strong>Paso 2</strong>Toca una hora libre.</div>
+          <div class="guide-step"><strong>Paso 3</strong>Escribe tus datos.</div>
+          <div class="guide-step"><strong>Paso 4</strong>Confirma la cita.</div>
+        </div>
 
         <form id="bookingForm" autocomplete="on">
           <input type="hidden" id="barbero" name="barbero" value="Chocho la pinta" />
@@ -1202,21 +1254,21 @@
             <div class="section-head">
               <div class="section-number">1</div>
               <div class="section-title">
-                <h3>Elige servicio y fecha</h3>
-                <p>El barbero se asigna automáticamente para que la reserva sea más rápida.</p>
+                <h3>¿Qué quieres hacerte?</h3>
+                <p>Elige el servicio y el día que quieres venir.</p>
               </div>
             </div>
 
             <div class="form-grid two-cols">
               <div class="form-group">
-                <label for="servicio">Servicio</label>
+                <label for="servicio">Servicio que quieres</label>
                 <select id="servicio" name="servicio" required>
                   <option value="">Cargando servicios...</option>
                 </select>
               </div>
 
               <div class="form-group">
-                <label for="fecha">Fecha</label>
+                <label for="fecha">Día de la cita</label>
                 <input type="date" id="fecha" name="fecha" required />
               </div>
             </div>
@@ -1226,16 +1278,16 @@
             <div class="section-head">
               <div class="section-number">2</div>
               <div class="section-title">
-                <h3>Selecciona una hora</h3>
-                <p>Solo aparecerán las horas que están libres para ese día.</p>
+                <h3>Toca una hora libre</h3>
+                <p>Las horas ocupadas no aparecen.</p>
               </div>
             </div>
 
             <div class="form-group">
-              <label>Horas disponibles</label>
+              <label>Horas libres</label>
               <div class="hours-wrap">
                 <p class="hours-note">
-                  Elige servicio y fecha para ver las horas disponibles.
+                  Primero elige servicio y día. Luego toca la hora que prefieras.
                 </p>
                 <div class="hours-grid" id="hoursGrid" role="list" aria-live="polite" aria-label="Horas disponibles"></div>
               </div>
@@ -1247,14 +1299,14 @@
             <div class="section-head">
               <div class="section-number">3</div>
               <div class="section-title">
-                <h3>Tus datos</h3>
-                <p>Escribe tu nombre y teléfono para confirmar la cita.</p>
+                <h3>¿A nombre de quién?</h3>
+                <p>Pon tu nombre y un teléfono para avisarte si hace falta.</p>
               </div>
             </div>
 
             <div class="form-grid two-cols">
               <div class="form-group">
-                <label for="nombre">Nombre</label>
+                <label for="nombre">Tu nombre</label>
                 <input type="text" id="nombre" name="nombre" required autocomplete="name" minlength="2" maxlength="80" placeholder="Tu nombre" />
               </div>
 
@@ -1268,7 +1320,7 @@
                   autocomplete="tel"
                   inputmode="tel"
                   maxlength="16"
-                  placeholder="Tu número"
+                  placeholder="Tu WhatsApp o teléfono"
                 />
               </div>
             </div>
@@ -1278,8 +1330,8 @@
             <div class="section-head">
               <div class="section-number">4</div>
               <div class="section-title">
-                <h3>Método de pago</h3>
-                <p>Selecciona cómo vas a pagar tu cita.</p>
+                <h3>¿Cómo vas a pagar?</h3>
+                <p>Puedes pagar en efectivo o por transferencia.</p>
               </div>
             </div>
 
@@ -1326,32 +1378,23 @@
             </div>
           </div>
 
-          <button type="submit" class="submit-btn" id="submitButton">Confirmar cita</button>
+          <button type="submit" class="submit-btn" id="submitButton">Agendar mi cita</button>
         </form>
       </div>
 
-      <aside class="panel side-panel horario-panel" aria-label="Resumen y horario de atención">
-        <div class="panel-head">
-          <span class="eyebrow">Resumen</span>
-          <h3>Revisa antes de confirmar</h3>
-          <p>Un vistazo rápido antes de enviar la cita.</p>
+      <aside class="panel side-panel horario-panel" aria-label="Horario de atención">
+        <div class="booking-summary" id="bookingSummary" style="display: none;" aria-hidden="true">
+          <p class="summary-empty">Completa el formulario para ver el detalle de tu cita.</p>
         </div>
 
         <div class="box">
-          <h4>Tu cita</h4>
-          <div class="booking-summary" id="bookingSummary">
-            <p class="summary-empty">Completa el formulario para ver el detalle de tu cita.</p>
-          </div>
-        </div>
-
-        <div class="box">
-          <h4>Horario</h4>
+          <h4>Horario de atención</h4>
           <div class="info-list">
             <div class="info-item"><strong>Lunes, miércoles y jueves:</strong> 8:00 AM a 8:00 PM</div>
             <div class="info-item"><strong>Viernes y sábado:</strong> 8:00 AM a 9:00 PM</div>
-            <div class="info-item"><strong>Domingo y martes:</strong> disponibles cuando estén habilitados</div>
-            <div class="info-item"><strong>Cortes niños:</strong> 30 minutos</div>
-            <div class="info-item"><strong>Demás servicios:</strong> 1 hora</div>
+            <div class="info-item"><strong>Domingo y martes:</strong> solo si aparecen disponibles en la agenda</div>
+            <div class="info-item"><strong>Cortes de niños:</strong> duran 30 minutos</div>
+            <div class="info-item"><strong>Demás servicios:</strong> duran 1 hora</div>
             <div class="info-item"><strong>Recomendación:</strong> llega 10 minutos antes</div>
           </div>
         </div>
