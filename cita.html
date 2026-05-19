@@ -72,6 +72,40 @@
       color: var(--text);
       overflow-x: hidden;
     }
+    /* Estilo fuerte para input type=date */
+.date-input {
+  width: 100% !important;
+  min-height: 52px !important;
+  padding: 14px 15px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: #f3f7ff !important;
+  font-size: 0.97rem !important;
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.9) brightness(1.3) !important;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.date-input::-webkit-date-and-time-value {
+  color: #f3f7ff !important;
+}
+
+.date-input::placeholder {
+  color: rgba(255,255,255,0.45) !important;
+}
+
+/* Para Android */
+.date-input {
+  color-scheme: dark !important;
+}
 
     a {
       color: inherit;
@@ -1276,7 +1310,7 @@
     id="fecha" 
     name="fecha" 
     required 
-    style="color: #f3f7ff; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.14);"
+    class="date-input"
   />
 </div>
             </div>
