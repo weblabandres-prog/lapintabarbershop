@@ -340,11 +340,11 @@
     }
 
     .main-shell {
-      width: min(var(--max), 92%);
-      margin: -60px auto 60px;
-      position: relative;
-      z-index: 3;
-    }
+  width: min(var(--max), 92%);
+  margin: -85px auto 40px;   /* Subimos más el formulario */
+  position: relative;
+  z-index: 3;
+}
 
     .layout {
       display: grid;
@@ -931,15 +931,20 @@
       }
     }
 
-    @media (max-width: 930px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
+   @media (max-width: 400px) {
+  .hero {
+    min-height: 280px;           /* antes era 345px o más */
+    padding-bottom: 20px;
+  }
 
-      .side-panel {
-        position: static;
-      }
-    }
+  .hero-inner {
+    padding: 35px 0 50px;        /* menos padding vertical */
+  }
+
+  .main-shell {
+    margin-top: -65px;           /* ajuste fino para móvil */
+  }
+}
 
     @media (max-width: 760px) {
       .brand-copy {
@@ -994,7 +999,7 @@
 
       .form-panel,
       .side-panel {
-        padding: 18px;
+        padding: 23px;
       }
 
       .hero p {
