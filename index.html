@@ -5,14 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>La Pinta Barber | Reserva tu cita</title>
   <meta name="description" content="Agenda tu cita en La Pinta Barber de forma rápida y sencilla." />
-
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-
   <style>
     :root {
       --bg: #050912;
@@ -31,17 +28,14 @@
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --shadow: 0 26px 76px rgba(0,0,0,.40);
     }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
     html {
       scroll-behavior: smooth;
     }
-
     body {
       min-height: 100svh;
       font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -51,16 +45,13 @@
         linear-gradient(180deg, #050912 0%, #07101d 48%, #03060c 100%);
       overflow-x: hidden;
     }
-
     a {
       color: inherit;
       text-decoration: none;
     }
-
     button {
       font: inherit;
     }
-
     .page {
       width: min(1180px, calc(100% - 28px));
       min-height: 100svh;
@@ -70,7 +61,6 @@
       grid-template-rows: auto auto auto;
       gap: 14px;
     }
-
     .topbar {
       min-height: 72px;
       display: flex;
@@ -85,14 +75,12 @@
       -webkit-backdrop-filter: blur(18px);
       box-shadow: 0 18px 48px rgba(0,0,0,.28);
     }
-
     .brand {
       min-width: 0;
       display: flex;
       align-items: center;
       gap: 12px;
     }
-
     .brand-logo-wrap {
       width: 52px;
       height: 52px;
@@ -104,14 +92,12 @@
       padding: 5px;
       overflow: hidden;
     }
-
     .brand-logo {
       width: 100%;
       height: 100%;
       object-fit: contain;
       display: block;
     }
-
     .brand small {
       display: block;
       margin-bottom: 5px;
@@ -122,7 +108,6 @@
       text-transform: uppercase;
       white-space: nowrap;
     }
-
     .brand strong {
       display: block;
       font-family: "Cormorant Garamond", serif;
@@ -130,7 +115,6 @@
       line-height: .95;
       white-space: nowrap;
     }
-
     .nav-actions {
       display: flex;
       align-items: center;
@@ -138,7 +122,6 @@
       gap: 9px;
       flex-wrap: wrap;
     }
-
     .btn,
     .mini-btn {
       display: inline-flex;
@@ -152,33 +135,28 @@
       white-space: nowrap;
       transition: transform .2s ease, background .2s ease, border-color .2s ease;
     }
-
     .mini-btn {
       min-height: 42px;
       padding: 10px 14px;
       font-size: .86rem;
     }
-
     .btn {
       min-height: 52px;
       padding: 14px 20px;
       font-size: .94rem;
     }
-
     .btn:hover,
     .mini-btn:hover {
       transform: translateY(-1px);
       background: rgba(255,255,255,.11);
       border-color: rgba(255,255,255,.22);
     }
-
     .primary {
       background: linear-gradient(135deg, var(--blue), var(--blue-2));
       color: #04101d;
       border-color: transparent;
       box-shadow: 0 18px 34px rgba(31,134,255,.22);
     }
-
     .hero {
       min-height: 430px;
       display: grid;
@@ -186,7 +164,6 @@
       gap: 14px;
       align-items: stretch;
     }
-
     .hero-main,
     .photo-card,
     .compact-card {
@@ -198,7 +175,6 @@
       box-shadow: var(--shadow);
       overflow: hidden;
     }
-
     .hero-main {
       position: relative;
       min-height: 100%;
@@ -210,7 +186,6 @@
         linear-gradient(180deg, rgba(12,21,35,.86), rgba(6,11,20,.90)),
         radial-gradient(circle at bottom right, rgba(31,134,255,.20), transparent 45%);
     }
-
     .label-row {
       display: flex;
       align-items: center;
@@ -218,7 +193,6 @@
       flex-wrap: wrap;
       margin-bottom: 14px;
     }
-
     .kicker,
     .status-badge {
       display: inline-flex;
@@ -229,7 +203,6 @@
       font-size: .72rem;
       font-weight: 900;
     }
-
     .kicker {
       color: #cce6ff;
       background: rgba(31,134,255,.15);
@@ -237,25 +210,21 @@
       letter-spacing: .12em;
       text-transform: uppercase;
     }
-
     .status-badge {
       color: var(--yellow);
       background: rgba(255, 210, 122, .12);
       border: 1px solid rgba(255, 210, 122, .23);
     }
-
     .status-badge.open {
       color: var(--green);
       background: rgba(43,198,130,.12);
       border-color: rgba(43,198,130,.25);
     }
-
     .status-badge.closed {
       color: var(--red);
       background: rgba(229,57,53,.12);
       border-color: rgba(229,57,53,.24);
     }
-
     h1 {
       max-width: 700px;
       margin-bottom: 12px;
@@ -264,7 +233,6 @@
       line-height: .84;
       letter-spacing: -.055em;
     }
-
     .lead {
       max-width: 610px;
       margin-bottom: 22px;
@@ -272,19 +240,16 @@
       font-size: clamp(.96rem, 1.5vw, 1.08rem);
       line-height: 1.5;
     }
-
     .hero-buttons {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
-
     .photo-card {
       min-height: 100%;
       position: relative;
       background: #08111f;
     }
-
     .photo-card img {
       width: 100%;
       height: 100%;
@@ -293,7 +258,6 @@
       display: block;
       filter: saturate(1.06) contrast(1.02);
     }
-
     .photo-badge {
       position: absolute;
       left: 16px;
@@ -306,31 +270,26 @@
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
     }
-
     .photo-badge strong {
       display: block;
       margin-bottom: 4px;
       font-size: .98rem;
     }
-
     .photo-badge span {
       display: block;
       color: var(--muted);
       font-size: .84rem;
       line-height: 1.35;
     }
-
     .info-grid {
       display: grid;
       grid-template-columns: 1.1fr .9fr .95fr;
       gap: 14px;
     }
-
     .compact-card {
       padding: 16px;
       background: var(--card-2);
     }
-
     .card-title {
       margin-bottom: 12px;
       display: flex;
@@ -338,7 +297,6 @@
       justify-content: space-between;
       gap: 8px;
     }
-
     .card-title span {
       color: #7dbbff;
       font-size: .7rem;
@@ -346,22 +304,18 @@
       letter-spacing: .16em;
       text-transform: uppercase;
     }
-
     .card-title h2 {
       margin-top: 4px;
       font-size: 1.08rem;
       line-height: 1.1;
     }
-
     .services {
       display: grid;
       gap: 8px;
     }
-
     .bank-services {
       grid-template-columns: 1fr;
     }
-
     .service,
     .bank-row {
       display: grid;
@@ -373,7 +327,6 @@
       border: 1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.045);
     }
-
     .service strong,
     .bank-row strong {
       display: block;
@@ -381,14 +334,12 @@
       font-size: .86rem;
       line-height: 1.14;
     }
-
     .service small,
     .bank-row small {
       color: var(--muted);
       font-size: .74rem;
       font-weight: 700;
     }
-
     .price,
     .copy-number {
       color: #dcecff;
@@ -396,7 +347,6 @@
       font-weight: 900;
       white-space: nowrap;
     }
-
     .bank-pay-btn {
       border: none;
       outline: none;
@@ -411,25 +361,21 @@
       white-space: nowrap;
       transition: transform .2s ease, background .2s ease, border-color .2s ease;
     }
-
     .bank-pay-btn:hover {
       transform: translateY(-1px);
       background: rgba(31,134,255,.22);
       border-color: rgba(31,134,255,.36);
     }
-
     .bank-note {
       margin-top: 10px;
       color: var(--muted);
       font-size: .78rem;
       line-height: 1.35;
     }
-
     .map-card {
       padding: 0;
       min-height: 245px;
     }
-
     .map-card iframe {
       width: 100%;
       height: 100%;
@@ -438,109 +384,82 @@
       display: block;
       filter: saturate(.92) contrast(.98);
     }
-
     @media (max-width: 980px) {
-      body {
-        overflow-y: auto;
-      }
-
-      .page {
-        width: min(100% - 22px, 760px);
-      }
-
       .hero {
         grid-template-columns: 1fr;
         min-height: auto;
       }
-
       .photo-card img {
         min-height: 260px;
         max-height: 290px;
       }
-
       .info-grid {
         grid-template-columns: 1fr;
       }
-
       .map-card iframe {
         min-height: 260px;
       }
     }
-
     @media (max-width: 560px) {
       .page {
         width: min(100% - 18px, 760px);
         padding-top: calc(10px + var(--safe-top));
         gap: 10px;
       }
-
       .topbar {
         min-height: 60px;
         border-radius: 22px;
         padding: 8px;
       }
-
       .brand-logo-wrap {
         width: 43px;
         height: 43px;
       }
-
       .brand small {
         display: none;
       }
-
       .brand strong {
         font-size: 1.12rem;
       }
-
       .mini-btn {
         min-height: 38px;
         padding: 9px 11px;
         font-size: .78rem;
       }
-
       .mini-btn.hide-mobile {
         display: none;
       }
-
       .hero-main {
         border-radius: 26px;
         padding: 20px;
       }
-
       .label-row {
         margin-bottom: 10px;
       }
-
       .kicker,
       .status-badge {
         min-height: 30px;
         padding: 7px 10px;
         font-size: .66rem;
       }
-
       h1 {
         margin-bottom: 9px;
         font-size: clamp(2.32rem, 14vw, 3.8rem);
       }
-
       .lead {
         margin-bottom: 15px;
         font-size: .9rem;
         line-height: 1.38;
       }
-
       .btn {
         min-height: 45px;
         padding: 12px 13px;
         font-size: .84rem;
       }
-
       .photo-card img {
         min-height: 210px;
         max-height: 230px;
       }
-
       .photo-badge {
         left: 12px;
         right: 12px;
@@ -548,60 +467,42 @@
         padding: 12px;
         border-radius: 18px;
       }
-
       .compact-card {
         padding: 12px;
         border-radius: 24px;
       }
-
       .services {
         grid-template-columns: 1fr 1fr;
       }
-
       .bank-services {
         grid-template-columns: 1fr;
       }
-
       .service {
         grid-template-columns: 1fr;
         gap: 4px;
         padding: 9px;
       }
-
       .service strong {
         font-size: .76rem;
       }
-
       .service small {
         display: none;
       }
-
-      .price {
-        font-size: .76rem;
-      }
-
-      .service.hide-mobile {
-        display: none;
-      }
-
       .bank-row {
         grid-template-columns: 1fr;
         gap: 7px;
       }
-
       .bank-pay-btn {
         width: 100%;
         justify-content: center;
         padding: 10px 12px;
       }
-
       .map-card iframe {
         min-height: 220px;
       }
     }
   </style>
 </head>
-
 <body>
   <div class="page">
     <header class="topbar">
@@ -614,7 +515,6 @@
           <strong>La Pinta Barber</strong>
         </div>
       </a>
-
       <nav class="nav-actions" aria-label="Accesos rápidos">
         <a class="mini-btn hide-mobile" href="ver-citas.html">Ver citas</a>
         <a class="mini-btn primary" href="cita.html">Agendar</a>
@@ -627,21 +527,17 @@
           <span class="kicker">Reserva en minutos</span>
           <div class="status-badge" id="shopStatusBadge">Consultando horario...</div>
         </div>
-
         <h1>Tu corte, tu hora, sin vueltas.</h1>
-
         <p class="lead">
           Agenda rápido, revisa tus citas y paga como prefieras. Todo más claro desde el celular o la PC.
         </p>
-
         <div class="hero-buttons">
           <a href="cita.html" class="btn primary">Agendar cita</a>
           <a href="ver-citas.html" class="btn">Ver citas</a>
         </div>
       </section>
-
       <aside class="photo-card" aria-label="Foto de la barbería">
-        <img src="interior.jpeg" alt="Interior de La Pinta Barber" />
+        <img src="Barberia.jfif" alt="Interior de La Pinta Barber" />
         <div class="photo-badge">
           <strong>La Pinta Barber</strong>
           <span>Ambiente cómodo, cortes limpios y reserva online.</span>
@@ -649,50 +545,7 @@
       </aside>
     </main>
 
-    <section class="info-grid" aria-label="Información rápida">
-      <article class="compact-card">
-        <div class="card-title">
-          <div>
-            <span>Servicios</span>
-            <h2>Elige y reserva</h2>
-          </div>
-        </div>
-
-        <div class="services">
-          <a class="service" href="cita.html?servicio=Corte%20%2B%20Fade">
-            <span>
-              <strong>Corte + Fade</strong>
-              <small>Degradado limpio · 1 hora</small>
-            </span>
-            <span class="price">RD$550</span>
-          </a>
-
-          <a class="service" href="cita.html?servicio=Corte%20Cl%C3%A1sico">
-            <span>
-              <strong>Corte clásico</strong>
-              <small>Estilo limpio · 1 hora</small>
-            </span>
-            <span class="price">RD$500</span>
-          </a>
-
-          <a class="service" href="cita.html?servicio=Cortes%20Ni%C3%B1os">
-            <span>
-              <strong>Cortes niños</strong>
-              <small>Cómodo y rápido · 30 min</small>
-            </span>
-            <span class="price">RD$350</span>
-          </a>
-
-          <a class="service hide-mobile" href="cita.html?servicio=Corte%20%2B%20Fade%20%2B%20Facial%20%2B%20Lavado%20de%20cabello">
-            <span>
-              <strong>Servicio completo</strong>
-              <small>Corte + facial + lavado</small>
-            </span>
-            <span class="price">RD$700</span>
-          </a>
-        </div>
-      </article>
-
+    <section class="info-grid">
       <article class="compact-card">
         <div class="card-title">
           <div>
@@ -700,14 +553,12 @@
             <h2>Pago por transferencia</h2>
           </div>
         </div>
-
         <div class="services bank-services">
           <div class="bank-row">
             <span>
               <strong>Banreservas</strong>
               <small>Cuenta de ahorro</small>
             </span>
-
             <button
               type="button"
               class="bank-pay-btn"
@@ -715,13 +566,11 @@
               9602003811
             </button>
           </div>
-
           <div class="bank-row">
             <span>
               <strong>Popular</strong>
               <small>Cuenta de ahorro</small>
             </span>
-
             <button
               type="button"
               class="bank-pay-btn"
@@ -730,9 +579,8 @@
             </button>
           </div>
         </div>
-
         <p class="bank-note">
-          Toca la cuenta: se copia el número y se abre la app del banco. También puedes pagar en efectivo al llegar.
+          Toca la cuenta: se copia el número y se intenta abrir la app del banco para hacer la transferencia más fácil.
         </p>
       </article>
 
@@ -769,13 +617,12 @@
         } else {
           copyTextFallback(accountNumber);
         }
-
         return true;
       } catch (error) {
         try {
           copyTextFallback(accountNumber);
           return true;
-        } catch (fallbackError) {
+        } catch (e) {
           return false;
         }
       }
@@ -783,24 +630,27 @@
 
     async function copyAndOpenBank(accountNumber, bank) {
       const copied = await copyAccountNumber(accountNumber);
+      const bankName = bank === 'banreservas' ? 'Banreservas' : 'Popular';
 
       if (copied) {
-        alert("Cuenta copiada: " + accountNumber + "\nAhora se abrirá el banco para que puedas pegarla.");
+        alert(`✅ Número copiado: ${accountNumber}\n\nSe intentará abrir la app de ${bankName} para que puedas pegar el número y hacer la transferencia.`);
       } else {
-        alert("Cuenta: " + accountNumber + "\nCópiala manualmente antes de hacer la transferencia.");
+        alert(`Número: ${accountNumber}\nCópialo manualmente.`);
       }
 
-      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const isAndroid = /Android/i.test(navigator.userAgent);
-
+      // Intentar abrir la app del banco
       if (bank === "popular") {
         window.location.href = "https://deeplink.popularenlinea.com/dashboard";
-        return;
-      }
+        setTimeout(() => {
+          window.location.href = "https://play.google.com/store/apps/details?id=com.popular.app.android";
+        }, 700);
+      } 
+      else if (bank === "banreservas") {
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isAndroid = /Android/i.test(navigator.userAgent);
 
-      if (bank === "banreservas") {
         if (isIOS) {
-          window.location.href = "https://apps.apple.com/us/app/banreservas/id1170610154";
+          window.location.href = "https://apps.apple.com/app/banreservas/id1170610154";
         } else if (isAndroid) {
           window.location.href = "https://play.google.com/store/apps/details?id=com.banreservas.tubancoappmobile";
         } else {
@@ -812,7 +662,6 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyD4WCEUcsgfjK_LgNkY5rexqvPMxQ-RdEE",
@@ -824,22 +673,16 @@
       appId: "1:763008264452:web:4adb64267606266deb4851",
       measurementId: "G-QHN4PX48D4"
     };
-
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-
     const db = firebase.database();
     const shopStatusRef = db.ref("shopStatus");
     const statusBadge = document.getElementById("shopStatusBadge");
-    const logoSecret = document.getElementById("logoSecret");
 
     function updateStatus(data = {}) {
       if (!statusBadge) return;
-
       const isOpen = data.isOpen !== false;
-
       statusBadge.classList.toggle("open", isOpen);
       statusBadge.classList.toggle("closed", !isOpen);
-
       statusBadge.textContent = isOpen
         ? "Abierto · agenda tu cita"
         : "Cerrado por el momento · agenda para otro día";
@@ -853,16 +696,12 @@
 
     let logoTaps = 0;
     let logoTimer = null;
-
-    logoSecret?.addEventListener("click", event => {
+    document.getElementById("logoSecret")?.addEventListener("click", event => {
       if (logoTimer) clearTimeout(logoTimer);
-
       logoTaps += 1;
-
       logoTimer = setTimeout(() => {
         logoTaps = 0;
       }, 1600);
-
       if (logoTaps >= 5) {
         event.preventDefault();
         logoTaps = 0;
