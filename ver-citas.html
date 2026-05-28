@@ -1740,6 +1740,15 @@
         return null;
       }
 
+      // Horario personalizado para este día específico
+      if (override?.customStart && override?.customEnd) {
+        return {
+          start: formatTime12(override.customStart),
+          end: formatTime12(override.customEnd),
+          breaks: []
+        };
+      }
+
       const day = getDayFromDate(dateString);
       let config = null;
 
