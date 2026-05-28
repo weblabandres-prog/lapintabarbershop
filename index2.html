@@ -594,6 +594,7 @@
 
       <nav class="sidebar-nav">
         <a href="#dashboard" class="active">Dashboard</a>
+        <a href="#customScheduleSection">Horario personalizado</a>
         <a href="#timeBlocksSection">Bloques de horas</a>
         <a href="#appointmentsSection">Citas</a>
         <a href="#toolsSection">Herramientas</a>
@@ -653,7 +654,26 @@
         </div>
       </section>
 
-      <section class="status-card" id="timeBlocksSection">
+      <section class="status-card" id="customScheduleSection">
+        <div class="status-head">
+          <div>
+            <span class="eyebrow">Horario del día</span>
+            <h3>Horario personalizado</h3>
+          </div>
+          <div id="customScheduleCountBadge" class="badge-inline">0 días personalizados</div>
+        </div>
+        <p class="status-help">Pon el horario exacto que quieres para cualquier día. Ejemplo: el lunes próximo de 6:00 AM a 12:00 PM. Reemplaza el horario normal de ese día.</p>
+        <div class="time-block-form">
+          <div class="field"><label for="customSchedDate">Fecha</label><input id="customSchedDate" type="date" /></div>
+          <div class="field"><label for="customSchedStart">Abre a las</label><input id="customSchedStart" type="time" step="1800" /></div>
+          <div class="field"><label for="customSchedEnd">Cierra a las</label><input id="customSchedEnd" type="time" step="1800" /></div>
+          <div class="field"><label for="customSchedReason">Nota (opcional)</label><input id="customSchedReason" type="text" placeholder="Festivo, evento especial..." maxlength="80" /></div>
+          <button id="saveCustomSchedBtn" class="primary-btn" type="button">Guardar</button>
+        </div>
+        <div id="customScheduleList" class="time-block-list"></div>
+      </section>
+
+            <section class="status-card" id="timeBlocksSection">
         <div class="status-head">
           <div>
             <span class="eyebrow">Bloques de horas</span>
@@ -906,6 +926,13 @@
     const saveTimeBlockBtn = document.getElementById("saveTimeBlockBtn");
     const timeBlocksList = document.getElementById("timeBlocksList");
     const timeBlockCountBadge = document.getElementById("timeBlockCountBadge");
+    const customSchedDate = document.getElementById("customSchedDate");
+    const customSchedStart = document.getElementById("customSchedStart");
+    const customSchedEnd = document.getElementById("customSchedEnd");
+    const customSchedReason = document.getElementById("customSchedReason");
+    const saveCustomSchedBtn = document.getElementById("saveCustomSchedBtn");
+    const customScheduleList = document.getElementById("customScheduleList");
+    const customScheduleCountBadge = document.getElementById("customScheduleCountBadge");
 
     let appointments = [];
     let servicesData = {};
@@ -1219,11 +1246,21 @@
       const today = getTodayISO();
       const override = dailyOverrides[dateString] || null;
 
-      if (dateString === today && !shopIsOpen && !override?.forceOpen) {
+      if (override?.forceClosed === true) {
         return null;
       }
 
-      if (override?.forceClosed === true) {
+      // Horario personalizado para este día específico
+      if (override?.customStart && override?.customEnd) {
+        const finalConfig = {
+          start: formatStatusTime(override.customStart),
+          end: formatStatusTime(override.customEnd),
+          breaks: []
+        };
+        return finalConfig;
+      }
+
+      if (dateString === today && !shopIsOpen && !override?.forceOpen) {
         return null;
       }
 
@@ -1457,7 +1494,95 @@
       return timeToMinutes(block.end) >= currentTimeMinutes();
     }
 
-    function saveTimeBlock() {
+    function setDefaultCustomSchedValues() {
+      const today = getTodayISO();
+      if (customSchedDate) {
+        customSchedDate.min = today;
+        if (!customSchedDate.value) customSchedDate.value = today;
+      }
+      if (customSchedStart && !customSchedStart.value) customSchedStart.value = "08:00";
+      if (customSchedEnd && !customSchedEnd.value) customSchedEnd.value = "20:00";
+    }
+
+    function saveCustomSchedule() {
+      if (!requireAuthAction()) return;
+
+      const fecha = customSchedDate?.value || "";
+      const start = customSchedStart?.value || "";
+      const end = customSchedEnd?.value || "";
+      const reason = customSchedReason?.value.trim() || "";
+      const today = getTodayISO();
+
+      if (!fecha || !start || !end) return showToast("Completa fecha, hora de apertura y hora de cierre");
+      if (fecha < today) return showToast("No puedes editar una fecha pasada");
+      if (timeToMinutes(start) >= timeToMinutes(end)) return showToast("La hora de cierre debe ser mayor que la de apertura");
+
+      saveCustomSchedBtn.disabled = true;
+      saveCustomSchedBtn.textContent = "Guardando...";
+
+      firebase.database().ref(`dailyOverrides/${fecha}`).update({
+        customStart: start,
+        customEnd: end,
+        forceOpen: true,
+        forceClosed: false,
+        reason: reason || null,
+        updatedAt: new Date().toISOString()
+      }).then(() => {
+        if (customSchedReason) customSchedReason.value = "";
+        showToast("Horario personalizado guardado");
+      }).catch(() => {
+        showToast("No se pudo guardar el horario");
+      }).finally(() => {
+        saveCustomSchedBtn.disabled = false;
+        saveCustomSchedBtn.textContent = "Guardar";
+      });
+    }
+
+    function deleteCustomSchedule(fecha) {
+      if (!requireAuthAction()) return;
+      if (!confirm(`Quitar el horario personalizado del ${formatDate(fecha)}?`)) return;
+
+      firebase.database().ref(`dailyOverrides/${fecha}`).update({
+        customStart: null,
+        customEnd: null,
+        forceOpen: false,
+        reason: null,
+        updatedAt: new Date().toISOString()
+      }).then(() => showToast("Horario personalizado quitado"))
+        .catch(() => showToast("No se pudo quitar el horario"));
+    }
+
+    function renderCustomSchedules() {
+      if (!customScheduleList || !customScheduleCountBadge) return;
+
+      const today = getTodayISO();
+      const entries = Object.entries(dailyOverrides)
+        .filter(([fecha, data]) => data?.customStart && data?.customEnd && fecha >= today)
+        .sort(([a], [b]) => a.localeCompare(b));
+
+      customScheduleCountBadge.textContent = `${entries.length} ${entries.length === 1 ? "día personalizado" : "días personalizados"}`;
+
+      if (!entries.length) {
+        customScheduleList.innerHTML = '<div class="empty-state"><h4>No hay horarios personalizados</h4><p>Cuando guardes uno aparecerá aquí.</p></div>';
+        return;
+      }
+
+      customScheduleList.innerHTML = entries.map(([fecha, data]) => `
+        <article class="time-block-item">
+          <div>
+            <h4>${escapeHTML(formatDate(fecha))}</h4>
+            <p><strong>${escapeHTML(formatStatusTime(data.customStart))} – ${escapeHTML(formatStatusTime(data.customEnd))}</strong>${data.reason ? " • " + escapeHTML(data.reason) : ""}</p>
+            <div class="time-block-meta">
+              <span class="mini-pill">Horario personalizado</span>
+              ${fecha === today ? '<span class="mini-pill">Hoy</span>' : ""}
+            </div>
+          </div>
+          <button class="danger-btn" type="button" data-delete-custom-sched="${escapeHTMLAttr(fecha)}">Quitar</button>
+        </article>
+      `).join("");
+    }
+
+        function saveTimeBlock() {
       if (!requireAuthAction()) return;
 
       const fecha = blockDateInput?.value || "";
@@ -2124,6 +2249,7 @@
       dailyOverridesRef.on("value", snapshot => {
         dailyOverrides = snapshot.val() || {};
         renderShopStatusUI();
+        renderCustomSchedules();
       });
     }
 
@@ -2175,6 +2301,13 @@
       toggleSundayBtn?.addEventListener("click", toggleSundayState);
       toggleTuesdayBtn?.addEventListener("click", toggleTuesdayState);
       toggleExtendedHoursBtn?.addEventListener("click", toggleExtendedHoursState);
+      saveCustomSchedBtn?.addEventListener("click", saveCustomSchedule);
+
+      customScheduleList?.addEventListener("click", event => {
+        const btn = event.target.closest("button[data-delete-custom-sched]");
+        if (btn) deleteCustomSchedule(btn.dataset.deleteCustomSched);
+      });
+
       saveTimeBlockBtn?.addEventListener("click", saveTimeBlock);
       timeBlocksList?.addEventListener("click", handleTimeBlocksListClick);
       appointmentsTableBody?.addEventListener("click", handleAppointmentActionClick);
@@ -2245,6 +2378,7 @@
       listenServices();
       listenCustomClosures();
       setDefaultTimeBlockValues();
+      setDefaultCustomSchedValues();
       setInterval(autoDeleteExpiredAppointments, 60000);
     }
 
