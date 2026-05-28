@@ -1973,6 +1973,15 @@
         return null;
       }
 
+      // Horario personalizado para este día específico
+      if (override?.customStart && override?.customEnd) {
+        return {
+          start: formatStatusTime(override.customStart),
+          end: formatStatusTime(override.customEnd),
+          breaks: []
+        };
+      }
+
       const day = getDayFromDate(dateString);
       let config = null;
 
