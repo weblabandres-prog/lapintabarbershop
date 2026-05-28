@@ -1,1660 +1,2384 @@
-const firebaseConfig = {
-  apiKey: "AIzaSyD4WCEUcsgfjK_LgNkY5rexqvPMxQ-RdEE",
-  authDomain: "barberia2-bb033.firebaseapp.com",
-  databaseURL: "https://barberia2-bb033-default-rtdb.firebaseio.com",
-  projectId: "barberia2-bb033",
-  storageBucket: "barberia2-bb033.firebasestorage.app",
-  messagingSenderId: "763008264452",
-  appId: "1:763008264452:web:4adb64267606266deb4851",
-  measurementId: "G-QHN4PX48D4"
-};
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Agenda pública de citas | La Pinta Barber</title>
+  <meta name="description" content="Agenda pública de citas para La Pinta Barber, optimizada para celular y PC." />
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+  <link rel="icon" type="image/jpeg" href="logo.jpeg" />
+  <link rel="apple-touch-icon" href="logo.jpeg" />
 
-const db = firebase.database();
-const appointmentsRef = db.ref("appointments");
-const slotLocksRef = db.ref("slotLocks");
-const shopStatusRef = db.ref("shopStatus");
-const customClosuresRef = db.ref("customClosures");
-const servicesRef = db.ref("services");
-const dailyOverridesRef = db.ref("dailyOverrides");
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-const bookingForm = document.getElementById("bookingForm");
-const fechaInput = document.getElementById("fecha");
-const horaInput = document.getElementById("hora");
-const hoursGrid = document.getElementById("hoursGrid");
-const appointmentsList = document.getElementById("appointmentsList");
-const bookingSummary = document.getElementById("bookingSummary");
-
-const nombreInput = document.getElementById("nombre");
-const telefonoInput = document.getElementById("telefono");
-const servicioInput = document.getElementById("servicio");
-const barberoInput = document.getElementById("barbero");
-const anonimoInput = document.getElementById("anonimo");
-
-const metodoEfectivoInput = document.getElementById("metodo_efectivo");
-const metodoTransferenciaInput = document.getElementById("metodo_transferencia");
-const paymentTransferInfo = document.getElementById("paymentTransferInfo");
-const cuentaBanreservasInput = document.getElementById("cuenta_banreservas");
-const cuentaPopularInput = document.getElementById("cuenta_popular");
-
-const menuToggle = document.getElementById("menuToggle");
-const navPanel = document.getElementById("navPanel");
-
-const btnAprobarMenu = document.getElementById("btnAprobarMenu");
-const btnAprobarHero = document.getElementById("btnAprobarHero");
-const btnAprobarMobile = document.getElementById("btnAprobarMobile");
-const logoSecret = document.getElementById("logoSecret");
-
-let appointments = [];
-let servicesData = {};
-let shopIsOpen = true;
-let sundayOpen = false;
-let tuesdayForcedOpen = false;
-let extendedHours = false;
-let customClosures = {};
-let dailyOverrides = {};
-let requestedServiceFromURL = "";
-
-const EMAILJS_PUBLIC_KEY = "TXQSraRTJ0Ro5hhuk";
-const EMAILJS_SERVICE_ID = "service_15uyzin";
-const EMAILJS_TEMPLATE_ID = "template_zck2x4i";
-const BARBER_EMAIL = "castrovictory1@gmail.com";
-
-if (typeof emailjs !== "undefined") {
-  emailjs.init(EMAILJS_PUBLIC_KEY);
-}
-
-const normalWorkingDays = {
-  0: null,
-  1: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
-  2: null,
-  3: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
-  4: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
-  5: { start: "8:00 AM", end: "9:00 PM", breaks: [] },
-  6: { start: "8:00 AM", end: "9:00 PM", breaks: [] }
-};
-
-const extendedWorkingDays = {
-  0: null,
-  1: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
-  2: null,
-  3: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
-  4: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
-  5: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
-  6: { start: "8:00 AM", end: "10:00 PM", breaks: [] }
-};
-
-const normalSundaySchedule = {
-  start: "8:00 AM",
-  end: "8:00 PM",
-  breaks: []
-};
-
-const extendedSundaySchedule = {
-  start: "8:00 AM",
-  end: "10:00 PM",
-  breaks: []
-};
-
-const normalTuesdaySchedule = {
-  start: "8:00 AM",
-  end: "8:00 PM",
-  breaks: []
-};
-
-const extendedTuesdaySchedule = {
-  start: "8:00 AM",
-  end: "10:00 PM",
-  breaks: []
-};
-
-function escapeHTML(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function normalizeStatus(status) {
-  if (status === "approved") return "approved";
-  if (status === "cancelled") return "cancelled";
-  return "pending";
-}
-
-function generateApproveToken() {
-  if (window.crypto && typeof window.crypto.randomUUID === "function") {
-    return window.crypto.randomUUID();
-  }
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
-}
-
-function generateClientToken() {
-  if (window.crypto && typeof window.crypto.randomUUID === "function") {
-    return window.crypto.randomUUID();
-  }
-
-  return Date.now().toString(36) + Math.random().toString(36).substring(2, 12);
-}
-
-function rememberClientAppointment(appointmentId, clientToken) {
-  if (!appointmentId || !clientToken) return;
-
-  try {
-    const storageAppointmentId = "lapinta_client_appointment_id";
-    const storageClientToken = "lapinta_client_token";
-    const storageClientAppointments = "lapinta_client_appointments";
-    let savedAppointments = [];
-
-    try {
-      const rawAppointments = localStorage.getItem(storageClientAppointments);
-      savedAppointments = rawAppointments ? JSON.parse(rawAppointments) : [];
-    } catch (error) {
-      savedAppointments = [];
+  <style>
+    :root {
+      --bg: #050912;
+      --bg-2: #07101d;
+      --card: #0d1624;
+      --card-2: #101b2b;
+      --line: rgba(255,255,255,.09);
+      --line-2: rgba(255,255,255,.14);
+      --text: #f5f8ff;
+      --muted: #9daec7;
+      --muted-2: #7f91ad;
+      --blue: #1f86ff;
+      --green: #8ff0bc;
+      --green-bg: rgba(43, 198, 130, .14);
+      --green-line: rgba(43, 198, 130, .32);
+      --yellow: #ffd27a;
+      --yellow-bg: rgba(255, 193, 7, .14);
+      --yellow-line: rgba(255, 193, 7, .32);
+      --red: #ff9e99;
+      --red-bg: rgba(229, 57, 53, .14);
+      --red-line: rgba(229, 57, 53, .30);
+      --shadow: 0 22px 55px rgba(0,0,0,.38);
+      --radius: 24px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    if (!Array.isArray(savedAppointments)) savedAppointments = [];
-
-    const alreadySaved = savedAppointments.some(item => {
-      return String(item.id) === String(appointmentId) &&
-             String(item.token) === String(clientToken);
-    });
-
-    if (!alreadySaved) {
-      savedAppointments.push({ id: appointmentId, token: clientToken });
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    localStorage.setItem(storageAppointmentId, appointmentId);
-    localStorage.setItem(storageClientToken, clientToken);
-    localStorage.setItem(storageClientAppointments, JSON.stringify(savedAppointments));
-  } catch (error) {
-    console.warn("No se pudo guardar la cita en este dispositivo:", error);
-  }
-}
-
-function getBaseUrl() {
-  return "https://weblabandres-prog.github.io/lapintabarbershop";
-}
-
-function buildApproveLink(appointmentId, approveToken) {
-  if (!appointmentId || !approveToken) {
-    return `${getBaseUrl()}/aprobar.html`;
-  }
-  return `${getBaseUrl()}/aprobar.html?id=${encodeURIComponent(appointmentId)}&token=${encodeURIComponent(approveToken)}`;
-}
-
-function getTodayISO() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function formatDateSafe(dateString) {
-  if (!dateString) return "Sin fecha";
-  const parts = String(dateString).split("-");
-  if (parts.length !== 3) return dateString;
-  const [year, month, day] = parts;
-  return `${day}/${month}/${year}`;
-}
-
-function formatDateISOForSubject(dateString) {
-  return dateString || "";
-}
-
-function restarDiasAFecha(fechaISO, dias) {
-  const [year, month, day] = fechaISO.split("-").map(Number);
-  const fecha = new Date(year, month - 1, day);
-  fecha.setDate(fecha.getDate() - dias);
-  return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}`;
-}
-
-function diferenciaDiasDesdeHoy(fechaISO) {
-  const hoy = new Date();
-  const hoyLimpio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-  const [year, month, day] = fechaISO.split("-").map(Number);
-  const fecha = new Date(year, month - 1, day);
-  return Math.floor((fecha.getTime() - hoyLimpio.getTime()) / (1000 * 60 * 60 * 24));
-}
-
-function necesitaPublicarseDosDiasAntes(fechaISO) {
-  return diferenciaDiasDesdeHoy(fechaISO) > 15;
-}
-
-function setMinDate() {
-  if (fechaInput) fechaInput.min = getTodayISO();
-}
-
-function parseAnyTimeToMinutes(timeStr) {
-  if (!timeStr) return NaN;
-
-  const value = String(timeStr).trim().toUpperCase();
-
-  if (/^\d{1,2}:\d{2}$/.test(value)) {
-    const [h, m] = value.split(":").map(Number);
-    if (Number.isNaN(h) || Number.isNaN(m)) return NaN;
-    return (h * 60) + m;
-  }
-
-  const match = value.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/);
-  if (!match) return NaN;
-
-  let hour = Number(match[1]);
-  const minute = Number(match[2]);
-  const suffix = match[3];
-
-  if (suffix === "AM" && hour === 12) hour = 0;
-  if (suffix === "PM" && hour !== 12) hour += 12;
-
-  return (hour * 60) + minute;
-}
-
-function convertToMinutes(timeStr) {
-  const minutes = parseAnyTimeToMinutes(timeStr);
-  return Number.isNaN(minutes) ? 0 : minutes;
-}
-
-function convertToTime(minutes) {
-  let hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  const ampm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12 || 12;
-  return `${hours}:${String(mins).padStart(2, "0")} ${ampm}`;
-}
-
-function to24Hour(time12) {
-  if (!time12) return "00:00";
-
-  const value = String(time12).trim();
-  if (/^\d{1,2}:\d{2}$/.test(value)) {
-    const [h, m] = value.split(":");
-    return `${String(Number(h)).padStart(2, "0")}:${m}`;
-  }
-
-  const match = value.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
-  if (!match) return value;
-
-  let hour = parseInt(match[1], 10);
-  const minutes = match[2];
-  const suffix = match[3].toUpperCase();
-
-  if (suffix === "AM" && hour === 12) hour = 0;
-  if (suffix === "PM" && hour !== 12) hour += 12;
-
-  return `${String(hour).padStart(2, "0")}:${minutes}`;
-}
-
-function formatStatusTime(time24or12) {
-  if (!time24or12) return "";
-
-  if (/AM|PM/i.test(time24or12)) return time24or12;
-
-  const [hourStr, minute] = String(time24or12).split(":");
-  let hour = parseInt(hourStr, 10);
-  const suffix = hour >= 12 ? "PM" : "AM";
-
-  if (hour === 0) hour = 12;
-  else if (hour > 12) hour -= 12;
-
-  return `${hour}:${minute} ${suffix}`;
-}
-
-function normalizeLookupText(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/\s*\+\s*/g, "+")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function isKidsService(serviceName) {
-  return normalizeLookupText(serviceName).includes("nino");
-}
-
-function generateTimeSlots(start, end, interval = 30) {
-  const slots = [];
-  let current = convertToMinutes(start);
-  const finish = convertToMinutes(end);
-
-  while (current < finish) {
-    slots.push(convertToTime(current));
-    current += interval;
-  }
-
-  return slots;
-}
-
-function getDayFromDate(dateString) {
-  return new Date(dateString + "T00:00:00").getDay();
-}
-
-function getDailyOverride(dateString) {
-  if (!dateString || !dailyOverrides) return null;
-  return dailyOverrides[dateString] || null;
-}
-
-function cloneSchedule(config) {
-  if (!config) return null;
-
-  return {
-    start: config.start,
-    end: config.end,
-    breaks: Array.isArray(config.breaks) ? [...config.breaks] : []
-  };
-}
-
-function getDefaultOpenSchedule() {
-  return extendedHours
-    ? { start: "8:00 AM", end: "10:00 PM", breaks: [] }
-    : { start: "8:00 AM", end: "8:00 PM", breaks: [] };
-}
-
-function getCurrentBreak(config) {
-  const breaks = Array.isArray(config?.breaks) ? [...config.breaks] : [];
-  if (!breaks.length) return null;
-
-  const now = new Date();
-  const currentMinutes = (now.getHours() * 60) + now.getMinutes();
-  const breakMinutes = breaks
-    .map(convertToMinutes)
-    .filter(minutes => !Number.isNaN(minutes))
-    .sort((a, b) => a - b);
-
-  for (let i = 0; i < breakMinutes.length; i++) {
-    const startMinutes = breakMinutes[i];
-    let endMinutes = startMinutes + 30;
-
-    while (i + 1 < breakMinutes.length && breakMinutes[i + 1] === endMinutes) {
-      i += 1;
-      endMinutes += 30;
+    html {
+      scroll-behavior: smooth;
     }
 
-    if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
-      return {
-        start: convertToTime(startMinutes),
-        end: convertToTime(endMinutes)
-      };
-    }
-  }
-
-  return null;
-}
-
-function getNextOpenInfoFromDate(baseDate = new Date()) {
-  const dayNames = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
-
-  for (let i = 1; i <= 7; i++) {
-    const nextDate = new Date(baseDate);
-    nextDate.setDate(baseDate.getDate() + i);
-
-    const iso = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}-${String(nextDate.getDate()).padStart(2, "0")}`;
-    const config = getWorkingConfigByDate(iso);
-
-    if (config) {
-      return {
-        dayName: dayNames[nextDate.getDay()],
-        open: formatStatusTime(config.start)
-      };
-    }
-  }
-
-  return null;
-}
-
-function listenDailyOverrides() {
-  dailyOverridesRef.on("value", snapshot => {
-    dailyOverrides = snapshot.val() || {};
-    updateShopStatusBadge();
-    renderHours();
-    updateSummary();
-  });
-}
-
-function getServiceDuration(serviceName) {
-  if (!serviceName) return 60;
-  const serviceObj = Object.values(servicesData).find(s => s.nombre === serviceName);
-  return serviceObj && serviceObj.duracion ? Number(serviceObj.duracion) : 60;
-}
-
-function getServicePrice(serviceName) {
-  if (!serviceName) return 0;
-  const serviceObj = Object.values(servicesData).find(s => s.nombre === serviceName);
-  return serviceObj && serviceObj.precio ? Number(serviceObj.precio) : 0;
-}
-
-function getServiceBlocks(serviceName) {
-  return Math.ceil(getServiceDuration(serviceName) / 30);
-}
-
-function normalizeAppointment(id, app) {
-  return {
-    id,
-    nombre: app?.nombre || "",
-    telefono: app?.telefono || "",
-    servicio: app?.servicio || "",
-    barbero: app?.barbero || "",
-    fecha: app?.fecha || "",
-    agendaDesde: app?.agendaDesde || app?.fecha || "",
-    mostrarEnAgendaDosDiasAntes: Boolean(app?.mostrarEnAgendaDosDiasAntes),
-    hora: app?.hora || "",
-    duration: app?.duration || getServiceDuration(app?.servicio) || 60,
-    precio: app?.precio || 0,
-    slots: Array.isArray(app?.slots) ? app.slots : [],
-    anonimo: Boolean(app?.anonimo),
-    metodoPago: app?.metodoPago || "",
-    status: normalizeStatus(app?.status),
-    approveToken: app?.approveToken || "",
-    clientToken: app?.clientToken || "",
-    createdAt: app?.createdAt || new Date().toISOString()
-  };
-}
-
-function normalizeCustomClosure(block, fallbackDate = "") {
-  if (!block || typeof block !== "object") return null;
-
-  const fecha = block.fecha || block.date || fallbackDate || "";
-  const start = block.start || block.inicio || block.startTime || "";
-  const end = block.end || block.fin || block.endTime || "";
-  const reason = block.reason || block.motivo || "";
-
-  if (!fecha || !start || !end) return null;
-
-  const startMinutes = parseAnyTimeToMinutes(start);
-  const endMinutes = parseAnyTimeToMinutes(end);
-
-  if (Number.isNaN(startMinutes) || Number.isNaN(endMinutes)) return null;
-  if (startMinutes >= endMinutes) return null;
-
-  return { fecha, start, end, reason, type: "timeBlock" };
-}
-
-function getCustomClosuresForDate(dateString) {
-  if (!dateString || !customClosures) return [];
-
-  const closures = [];
-
-  Object.entries(customClosures).forEach(([key, value]) => {
-    if (!value || typeof value !== "object" || Array.isArray(value)) return;
-    const normalized = normalizeCustomClosure(value, key === dateString ? dateString : "");
-    if (normalized && normalized.fecha === dateString) closures.push(normalized);
-  });
-
-  return closures.sort((a, b) => convertToMinutes(a.start) - convertToMinutes(b.start));
-}
-
-function getTimeBlocksForDate(dateString) {
-  return getCustomClosuresForDate(dateString).filter(block => block.type === "timeBlock");
-}
-
-function rangesOverlapMinutes(startA, endA, startB, endB) {
-  return startA < endB && endA > startB;
-}
-
-function isSlotBlockedByCustomClosure(date, startSlot, serviceName) {
-  const blocks = getTimeBlocksForDate(date);
-  if (!blocks.length) return false;
-
-  const neededBlocks = getServiceBlocks(serviceName);
-  const slotStartMinutes = convertToMinutes(startSlot);
-  const slotEndMinutes = slotStartMinutes + (neededBlocks * 30);
-
-  return blocks.some(block => {
-    const blockStartMinutes = convertToMinutes(block.start);
-    const blockEndMinutes = convertToMinutes(block.end);
-
-    if (slotStartMinutes >= blockStartMinutes && slotStartMinutes < blockEndMinutes) {
-      return true;
+    body {
+      min-height: 100vh;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(31,134,255,.10), transparent 30%),
+        linear-gradient(180deg, #050912 0%, #07101d 48%, #03060c 100%);
+      overflow-x: hidden;
     }
 
-    return rangesOverlapMinutes(slotStartMinutes, slotEndMinutes, blockStartMinutes, blockEndMinutes);
-  });
-}
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
 
-function getActiveCustomClosureForNow(dateString) {
-  const blocks = getTimeBlocksForDate(dateString);
-  if (!blocks.length) return null;
+    button {
+      font: inherit;
+    }
 
-  const now = new Date();
-  const currentMinutes = (now.getHours() * 60) + now.getMinutes();
+    .app-shell {
+      width: min(100%, 560px);
+      margin: 0 auto;
+      min-height: 100vh;
+      border-left: 1px solid rgba(255,255,255,.04);
+      border-right: 1px solid rgba(255,255,255,.04);
+      background: linear-gradient(180deg, rgba(8,14,24,.72), rgba(5,9,18,.88));
+    }
 
-  return blocks.find(block => {
-    const blockStartMinutes = convertToMinutes(block.start);
-    const blockEndMinutes = convertToMinutes(block.end);
-    return currentMinutes >= blockStartMinutes && currentMinutes < blockEndMinutes;
-  }) || null;
-}
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      padding-top: var(--safe-top);
+      background: rgba(5,9,18,.88);
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
 
-function applySpecialClosingToConfig(dateString, config) {
-  return config;
-}
+    .nav {
+      min-height: 82px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
 
-function getWorkingConfigByDate(dateString) {
-  if (!dateString) return null;
+    .brand {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-  const todayISO = getTodayISO();
-  const override = getDailyOverride(dateString);
+    .brand-logo-wrap {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      background: #fff;
+      padding: 5px;
+      overflow: hidden;
+    }
 
-  if (dateString === todayISO && !shopIsOpen && !override?.forceOpen) {
-    return null;
-  }
+    .brand-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
 
-  if (override?.forceClosed === true) {
-    return null;
-  }
+    .brand-text {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+    }
 
-  const day = getDayFromDate(dateString);
-  let config = null;
+    .brand-text small {
+      margin-bottom: 6px;
+      color: var(--muted-2);
+      font-size: .61rem;
+      letter-spacing: .23em;
+      text-transform: uppercase;
+      font-weight: 800;
+      white-space: nowrap;
+    }
 
-  if (day === 0) {
-    if (!sundayOpen && !override?.forceOpen) return null;
-    config = extendedHours ? extendedSundaySchedule : normalSundaySchedule;
-  } else if (day === 2) {
-    if (!tuesdayForcedOpen && !override?.forceOpen) return null;
-    config = extendedHours ? extendedTuesdaySchedule : normalTuesdaySchedule;
-  } else {
-    const source = extendedHours ? extendedWorkingDays : normalWorkingDays;
-    config = source[day] || null;
-  }
+    .brand-text strong {
+      color: #fff;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.18rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
 
-  if (!config && override?.forceOpen) {
-    config = getDefaultOpenSchedule();
-  }
+    .menu-btn {
+      width: 54px;
+      height: 54px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      background: rgba(255,255,255,.04);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      color: #fff;
+      box-shadow: 0 12px 25px rgba(0,0,0,.18);
+    }
 
-  if (!config) return null;
+    .menu-btn span {
+      width: 24px;
+      height: 3px;
+      border-radius: 999px;
+      background: #fff;
+      transition: .22s ease;
+    }
 
-  return applySpecialClosingToConfig(dateString, cloneSchedule(config));
-}
+    .menu-btn.active span:nth-child(1) {
+      transform: translateY(8px) rotate(45deg);
+    }
 
-function shouldShowSlot(slot, serviceName) {
-  if (isKidsService(serviceName)) return true;
-  return convertToMinutes(slot) % 60 === 0;
-}
+    .menu-btn.active span:nth-child(2) {
+      opacity: 0;
+    }
 
-function isPastDateTime(date, slot) {
-  if (!date || !slot) return false;
+    .menu-btn.active span:nth-child(3) {
+      transform: translateY(-8px) rotate(-45deg);
+    }
 
-  const now = new Date();
-  const selectedDate = new Date(date + "T00:00:00");
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    .menu-panel {
+      display: none;
+      padding: 0 18px 16px;
+    }
 
-  if (selectedDate.getTime() !== today.getTime()) return false;
+    .menu-panel.open {
+      display: block;
+    }
 
-  const slotMinutes = convertToMinutes(slot);
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    .menu-card {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(16,27,43,.98), rgba(9,17,29,.98));
+      box-shadow: var(--shadow);
+    }
 
-  return slotMinutes <= currentMinutes;
-}
+    .menu-link {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      font-size: .94rem;
+      font-weight: 800;
+    }
 
-function isSlotAvailable(date, barber, startSlot, serviceName, list) {
-  const config = getWorkingConfigByDate(date);
-  if (!config) return false;
+    .menu-link.primary {
+      background: linear-gradient(135deg, #1f86ff, #65b0ff);
+      color: #05101d;
+      border-color: transparent;
+    }
 
-  const slots = generateTimeSlots(config.start, config.end, 30);
-  const breaks = config.breaks || [];
-  const neededBlocks = getServiceBlocks(serviceName);
-  const startIndex = slots.indexOf(startSlot);
+    .desktop-links {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
 
-  if (startIndex === -1) return false;
-  if (isPastDateTime(date, startSlot)) return false;
-  if (isSlotBlockedByCustomClosure(date, startSlot, serviceName)) return false;
+    .desktop-link {
+      min-height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      font-size: .92rem;
+      font-weight: 800;
+      transition: .2s ease;
+      white-space: nowrap;
+    }
 
-  for (let i = 0; i < neededBlocks; i++) {
-    const currentSlot = slots[startIndex + i];
+    .desktop-link:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.075);
+      border-color: rgba(31,134,255,.24);
+    }
 
-    if (!currentSlot || breaks.includes(currentSlot)) return false;
-    if (date === getTodayISO() && isPastDateTime(date, currentSlot)) return false;
+    .desktop-link.primary {
+      background: linear-gradient(135deg, #1f86ff, #65b0ff);
+      color: #05101d;
+      border-color: transparent;
+      box-shadow: 0 12px 24px rgba(31,134,255,.18);
+    }
 
-    for (const app of list) {
-      if (app.status === "cancelled") continue;
+    .content {
+      padding: 20px 18px calc(34px + var(--safe-bottom));
+    }
 
-      if (
-        app.fecha === date &&
-        app.barbero === barber &&
-        Array.isArray(app.slots) &&
-        app.slots.includes(currentSlot)
-      ) {
-        return false;
+    .top-card {
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 28px;
+      padding: 18px;
+      background:
+        radial-gradient(circle at top right, rgba(31,134,255,.14), transparent 38%),
+        linear-gradient(180deg, rgba(17,29,47,.90), rgba(10,18,31,.95));
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: #7dbbff;
+      font-size: .72rem;
+      letter-spacing: .20em;
+      text-transform: uppercase;
+      font-weight: 900;
+    }
+
+    .top-card h1 {
+      margin-bottom: 8px;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 2rem;
+      line-height: .98;
+      letter-spacing: -.02em;
+    }
+
+    .top-card p {
+      color: var(--muted);
+      font-size: .94rem;
+      line-height: 1.55;
+    }
+
+    .quick-stats {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .quick-stat {
+      padding: 13px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.035);
+    }
+
+    .quick-stat span {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted-2);
+      font-size: .75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .quick-stat strong {
+      display: block;
+      color: #fff;
+      font-size: 1.45rem;
+      line-height: 1;
+      font-weight: 900;
+    }
+
+    .agenda-layout {
+      display: block;
+    }
+
+    .agenda-section {
+      margin-top: 28px;
+    }
+
+    .agenda-section:first-of-type {
+      margin-top: 0;
+    }
+
+    .section-title {
+      margin-bottom: 14px;
+    }
+
+    .section-title h2 {
+      margin-bottom: 6px;
+      color: #fff;
+      font-size: 1.42rem;
+      line-height: 1.1;
+      font-weight: 900;
+      letter-spacing: -.02em;
+      text-transform: capitalize;
+    }
+
+    .section-title p {
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.35;
+    }
+
+    .section-divider {
+      height: 1px;
+      margin-top: 14px;
+      background: linear-gradient(90deg, rgba(255,255,255,.10), transparent);
+    }
+
+    .agenda-card {
+      overflow: hidden;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #111b2a, #09111e);
+      box-shadow: 0 16px 42px rgba(0,0,0,.28);
+    }
+
+    .agenda-grid {
+      display: grid;
+      grid-template-columns: minmax(102px, 1fr) 68px 98px 42px;
+      column-gap: 8px;
+      align-items: center;
+    }
+
+    .agenda-head {
+      min-height: 58px;
+      padding: 0 14px;
+      background: rgba(255,255,255,.025);
+      border-bottom: 1px solid var(--line-2);
+    }
+
+    .agenda-head div {
+      color: #94a7c1;
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .agenda-row {
+      position: relative;
+      min-height: 86px;
+      padding: 13px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .agenda-row:last-child {
+      border-bottom: none;
+    }
+
+    .agenda-row:active {
+      background: rgba(255,255,255,.035);
+    }
+
+    .client-name {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 900;
+      line-height: 1.13;
+      word-break: break-word;
+    }
+
+    .time-cell {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.25;
+      text-align: left;
+    }
+
+    .time-cell span {
+      display: block;
+    }
+
+    .status-pill {
+      width: 100%;
+      min-height: 38px;
+      padding: 7px 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      font-size: .68rem;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .status-approved {
+      color: var(--green);
+      background: var(--green-bg);
+      border-color: var(--green-line);
+    }
+
+    .status-pending {
+      color: var(--yellow);
+      background: var(--yellow-bg);
+      border-color: var(--yellow-line);
+    }
+
+    .status-cancelled {
+      color: var(--red);
+      background: var(--red-bg);
+      border-color: var(--red-line);
+    }
+
+    .view-btn {
+      min-height: 38px;
+      border: 1px solid rgba(229,57,53,.34);
+      border-radius: 999px;
+      background: rgba(229,57,53,.14);
+      color: #ffb4ae;
+      font-size: .78rem;
+      font-weight: 900;
+      cursor: pointer;
+      text-align: center;
+      padding: 8px 14px;
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+    }
+
+    .view-btn:active {
+      transform: scale(.96);
+    }
+
+    .view-btn:hover {
+      background: rgba(229,57,53,.22);
+      border-color: rgba(229,57,53,.48);
+    }
+
+    .row-note {
+      color: var(--muted-2);
+      font-size: .78rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .mine-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 7px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(31,134,255,.12);
+      border: 1px solid rgba(31,134,255,.24);
+      color: #cfe5ff;
+      font-size: .67rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .empty-state,
+    .loading-state {
+      padding: 24px 18px;
+      border-radius: 22px;
+      border: 1px dashed rgba(255,255,255,.14);
+      background: rgba(255,255,255,.025);
+      color: var(--muted);
+      text-align: center;
+      font-size: .94rem;
+      line-height: 1.55;
+    }
+
+    .loading-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.18);
+      border-top-color: #7dbbff;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .block-row {
+      display: grid;
+      grid-template-columns: minmax(102px, 1fr) 68px 98px 42px;
+      column-gap: 8px;
+      align-items: center;
+      min-height: 62px;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(220,38,38,.04),
+        rgba(220,38,38,.04) 6px,
+        transparent 6px,
+        transparent 14px
+      );
+    }
+
+    .block-row-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      grid-column: 1 / -1;
+    }
+
+    .block-row-label span {
+      color: #ff9e99;
+      font-size: .84rem;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .block-time-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(220,38,38,.14);
+      border: 1px solid rgba(220,38,38,.28);
+      color: #ff9e99;
+      font-size: .76rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    @media (min-width: 980px) {
+      .block-row {
+        grid-template-columns: minmax(170px, 1fr) 92px 132px 62px;
+        padding: 12px 18px;
       }
     }
-  }
 
-  return true;
-}
-
-function getCuentaTransferenciaSeleccionada() {
-  if (cuentaPopularInput?.checked) return "Popular - Ahorro - 853557841";
-  return "Banreservas - Ahorro - 9602003811";
-}
-
-function getMetodoPagoSeleccionado() {
-  if (metodoTransferenciaInput?.checked) {
-    return `Transferencia | ${getCuentaTransferenciaSeleccionada()}`;
-  }
-  return "Efectivo";
-}
-
-function lockKey(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function getLockEntries(appointmentId, appointment) {
-  const slots = Array.isArray(appointment?.slots) && appointment.slots.length
-    ? appointment.slots
-    : [];
-
-  return slots.map(slot => ({
-    appointmentId,
-    clientToken: appointment.clientToken || "",
-    fecha: appointment.fecha,
-    barbero: appointment.barbero,
-    barberKey: lockKey(appointment.barbero),
-    slot,
-    slotKey: lockKey(slot)
-  })).filter(entry => entry.fecha && entry.barberKey && entry.slotKey);
-}
-
-function getLockNode(tree, entry) {
-  return tree?.[entry.fecha]?.[entry.barberKey]?.[entry.slotKey] || null;
-}
-
-function ensureLockBranch(tree, entry) {
-  tree[entry.fecha] ||= {};
-  tree[entry.fecha][entry.barberKey] ||= {};
-  return tree[entry.fecha][entry.barberKey];
-}
-
-function canReuseLock(lock, appointmentId) {
-  if (!lock || lock.appointmentId === appointmentId) return true;
-  const owner = appointments.find(app => String(app.id) === String(lock.appointmentId));
-  return Boolean(owner && normalizeStatus(owner.status) === "cancelled");
-}
-
-async function reserveAppointmentLocks(appointmentId, appointment) {
-  const entries = getLockEntries(appointmentId, appointment);
-  const result = await slotLocksRef.transaction(current => {
-    const tree = current || {};
-
-    if (entries.some(entry => !canReuseLock(getLockNode(tree, entry), appointmentId))) {
-      return;
+    @media (min-width: 1180px) {
+      .block-row {
+        grid-template-columns: minmax(210px, 1fr) 102px 140px 66px;
+      }
     }
 
-    entries.forEach(entry => {
-      const branch = ensureLockBranch(tree, entry);
-      branch[entry.slotKey] = {
+    @media (max-width: 390px) {
+      .block-row {
+        grid-template-columns: minmax(90px, 1fr) 60px 88px 36px;
+        padding: 12px;
+      }
+    }
+
+.bottom-note {
+      margin-top: 24px;
+      color: var(--muted-2);
+      text-align: center;
+      font-size: .84rem;
+      line-height: 1.5;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 18px;
+      padding-bottom: calc(18px + var(--safe-bottom));
+      background: rgba(0,0,0,.66);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(100%, 520px);
+      max-height: min(82vh, 720px);
+      overflow: auto;
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, #111d2f, #07101d);
+      box-shadow: 0 26px 80px rgba(0,0,0,.55);
+    }
+
+    .modal-header {
+      position: sticky;
+      top: 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 20px 18px 14px;
+      background: rgba(15,26,43,.96);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .modal-header h3 {
+      color: #fff;
+      font-size: 1.25rem;
+      line-height: 1.15;
+      font-weight: 900;
+    }
+
+    .modal-header p {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .close-btn {
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 15px;
+      background: rgba(255,255,255,.04);
+      color: #fff;
+      font-size: 1.25rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .detail-item {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.035);
+    }
+
+    .detail-item span {
+      display: block;
+      margin-bottom: 6px;
+      color: #85a7d8;
+      font-size: .70rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .detail-item strong {
+      display: block;
+      color: #fff;
+      font-size: .98rem;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+
+
+
+    .edit-box {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(31,134,255,.18);
+      background: rgba(31,134,255,.055);
+    }
+
+    .edit-box h4 {
+      margin-bottom: 6px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    .edit-box p {
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.45;
+    }
+
+    .edit-form {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .edit-form label {
+      display: grid;
+      gap: 6px;
+      color: #dbe9ff;
+      font-size: .82rem;
+      font-weight: 800;
+    }
+
+    .edit-form input,
+    .edit-form select {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 15px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(5,9,18,.82);
+      color: #fff;
+      padding: 12px 14px;
+      outline: none;
+      font: inherit;
+    }
+
+    .edit-form input:focus,
+    .edit-form select:focus {
+      border-color: rgba(31,134,255,.48);
+      box-shadow: 0 0 0 3px rgba(31,134,255,.12);
+    }
+
+    .edit-btn {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid rgba(31,134,255,.34);
+      border-radius: 15px;
+      background: linear-gradient(135deg, #1f86ff, #65b0ff);
+      color: #05101d;
+      font-size: .92rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .edit-btn:disabled {
+      cursor: wait;
+      opacity: .68;
+    }
+
+    .edit-message {
+      min-height: 20px;
+      margin-top: 10px;
+      font-size: .84rem;
+      line-height: 1.4;
+      color: var(--muted);
+    }
+
+    .edit-message.ok {
+      color: var(--green);
+    }
+
+    .edit-message.error {
+      color: var(--red);
+    }
+
+    .modal-actions {
+      padding: 0 18px 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .owner-note {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.035);
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.5;
+    }
+
+    .cancel-box {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.035);
+    }
+
+    .cancel-box h4 {
+      margin-bottom: 6px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    .cancel-box p {
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.45;
+    }
+
+    .cancel-form {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .cancel-form input {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 15px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(5,9,18,.82);
+      color: #fff;
+      padding: 12px 14px;
+      outline: none;
+      font: inherit;
+    }
+
+    .cancel-form input:focus {
+      border-color: rgba(31,134,255,.45);
+      box-shadow: 0 0 0 3px rgba(31,134,255,.12);
+    }
+
+    .cancel-btn {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid rgba(229,57,53,.34);
+      border-radius: 15px;
+      background: rgba(229,57,53,.12);
+      color: #ffb4ae;
+      font-size: .92rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .cancel-btn:disabled {
+      cursor: wait;
+      opacity: .68;
+    }
+
+    .cancel-message {
+      min-height: 20px;
+      margin-top: 10px;
+      font-size: .84rem;
+      line-height: 1.4;
+      color: var(--muted);
+    }
+
+    .cancel-message.ok {
+      color: var(--green);
+    }
+
+    .cancel-message.error {
+      color: var(--red);
+    }
+
+    @media (min-width: 760px) {
+      body {
+        padding: 26px 0;
+      }
+
+      .app-shell {
+        width: min(100%, 720px);
+        border-radius: 34px;
+        overflow: hidden;
+        box-shadow: 0 35px 100px rgba(0,0,0,.42);
+      }
+
+      .header {
+        top: 26px;
+      }
+
+      .content {
+        padding: 26px 24px calc(38px + var(--safe-bottom));
+      }
+
+      .agenda-grid {
+        grid-template-columns: minmax(150px, 1fr) 86px 124px 56px;
+      }
+    }
+
+    @media (min-width: 980px) {
+      body {
+        padding: 30px 0;
+      }
+
+      .app-shell {
+        width: min(1220px, 94%);
+        min-height: calc(100vh - 60px);
+      }
+
+      .header {
+        top: 30px;
+      }
+
+      .nav {
+        min-height: 92px;
+        padding: 16px 28px;
+      }
+
+      .brand-logo-wrap {
+        width: 64px;
+        height: 64px;
+      }
+
+      .brand-text small {
+        font-size: .72rem;
+      }
+
+      .brand-text strong {
+        font-size: 1.55rem;
+      }
+
+      .desktop-links {
+        display: flex;
+      }
+
+      .menu-btn,
+      .menu-panel {
+        display: none !important;
+      }
+
+      .content {
+        padding: 32px 32px 44px;
+      }
+
+      .top-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 330px;
+        align-items: center;
+        gap: 28px;
+        padding: 28px;
+        border-radius: 32px;
+      }
+
+      .top-card h1 {
+        font-size: 2.75rem;
+      }
+
+      .top-card p {
+        max-width: 620px;
+        font-size: 1rem;
+      }
+
+      .quick-stats {
+        margin-top: 0;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .quick-stat {
+        min-height: 112px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        padding: 18px;
+      }
+
+      .quick-stat strong {
+        font-size: 2.35rem;
+      }
+
+      .agenda-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+      }
+
+      .agenda-section,
+      .agenda-section:first-of-type {
+        margin-top: 0;
+      }
+
+      .section-title h2 {
+        font-size: 1.65rem;
+      }
+
+      .agenda-card {
+        border-radius: 26px;
+      }
+
+      .agenda-grid {
+        grid-template-columns: minmax(170px, 1fr) 92px 132px 62px;
+        column-gap: 12px;
+      }
+
+      .agenda-head {
+        padding: 0 18px;
+      }
+
+      .agenda-row {
+        min-height: 92px;
+        padding: 16px 18px;
+      }
+
+      .client-name {
+        font-size: 1.05rem;
+      }
+
+      .time-cell {
+        font-size: 1.02rem;
+      }
+
+      .status-pill {
+        min-height: 40px;
+        font-size: .70rem;
+      }
+
+      .view-btn {
+        font-size: .88rem;
+      }
+
+      .modal-backdrop {
+        align-items: center;
+      }
+
+      .modal-card {
+        width: min(640px, 92vw);
+      }
+
+      .modal-body {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (min-width: 1180px) {
+      .agenda-grid {
+        grid-template-columns: minmax(210px, 1fr) 102px 140px 66px;
+      }
+    }
+
+    @media (max-width: 390px) {
+      .nav {
+        padding-inline: 14px;
+      }
+
+      .content {
+        padding-inline: 14px;
+      }
+
+      .brand-logo-wrap {
+        width: 50px;
+        height: 50px;
+      }
+
+      .brand-text small {
+        font-size: .54rem;
+        letter-spacing: .18em;
+      }
+
+      .brand-text strong {
+        font-size: 1.03rem;
+      }
+
+      .menu-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 17px;
+      }
+
+      .agenda-grid {
+        grid-template-columns: minmax(90px, 1fr) 60px 88px 36px;
+        column-gap: 6px;
+      }
+
+      .agenda-head,
+      .agenda-row {
+        padding-inline: 12px;
+      }
+
+      .agenda-head div {
+        font-size: .64rem;
+      }
+
+      .client-name {
+        font-size: .94rem;
+      }
+
+      .time-cell {
+        font-size: .94rem;
+      }
+
+      .status-pill {
+        min-height: 35px;
+        font-size: .60rem;
+        padding-inline: 6px;
+      }
+
+      .view-btn {
+        font-size: .78rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="header">
+      <div class="nav">
+        <a class="brand" href="index.html" aria-label="La Pinta Barber">
+          <div class="brand-logo-wrap">
+            <img src="logo.jpeg" alt="La Pinta Barber" class="brand-logo" />
+          </div>
+          <div class="brand-text">
+            <small>Barbería premium</small>
+            <strong>La Pinta Barber</strong>
+          </div>
+        </a>
+
+        <nav class="desktop-links" aria-label="Navegación principal">
+          <a class="desktop-link" href="index.html">Inicio</a>
+          <a class="desktop-link" href="aprobar.html">Abrir panel</a>
+          <a class="desktop-link primary" href="cita.html">Agendar cita</a>
+        </nav>
+
+        <button class="menu-btn" type="button" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+      <div class="menu-panel" id="menuPanel">
+        <div class="menu-card">
+          <a class="menu-link" href="index.html">Inicio</a>
+         
+          <a class="menu-link primary" href="cita.html">Agendar cita</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="top-card" aria-label="Resumen de agenda">
+        <span class="eyebrow">Agenda pública</span>
+        <h1>Citas programadas</h1>
+        <p>Vista rápida y cómoda para celular y PC, organizada por hoy y mañana. Las citas pendientes también aparecen aquí para que su dueño pueda gestionarlas desde el dispositivo donde las creó.</p>
+
+        <div class="quick-stats">
+          <div class="quick-stat">
+            <span>Hoy</span>
+            <strong id="countToday">0</strong>
+          </div>
+          <div class="quick-stat">
+            <span>Mañana</span>
+            <strong id="countTomorrow">0</strong>
+          </div>
+        </div>
+      </section>
+
+      <div class="agenda-layout">
+        <section class="agenda-section">
+          <div class="section-title">
+            <h2>Citas de hoy</h2>
+            <p>Reservas programadas para hoy</p>
+            <div class="section-divider"></div>
+          </div>
+          <div id="todayView" class="loading-state"><span class="spinner"></span> Cargando citas...</div>
+        </section>
+
+        <section class="agenda-section">
+          <div class="section-title">
+            <h2>Citas de mañana</h2>
+            <p>Reservas programadas para mañana</p>
+            <div class="section-divider"></div>
+          </div>
+          <div id="tomorrowView" class="loading-state"><span class="spinner"></span> Cargando citas...</div>
+        </section>
+      </div>
+
+      <p class="bottom-note" id="lastUpdated">Actualizando agenda pública en tiempo real. Las citas pendientes se muestran, pero solo su dueño puede editarlas.</p>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="detailsModal" aria-hidden="true">
+    <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <div>
+          <h3 id="modalTitle">Detalle de cita</h3>
+          <p id="modalSubtitle">Información completa de la reserva</p>
+        </div>
+        <button class="close-btn" type="button" id="closeModalBtn" aria-label="Cerrar">×</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-actions" id="modalActions"></div>
+    </article>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4WCEUcsgfjK_LgNkY5rexqvPMxQ-RdEE",
+      authDomain: "barberia2-bb033.firebaseapp.com",
+      databaseURL: "https://barberia2-bb033-default-rtdb.firebaseio.com",
+      projectId: "barberia2-bb033",
+      storageBucket: "barberia2-bb033.firebasestorage.app",
+      messagingSenderId: "763008264452",
+      appId: "1:763008264452:web:4adb64267606266deb4851",
+      measurementId: "G-QHN4PX48D4"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+    const db = firebase.database();
+    const appointmentsRef = db.ref("appointments");
+    const slotLocksRef = db.ref("slotLocks");
+    const shopStatusRef = db.ref("shopStatus");
+    const customClosuresRef = db.ref("customClosures");
+    const dailyOverridesRef = db.ref("dailyOverrides");
+
+    // IMPORTANTE: coloca aquí el WhatsApp real del barbero en formato internacional.
+    // Ejemplo RD: 18095551234. Sin espacios, sin guiones y sin el signo +.
+    // Si lo dejas vacío, WhatsApp abrirá para compartir el mensaje y elegir el contacto manualmente.
+    const BARBER_WHATSAPP_NUMBER = "18493757710";
+
+    const todayView = document.getElementById("todayView");
+    const tomorrowView = document.getElementById("tomorrowView");
+    const countToday = document.getElementById("countToday");
+    const countTomorrow = document.getElementById("countTomorrow");
+    const lastUpdated = document.getElementById("lastUpdated");
+    const detailsModal = document.getElementById("detailsModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalSubtitle = document.getElementById("modalSubtitle");
+    const modalBody = document.getElementById("modalBody");
+    const modalActions = document.getElementById("modalActions");
+    const menuBtn = document.getElementById("menuBtn");
+    const menuPanel = document.getElementById("menuPanel");
+    const STORAGE_APPOINTMENT_ID = "lapinta_client_appointment_id";
+    const STORAGE_CLIENT_TOKEN = "lapinta_client_token";
+    const STORAGE_CLIENT_APPOINTMENTS = "lapinta_client_appointments";
+    const AUTO_DELETE_AFTER_MINUTES = 60;
+
+    let currentAppointments = [];
+    let currentModalAppointmentId = "";
+    let myAppointmentId = localStorage.getItem(STORAGE_APPOINTMENT_ID);
+    let myClientToken = localStorage.getItem(STORAGE_CLIENT_TOKEN);
+    let myAppointments = [];
+    let shopIsOpen = true;
+    let sundayOpen = false;
+    let tuesdayForcedOpen = false;
+    let extendedHours = false;
+    let customClosures = {};
+    let dailyOverrides = {};
+
+    const normalWorkingDays = {
+      0: null,
+      1: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      2: null,
+      3: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      4: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      5: { start: "8:00 AM", end: "9:00 PM", breaks: [] },
+      6: { start: "8:00 AM", end: "9:00 PM", breaks: [] }
+    };
+
+    const extendedWorkingDays = {
+      0: null,
+      1: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      2: null,
+      3: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      4: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      5: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      6: { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+    };
+
+    const normalSundaySchedule = { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    const extendedSundaySchedule = { start: "8:00 AM", end: "10:00 PM", breaks: [] };
+    const normalTuesdaySchedule = { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    const extendedTuesdaySchedule = { start: "8:00 AM", end: "10:00 PM", breaks: [] };
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function normalizePhone(value) {
+      return String(value || "").replace(/[^\d+]/g, "").trim();
+    }
+
+    function phoneMatches(savedPhone, typedPhone) {
+      const saved = normalizePhone(savedPhone);
+      const typed = normalizePhone(typedPhone);
+      if (!saved || !typed) return false;
+      return saved === typed || saved.replace(/^\+1/, "") === typed || typed.replace(/^\+1/, "") === saved;
+    }
+
+    function phoneLast4(value) {
+      return normalizePhone(value).replace(/\D/g, "").slice(-4) || "----";
+    }
+
+    function refreshMyAppointmentData() {
+      myAppointmentId = localStorage.getItem(STORAGE_APPOINTMENT_ID);
+      myClientToken = localStorage.getItem(STORAGE_CLIENT_TOKEN);
+
+      try {
+        myAppointments = JSON.parse(localStorage.getItem(STORAGE_CLIENT_APPOINTMENTS)) || [];
+      } catch (error) {
+        myAppointments = [];
+      }
+
+      if (myAppointmentId && myClientToken) {
+        const exists = myAppointments.some(item => {
+          return String(item.id) === String(myAppointmentId) &&
+                 String(item.token) === String(myClientToken);
+        });
+
+        if (!exists) {
+          myAppointments.push({
+            id: myAppointmentId,
+            token: myClientToken
+          });
+
+          localStorage.setItem(STORAGE_CLIENT_APPOINTMENTS, JSON.stringify(myAppointments));
+        }
+      }
+    }
+
+    function forgetClientAppointment(appointmentId) {
+      if (!appointmentId) return;
+
+      try {
+        const rawAppointments = localStorage.getItem(STORAGE_CLIENT_APPOINTMENTS);
+        const savedAppointments = rawAppointments ? JSON.parse(rawAppointments) : [];
+        const filteredAppointments = Array.isArray(savedAppointments)
+          ? savedAppointments.filter(item => String(item.id) !== String(appointmentId))
+          : [];
+
+        localStorage.setItem(STORAGE_CLIENT_APPOINTMENTS, JSON.stringify(filteredAppointments));
+
+        if (String(localStorage.getItem(STORAGE_APPOINTMENT_ID)) === String(appointmentId)) {
+          localStorage.removeItem(STORAGE_APPOINTMENT_ID);
+          localStorage.removeItem(STORAGE_CLIENT_TOKEN);
+          myAppointmentId = "";
+          myClientToken = "";
+        }
+
+        myAppointments = filteredAppointments;
+      } catch (error) {
+        console.warn("No se pudo limpiar la cita cancelada de este dispositivo:", error);
+      }
+    }
+
+    function buildWhatsAppUrl(message) {
+      const phone = String(BARBER_WHATSAPP_NUMBER || "").replace(/\D/g, "");
+      const encodedMessage = encodeURIComponent(message);
+
+      if (phone) {
+        return `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMessage}`;
+      }
+
+      return `https://api.whatsapp.com/send?text=${encodedMessage}`;
+    }
+
+    function isMobileDevice() {
+      return /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(navigator.userAgent || "");
+    }
+
+    function openWhatsAppPlaceholder() {
+      if (isMobileDevice()) return null;
+
+      try {
+        const whatsappWindow = window.open("about:blank", "_blank");
+        if (whatsappWindow) {
+          whatsappWindow.document.write("<p style='font-family:Arial,sans-serif;padding:20px;'>Preparando WhatsApp...</p>");
+          whatsappWindow.document.close();
+        }
+        return whatsappWindow;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function openWhatsAppMessage(message, preparedWindow = null) {
+      const url = buildWhatsAppUrl(message);
+
+      if (isMobileDevice()) {
+        window.location.href = url;
+        return;
+      }
+
+      if (preparedWindow && !preparedWindow.closed) {
+        preparedWindow.location.href = url;
+        return;
+      }
+
+      const whatsappWindow = window.open(url, "_blank");
+
+      if (!whatsappWindow) {
+        window.location.href = url;
+      }
+    }
+
+    function closePreparedWhatsAppWindow(preparedWindow) {
+      try {
+        if (preparedWindow && !preparedWindow.closed) preparedWindow.close();
+      } catch (error) {
+        console.warn("No se pudo cerrar la ventana temporal de WhatsApp:", error);
+      }
+    }
+
+    function buildWhatsAppManualLink(message, label = "Abrir WhatsApp manualmente") {
+      const url = buildWhatsAppUrl(message);
+      return `<a href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer" style="color:#8fc8ff;font-weight:900;text-decoration:underline;">${escapeHTML(label)}</a>`;
+    }
+
+    function getTodayISO() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function addDaysISO(dateISO, days) {
+      const [year, month, day] = dateISO.split("-").map(Number);
+      const date = new Date(year, month - 1, day);
+      date.setDate(date.getDate() + days);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function formatDateSafe(dateString) {
+      if (!dateString) return "-";
+      const parts = String(dateString).split("-");
+      if (parts.length !== 3) return dateString;
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    function normalizeStatus(status) {
+      const value = String(status || "pending").toLowerCase();
+      if (["approved", "aprobado", "aprobada"].includes(value)) return "approved";
+      if (["cancelled", "canceled", "cancelado", "cancelada"].includes(value)) return "cancelled";
+      return "pending";
+    }
+
+    function lockKey(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    function getLockEntries(appointmentId, appointment) {
+      const slots = Array.isArray(appointment?.slots) && appointment.slots.length
+        ? appointment.slots
+        : getAppointmentSlots(appointment);
+
+      return slots.map(slot => ({
         appointmentId,
-        clientToken: appointment.clientToken,
-        fecha: entry.fecha,
-        barbero: entry.barbero,
-        slot: entry.slot,
-        updatedAt: new Date().toISOString()
-      };
-    });
-
-    return tree;
-  });
-
-  return result.committed;
-}
-
-async function releaseAppointmentLocks(appointmentId, appointment) {
-  const entries = getLockEntries(appointmentId, appointment);
-
-  await slotLocksRef.transaction(current => {
-    const tree = current || {};
-
-    entries.forEach(entry => {
-      const lock = getLockNode(tree, entry);
-      if (!lock || String(lock.appointmentId) !== String(appointmentId)) return;
-
-      delete tree[entry.fecha][entry.barberKey][entry.slotKey];
-      if (!Object.keys(tree[entry.fecha][entry.barberKey]).length) {
-        delete tree[entry.fecha][entry.barberKey];
-      }
-      if (!Object.keys(tree[entry.fecha]).length) {
-        delete tree[entry.fecha];
-      }
-    });
-
-    return tree;
-  });
-}
-
-function updatePaymentMethodUI() {
-  if (!paymentTransferInfo) return;
-  paymentTransferInfo.classList.toggle("hidden", !metodoTransferenciaInput?.checked);
-}
-
-function limpiarTelefono(valor) {
-  return String(valor || "").replace(/[^\d+]/g, "");
-}
-
-function normalizarTelefono(valor) {
-  let limpio = limpiarTelefono(valor).trim();
-  if (!limpio) return "";
-  if (limpio.includes("+")) limpio = "+" + limpio.replace(/\+/g, "");
-  return limpio;
-}
-
-function telefonoValido(phone) {
-  const valor = normalizarTelefono(phone);
-  if (!valor) return false;
-
-  if (/^(809|829|849)\d{7}$/.test(valor)) return true;
-  if (/^\+1\d{10}$/.test(valor)) return true;
-  if (/^\d{10}$/.test(valor)) return true;
-  if (/^\+\d{8,15}$/.test(valor)) return true;
-
-  return false;
-}
-
-function telefonoParaGuardar(valor) {
-  return normalizarTelefono(valor);
-}
-
-function configurarInputTelefono() {
-  if (!telefonoInput) return;
-
-  telefonoInput.setAttribute("inputmode", "tel");
-  telefonoInput.setAttribute("maxlength", "16");
-  telefonoInput.setAttribute("autocomplete", "tel");
-  telefonoInput.setAttribute("placeholder", "Número obligatorio");
-
-  telefonoInput.addEventListener("input", () => {
-    let valor = telefonoInput.value.replace(/[^\d+]/g, "");
-    if (valor.includes("+")) valor = "+" + valor.replace(/\+/g, "");
-    telefonoInput.value = valor.slice(0, 16);
-    updateSummary();
-  });
-
-  telefonoInput.addEventListener("blur", () => {
-    const valor = telefonoInput.value.trim();
-    if (!valor) return;
-
-    if (!telefonoValido(valor)) {
-      telefonoInput.setCustomValidity("Ingresa un número válido. Ejemplo: 8493767710, 3055551234 o +34612345678");
-    } else {
-      telefonoInput.setCustomValidity("");
+        clientToken: appointment.clientToken || "",
+        fecha: appointment.fecha,
+        barbero: appointment.barbero,
+        barberKey: lockKey(appointment.barbero),
+        slot,
+        slotKey: lockKey(slot)
+      })).filter(entry => entry.fecha && entry.barberKey && entry.slotKey);
     }
 
-    telefonoInput.reportValidity();
-  });
+    function getLockNode(tree, entry) {
+      return tree?.[entry.fecha]?.[entry.barberKey]?.[entry.slotKey] || null;
+    }
 
-  telefonoInput.addEventListener("focus", () => {
-    telefonoInput.setCustomValidity("");
-  });
-}
+    function ensureLockBranch(tree, entry) {
+      tree[entry.fecha] ||= {};
+      tree[entry.fecha][entry.barberKey] ||= {};
+      return tree[entry.fecha][entry.barberKey];
+    }
 
-function renderHours() {
-  if (!hoursGrid) return;
+    function canReuseLock(lock, appointmentId) {
+      if (!lock || String(lock.appointmentId) === String(appointmentId)) return true;
+      const owner = currentAppointments.find(app => String(app.id) === String(lock.appointmentId));
+      return Boolean(owner && normalizeStatus(owner.status) === "cancelled");
+    }
 
-  hoursGrid.innerHTML = "";
+    async function replaceAppointmentLocks(appointmentId, oldAppointment, newAppointment) {
+      const oldEntries = getLockEntries(appointmentId, oldAppointment);
+      const newEntries = getLockEntries(appointmentId, newAppointment);
+      const result = await slotLocksRef.transaction(current => {
+        const tree = current || {};
 
-  const selectedDate = fechaInput?.value || "";
-  const selectedBarber = barberoInput?.value || "";
-  const selectedService = servicioInput?.value || "";
+        if (newEntries.some(entry => !canReuseLock(getLockNode(tree, entry), appointmentId))) {
+          return;
+        }
 
-  if (!selectedDate) {
-    hoursGrid.innerHTML = '<p style="color:#93a3bd; grid-column: 1/-1;">Selecciona primero una fecha.</p>';
-    return;
-  }
+        oldEntries.forEach(entry => {
+          const lock = getLockNode(tree, entry);
+          if (!lock || String(lock.appointmentId) !== String(appointmentId)) return;
+          delete tree[entry.fecha][entry.barberKey][entry.slotKey];
+          if (!Object.keys(tree[entry.fecha][entry.barberKey]).length) {
+            delete tree[entry.fecha][entry.barberKey];
+          }
+          if (!Object.keys(tree[entry.fecha]).length) {
+            delete tree[entry.fecha];
+          }
+        });
 
-  if (!selectedBarber) {
-    hoursGrid.innerHTML = '<p style="color:#93a3bd; grid-column: 1/-1;">Selecciona primero un barbero.</p>';
-    return;
-  }
+        newEntries.forEach(entry => {
+          const branch = ensureLockBranch(tree, entry);
+          branch[entry.slotKey] = {
+            appointmentId,
+            clientToken: newAppointment.clientToken,
+            fecha: entry.fecha,
+            barbero: entry.barbero,
+            slot: entry.slot,
+            updatedAt: new Date().toISOString()
+          };
+        });
 
-  if (!selectedService) {
-    hoursGrid.innerHTML = '<p style="color:#93a3bd; grid-column: 1/-1;">Selecciona primero un servicio.</p>';
-    return;
-  }
+        return tree;
+      });
 
-  const config = getWorkingConfigByDate(selectedDate);
+      return result.committed;
+    }
 
-  if (!config) {
-    hoursGrid.innerHTML = '<p style="color:#93a3bd; grid-column: 1/-1;">Este día está cerrado.</p>';
-    return;
-  }
+    async function releaseAppointmentLocks(appointmentId, appointment) {
+      const entries = getLockEntries(appointmentId, appointment);
 
-  const timeBlocks = getTimeBlocksForDate(selectedDate);
+      await slotLocksRef.transaction(current => {
+        const tree = current || {};
 
-  if (timeBlocks.length) {
-    const info = document.createElement("div");
-    info.style.color = "#93a3bd";
-    info.style.gridColumn = "1 / -1";
-    info.style.marginBottom = "10px";
-    info.style.lineHeight = "1.6";
+        entries.forEach(entry => {
+          const lock = getLockNode(tree, entry);
+          if (!lock || String(lock.appointmentId) !== String(appointmentId)) return;
+          delete tree[entry.fecha][entry.barberKey][entry.slotKey];
+          if (!Object.keys(tree[entry.fecha][entry.barberKey]).length) {
+            delete tree[entry.fecha][entry.barberKey];
+          }
+          if (!Object.keys(tree[entry.fecha]).length) {
+            delete tree[entry.fecha];
+          }
+        });
 
-    const detail = timeBlocks
-      .map(block => `${formatStatusTime(block.start)} - ${formatStatusTime(block.end)}${block.reason ? ` (${block.reason})` : ""}`)
-      .join(" | ");
-
-    info.textContent = `Bloques cerrados para esta fecha: ${detail}`;
-    hoursGrid.appendChild(info);
-  }
-
-  const allSlots = generateTimeSlots(config.start, config.end, 30);
-  const visibleSlots = allSlots.filter(slot => shouldShowSlot(slot, selectedService));
-
-  if (isKidsService(selectedService)) {
-    const info = document.createElement("p");
-    info.style.color = "#93a3bd";
-    info.style.gridColumn = "1 / -1";
-    info.style.marginBottom = "8px";
-    info.textContent = "Corte de nino usa media hora.";
-    hoursGrid.appendChild(info);
-  }
-
-  let availableCount = 0;
-
-  visibleSlots.forEach(slot => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.classList.add("hour-btn");
-    btn.textContent = slot;
-
-    const available = isSlotAvailable(selectedDate, selectedBarber, slot, selectedService, appointments);
-
-    if (!available) {
-      btn.classList.add("disabled");
-      btn.disabled = true;
-      btn.title = "Hora no disponible";
-    } else {
-      availableCount++;
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".hour-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        if (horaInput) horaInput.value = slot;
-        updateSummary();
+        return tree;
       });
     }
 
-    hoursGrid.appendChild(btn);
-  });
-
-  if (!availableCount) {
-    const empty = document.createElement("p");
-    empty.style.color = "#93a3bd";
-    empty.style.gridColumn = "1 / -1";
-    empty.style.marginTop = "10px";
-    empty.textContent = "No quedan horarios disponibles para esta selección.";
-    hoursGrid.appendChild(empty);
-  }
-}
-
-function updateSummary() {
-  if (!bookingSummary) return;
-
-  const nombre = nombreInput?.value.trim() || "-";
-  const telefono = telefonoInput?.value.trim() || "-";
-  const servicio = servicioInput?.value || "-";
-  const barbero = barberoInput?.value || "-";
-  const fecha = fechaInput?.value ? formatDateSafe(fechaInput.value) : "-";
-  const hora = horaInput?.value ? formatStatusTime(horaInput.value) : "-";
-
-  const duration = getServiceDuration(servicio);
-  const precio = getServicePrice(servicio);
-
-  const anonimo = anonimoInput?.checked ? "Sí" : "No";
-  const nombrePublico = anonimo === "Sí" ? "Anónimo" : nombre;
-  const metodoPago = getMetodoPagoSeleccionado() || "-";
-  const estadoBarberia = getShopStatus().type === "open" ? "Abierta" : "Cerrada";
-
-  bookingSummary.innerHTML = `
-    <p><strong>Nombre real:</strong> ${escapeHTML(nombre)}</p>
-    <p><strong>Nombre en público:</strong> ${escapeHTML(nombrePublico)}</p>
-    <p><strong>Teléfono:</strong> ${escapeHTML(telefono)}</p>
-    <p><strong>Servicio:</strong> ${escapeHTML(servicio)}</p>
-    <p><strong>Precio:</strong> ${escapeHTML(precio ? `RD$${precio}` : "-")}</p>
-    <p><strong>Barbero:</strong> ${escapeHTML(barbero)}</p>
-    <p><strong>Fecha:</strong> ${escapeHTML(fecha)}</p>
-    <p><strong>Hora:</strong> ${escapeHTML(hora)}</p>
-    <p><strong>Duración:</strong> ${escapeHTML(String(duration))} minutos</p>
-    <p><strong>Anónimo en público:</strong> ${escapeHTML(anonimo)}</p>
-    <p><strong>Método de pago:</strong> ${escapeHTML(metodoPago)}</p>
-    <p><strong>Estado barbería:</strong> ${escapeHTML(estadoBarberia)}</p>
-  `;
-}
-
-function renderAppointments() {
-  const publicStatTotal = document.getElementById("publicStatTotal");
-  const publicStatApproved = document.getElementById("publicStatApproved");
-  const publicStatPending = document.getElementById("publicStatPending");
-  const todayISO = getTodayISO();
-
-  const publicAppointments = appointments.filter(app => {
-    if (app.status === "cancelled") return false;
-    const agendaVisibleDate = app.agendaDesde || app.fecha;
-    return agendaVisibleDate <= todayISO;
-  });
-
-  const orderedAppointments = [...publicAppointments].sort((a, b) => {
-    const aValue = `${a.fecha} ${to24Hour(a.hora)}`;
-    const bValue = `${b.fecha} ${to24Hour(b.hora)}`;
-    return aValue.localeCompare(bValue);
-  });
-
-  const approvedCount = orderedAppointments.filter(app => app.status === "approved").length;
-  const pendingCount = orderedAppointments.filter(app => app.status === "pending").length;
-
-  if (publicStatTotal) publicStatTotal.textContent = orderedAppointments.length;
-  if (publicStatApproved) publicStatApproved.textContent = approvedCount;
-  if (publicStatPending) publicStatPending.textContent = pendingCount;
-
-  if (!appointmentsList) return;
-
-  appointmentsList.innerHTML = "";
-
-  if (!orderedAppointments.length) {
-    appointmentsList.innerHTML = `
-      <div class="public-empty-state">
-        <h3>No hay citas agendadas</h3>
-        <p>Cuando entren nuevas reservas aparecerán aquí automáticamente.</p>
-      </div>
-    `;
-    return;
-  }
-
-  orderedAppointments.forEach(app => {
-    const item = document.createElement("article");
-    item.classList.add("appointment-item");
-
-    const publicStatus =
-      app.status === "approved"
-        ? '<span class="public-status approved">Aprobada</span>'
-        : '<span class="public-status pending">Pendiente</span>';
-
-    const publicName = app.anonimo === true ? "Anónimo" : (app.nombre || "Cliente");
-    const price = app.precio || getServicePrice(app.servicio);
-
-    item.innerHTML = `
-      <div class="appointment-top">
-        <div class="appointment-title-box">
-          <h3>${escapeHTML(app.servicio)}</h3>
-          <div class="appointment-subtitle">Reserva pública visible para clientes</div>
-        </div>
-        ${publicStatus}
-      </div>
-
-      <div class="appointment-meta-grid">
-        <div class="appointment-meta-card">
-          <span>Cliente</span>
-          <strong>${escapeHTML(publicName)}</strong>
-        </div>
-
-        <div class="appointment-meta-card">
-          <span>Barbero</span>
-          <strong>${escapeHTML(app.barbero)}</strong>
-        </div>
-
-        <div class="appointment-meta-card">
-          <span>Fecha</span>
-          <strong>${escapeHTML(formatDateSafe(app.fecha))}</strong>
-        </div>
-
-        <div class="appointment-meta-card">
-          <span>Hora</span>
-          <strong>${escapeHTML(formatStatusTime(app.hora))}</strong>
-        </div>
-
-        <div class="appointment-meta-card">
-          <span>Duración</span>
-          <strong>${escapeHTML(String(app.duration))} min</strong>
-        </div>
-
-        <div class="appointment-meta-card">
-          <span>Precio</span>
-          <strong>RD$${escapeHTML(String(price))}</strong>
-        </div>
-      </div>
-    `;
-
-    appointmentsList.appendChild(item);
-  });
-}
-
-function getShopStatus() {
-  const todayISO = getTodayISO();
-  const override = getDailyOverride(todayISO);
-  const now = new Date();
-  const currentMinutes = (now.getHours() * 60) + now.getMinutes();
-
-  if (!shopIsOpen && !override?.forceOpen) {
-    return {
-      type: "closed",
-      text: "Cerrado por el momento, agenda para otra hora o dia",
-      showBanner: true
-    };
-  }
-
-  if (override?.forceClosed === true) {
-    return {
-      type: "closed",
-      text: "Cerrado por el momento, agenda para otra hora o dia",
-      showBanner: true
-    };
-  }
-
-  const activeBlock = getActiveCustomClosureForNow(todayISO);
-  if (activeBlock) {
-    return {
-      type: "closed",
-      text: `Cerrado por bloque de horas. Volvemos a las ${formatStatusTime(activeBlock.end)}`,
-      showBanner: true
-    };
-  }
-
-  const config = getWorkingConfigByDate(todayISO);
-
-  if (!config) {
-    const nextOpen = getNextOpenInfoFromDate(now);
-    return {
-      type: "closed",
-      text: nextOpen
-        ? `Cerrado por hoy. Abrimos ${nextOpen.dayName} a las ${nextOpen.open}`
-        : "Cerrado por el momento, agenda para otra hora o dia",
-      showBanner: true
-    };
-  }
-
-  const openMinutes = convertToMinutes(config.start);
-  const closeMinutes = convertToMinutes(config.end);
-
-  if (currentMinutes < openMinutes) {
-    return {
-      type: "closed",
-      text: `Cerrado ahora. Abrimos hoy a las ${formatStatusTime(config.start)}`,
-      showBanner: true
-    };
-  }
-
-  if (currentMinutes >= closeMinutes) {
-    const nextOpen = getNextOpenInfoFromDate(now);
-    return {
-      type: "closed",
-      text: nextOpen
-        ? `Cerrado por hoy. Abrimos ${nextOpen.dayName} a las ${nextOpen.open}`
-        : "Cerrado por el momento, agenda para otra hora o dia",
-      showBanner: true
-    };
-  }
-
-  const currentBreak = getCurrentBreak(config);
-  if (currentBreak) {
-    return {
-      type: "break",
-      text: `En descanso. Volvemos a las ${formatStatusTime(currentBreak.end)}`,
-      showBanner: false
-    };
-  }
-
-  return {
-    type: "open",
-    text: `Abierto hoy - ${formatStatusTime(config.start)} a ${formatStatusTime(config.end)}`,
-    showBanner: false
-  };
-}
-
-function updateShopStatusBadge() {
-  const badge = document.getElementById("shopStatusBadge");
-  const closedBanner = document.getElementById("shopClosedBanner");
-
-  if (!badge) return;
-
-  const status = getShopStatus();
-
-  badge.classList.remove("open", "break", "closed");
-  badge.classList.add(status.type);
-  badge.textContent = status.text;
-
-  if (closedBanner) {
-    closedBanner.classList.toggle("show", status.showBanner === true);
-    closedBanner.textContent = "Cerrado por el momento, agenda para otra hora o día.";
-  }
-}
-
-function showApproveButtons() {
-  if (btnAprobarMenu) btnAprobarMenu.style.display = "inline-flex";
-  if (btnAprobarHero) btnAprobarHero.style.display = "inline-flex";
-  if (btnAprobarMobile) btnAprobarMobile.style.display = "inline-flex";
-}
-
-function hideApproveButtons() {
-  if (btnAprobarMenu) btnAprobarMenu.style.display = "none";
-  if (btnAprobarHero) btnAprobarHero.style.display = "none";
-  if (btnAprobarMobile) btnAprobarMobile.style.display = "none";
-}
-
-function goToApprovePage() {
-  window.location.href = "aprobar.html";
-}
-
-function bindHiddenApproveButtons() {
-  if (btnAprobarMenu) {
-    btnAprobarMenu.addEventListener("click", function (e) {
-      e.preventDefault();
-      goToApprovePage();
-    });
-  }
-
-  if (btnAprobarHero) {
-    btnAprobarHero.addEventListener("click", function (e) {
-      e.preventDefault();
-      goToApprovePage();
-    });
-  }
-
-  if (btnAprobarMobile) {
-    btnAprobarMobile.addEventListener("click", function (e) {
-      e.preventDefault();
-      goToApprovePage();
-    });
-  }
-}
-
-function bindSecretShortcut() {
-  if (!logoSecret) return;
-
-  let tapCount = 0;
-  let tapTimer = null;
-  let lastTriggerTime = 0;
-
-  function resetTaps() {
-    tapCount = 0;
-    if (tapTimer) clearTimeout(tapTimer);
-  }
-
-  function registerTap(e) {
-    const now = Date.now();
-    if (now - lastTriggerTime < 350) return;
-    lastTriggerTime = now;
-
-    if (e) e.preventDefault();
-    tapCount++;
-
-    if (tapTimer) clearTimeout(tapTimer);
-    tapTimer = setTimeout(resetTaps, 2000);
-
-    if (tapCount >= 5) {
-      resetTaps();
-      showApproveButtons();
-      setTimeout(goToApprovePage, 150);
-    }
-  }
-
-  logoSecret.addEventListener("click", registerTap);
-}
-
-async function sendAppointmentEmail(appointment, appointmentId) {
-  if (typeof emailjs === "undefined") {
-    throw new Error("EmailJS no está cargado.");
-  }
-
-  const approvalLink = buildApproveLink(appointmentId, appointment.approveToken);
-
-  const templateParams = {
-    to_email: BARBER_EMAIL,
-    nombre: appointment.nombre || "",
-    telefono: appointment.telefono || "",
-    servicio: appointment.servicio || "",
-    barbero: appointment.barbero || "",
-    fecha: formatDateSafe(appointment.fecha) || "",
-    fecha_iso: formatDateISOForSubject(appointment.fecha) || "",
-    hora: formatStatusTime(appointment.hora) || "",
-    duration: `${appointment.duration || 0} min`,
-    precio: `RD$${appointment.precio || getServicePrice(appointment.servicio)}`,
-    metodo_pago: appointment.metodoPago || "Efectivo",
-    approval_link: approvalLink
-  };
-
-  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-}
-
-function isAppointmentPast(app) {
-  if (!app?.fecha || !app?.hora) return false;
-
-  const dateTime = new Date(`${app.fecha}T${to24Hour(app.hora)}:00`);
-  if (Number.isNaN(dateTime.getTime())) return false;
-
-  return dateTime.getTime() < Date.now();
-}
-
-async function cleanupPastAppointments() {
-  try {
-    const snapshot = await appointmentsRef.once("value");
-    const data = snapshot.val() || {};
-    const updates = {};
-
-    Object.entries(data).forEach(([id, app]) => {
-      if (isAppointmentPast(app)) {
-        updates[id] = null;
-      }
-    });
-
-    if (Object.keys(updates).length > 0) {
-      await appointmentsRef.update(updates);
-      console.log("Citas pasadas eliminadas:", Object.keys(updates).length);
-    }
-  } catch (error) {
-    console.error("Error eliminando citas pasadas:", error);
-  }
-}
-
-if (bookingForm) {
-  bookingForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-
-    const telefonoLimpio = telefonoParaGuardar(telefonoInput?.value || "");
-    const nombre = nombreInput?.value.trim() || "";
-
-    if (!nombre) {
-      alert("Por favor escribe tu nombre.");
-      nombreInput?.focus();
-      return;
+    function getStatusText(status) {
+      const normalized = normalizeStatus(status);
+      if (normalized === "approved") return "Aprobado";
+      if (normalized === "cancelled") return "Cancelado";
+      return "Pendiente";
     }
 
-    if (!telefonoLimpio) {
-      alert("Por favor escribe tu número de teléfono.");
-      telefonoInput?.focus();
-      return;
-    }
+    function convertToMinutes(timeStr) {
+      if (!timeStr) return 0;
+      const value = String(timeStr).trim().toUpperCase();
 
-    if (!telefonoValido(telefonoLimpio)) {
-      alert("Ingresa un número válido. Ejemplo RD: 8493767710, USA: 3055551234, Europa: +34612345678");
-      telefonoInput?.focus();
-      return;
-    }
-
-    if (telefonoInput) {
-      telefonoInput.value = telefonoLimpio;
-      telefonoInput.setCustomValidity("");
-    }
-
-    if (!horaInput?.value) {
-      alert("Por favor selecciona una hora disponible.");
-      return;
-    }
-
-    const selectedService = servicioInput?.value || "";
-    const selectedDate = fechaInput?.value || "";
-    const selectedBarber = barberoInput?.value || "";
-    const selectedHour = horaInput?.value || "";
-
-    const mostrarEnAgendaDosDiasAntes = necesitaPublicarseDosDiasAntes(selectedDate);
-    const agendaDesde = mostrarEnAgendaDosDiasAntes
-      ? restarDiasAFecha(selectedDate, 2)
-      : selectedDate;
-
-    if (!selectedService || !selectedDate || !selectedBarber) {
-      alert("Completa todos los campos requeridos.");
-      return;
-    }
-
-    if (!isSlotAvailable(selectedDate, selectedBarber, selectedHour, selectedService, appointments)) {
-      alert("Esa hora ya no está disponible. Por favor elige otra.");
-      renderHours();
-      return;
-    }
-
-    const config = getWorkingConfigByDate(selectedDate);
-    if (!config) {
-      alert("Ese día no está disponible.");
-      return;
-    }
-
-    const slots = generateTimeSlots(config.start, config.end, 30);
-    const neededBlocks = getServiceBlocks(selectedService);
-    const startIndex = slots.indexOf(selectedHour);
-
-    if (startIndex === -1) {
-      alert("La hora seleccionada no es válida.");
-      renderHours();
-      return;
-    }
-
-    const reservedSlots = [];
-
-    for (let i = 0; i < neededBlocks; i++) {
-      if (slots[startIndex + i]) reservedSlots.push(slots[startIndex + i]);
-    }
-
-    const newAppointment = {
-      nombre: nombre,
-      telefono: telefonoLimpio,
-      servicio: selectedService,
-      barbero: selectedBarber,
-      fecha: selectedDate,
-      agendaDesde: agendaDesde,
-      mostrarEnAgendaDosDiasAntes: mostrarEnAgendaDosDiasAntes,
-      hora: selectedHour,
-      duration: getServiceDuration(selectedService),
-      precio: getServicePrice(selectedService),
-      slots: reservedSlots,
-      anonimo: anonimoInput?.checked || false,
-      metodoPago: getMetodoPagoSeleccionado(),
-      status: "pending"
-    };
-
-    const submitButton = bookingForm.querySelector('button[type="submit"]');
-    const originalButtonText = submitButton ? submitButton.textContent : "Confirmar cita";
-
-    try {
-      if (submitButton) {
-        submitButton.disabled = true;
-        submitButton.textContent = "Procesando...";
+      if (/^\d{1,2}:\d{2}$/.test(value)) {
+        const [hour24, minute24] = value.split(":").map(Number);
+        return (hour24 * 60) + minute24;
       }
 
-      const newRef = appointmentsRef.push();
-      const appointmentId = newRef.key;
-      const clientToken = generateClientToken();
-      const appointmentToSave = {
-        ...newAppointment,
-        approveToken: generateApproveToken(),
-        clientToken,
-        createdAt: new Date().toISOString(),
-        recordatorioEnviado: false
+      const match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (!match) return 0;
+
+      let hour = Number(match[1]);
+      const minute = Number(match[2]);
+      const suffix = match[3].toUpperCase();
+
+      if (suffix === "PM" && hour !== 12) hour += 12;
+      if (suffix === "AM" && hour === 12) hour = 0;
+
+      return hour * 60 + minute;
+    }
+
+    function convertToTime(minutes) {
+      let hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      const suffix = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12 || 12;
+      return `${hours}:${String(mins).padStart(2, "0")} ${suffix}`;
+    }
+
+    function buildSlotsFromStart(startHour, duration) {
+      const totalMinutes = Number(duration || 60);
+      const blocks = Math.max(1, Math.ceil(totalMinutes / 30));
+      const startMinutes = convertToMinutes(startHour);
+      const slots = [];
+
+      for (let i = 0; i < blocks; i++) {
+        slots.push(convertToTime(startMinutes + (i * 30)));
+      }
+
+      return slots;
+    }
+
+    function generateTimeSlots(start, end, interval = 30) {
+      const slots = [];
+      let current = convertToMinutes(start);
+      const finish = convertToMinutes(end);
+
+      while (current < finish) {
+        slots.push(convertToTime(current));
+        current += interval;
+      }
+
+      return slots;
+    }
+
+    function getDayFromDate(dateString) {
+      return new Date(`${dateString}T00:00:00`).getDay();
+    }
+
+    function normalizeCustomClosure(block, fallbackDate = "") {
+      if (!block || typeof block !== "object") return null;
+
+      const fecha = block.fecha || block.date || fallbackDate;
+      const start = block.start || block.inicio || block.startTime || "";
+      const end = block.end || block.fin || block.endTime || "";
+
+      if (!fecha || !end) return null;
+
+      return {
+        fecha,
+        start,
+        end,
+        reason: block.reason || block.motivo || "",
+        type: block.type || "timeBlock"
       };
+    }
 
-      const locksReserved = await reserveAppointmentLocks(appointmentId, appointmentToSave);
-      if (!locksReserved) {
-        const error = new Error("Esa hora acaba de ocuparse.");
-        error.code = "SLOT_TAKEN";
-        throw error;
+    function getCustomClosuresForDate(dateString) {
+      if (!dateString || !customClosures) return [];
+
+      return Object.entries(customClosures)
+        .map(([key, value]) => normalizeCustomClosure(value, key === dateString ? dateString : ""))
+        .filter(block => block && block.fecha === dateString);
+    }
+
+    function getTimeBlocksForDate(dateString) {
+      return getCustomClosuresForDate(dateString)
+        .filter(block => block.start && block.end)
+        .sort((a, b) => convertToMinutes(a.start) - convertToMinutes(b.start));
+    }
+
+    function getEarlyClosingForDate(dateString) {
+      return getCustomClosuresForDate(dateString).find(block => {
+        return !block.start && block.end;
+      });
+    }
+
+    function rangesOverlapMinutes(startA, endA, startB, endB) {
+      return startA < endB && endA > startB;
+    }
+
+    function cloneSchedule(config) {
+      if (!config) return null;
+
+      return {
+        start: config.start,
+        end: config.end,
+        breaks: Array.isArray(config.breaks) ? [...config.breaks] : []
+      };
+    }
+
+    function getDefaultOpenSchedule() {
+      return extendedHours
+        ? { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+        : { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    }
+
+    function applySpecialClosingToConfig(dateString, config) {
+      if (!dateString || !config) return config;
+
+      const earlyClosing = getEarlyClosingForDate(dateString);
+      if (!earlyClosing?.end) return config;
+
+      const specialEndMinutes = convertToMinutes(earlyClosing.end);
+      const normalEndMinutes = convertToMinutes(config.end);
+
+      if (specialEndMinutes >= normalEndMinutes) return config;
+
+      return {
+        ...config,
+        end: earlyClosing.end
+      };
+    }
+
+    function getWorkingConfigByDate(dateString) {
+      if (!dateString) return null;
+
+      const override = dailyOverrides[dateString] || null;
+
+      if (dateString === getTodayISO() && !shopIsOpen && !override?.forceOpen) {
+        return null;
       }
 
-      try {
-        await newRef.set(appointmentToSave);
-      } catch (error) {
-        await releaseAppointmentLocks(appointmentId, appointmentToSave);
-        throw error;
+      if (override?.forceClosed === true) {
+        return null;
       }
 
-      rememberClientAppointment(appointmentId, clientToken);
+      const day = getDayFromDate(dateString);
+      let config = null;
 
-      try {
-        await sendAppointmentEmail(appointmentToSave, appointmentId);
-
-        if (mostrarEnAgendaDosDiasAntes) {
-          alert(
-            `✅ Cita agendada correctamente. Se envió el correo y la cita quedó pendiente de aprobación. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
-          );
-        } else {
-          alert("✅ Cita agendada correctamente. Se envió el correo y la cita quedó pendiente de aprobación.");
-        }
-      } catch (emailError) {
-        console.error("Error enviando correo:", emailError);
-
-        if (mostrarEnAgendaDosDiasAntes) {
-          alert(
-            `✅ La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
-          );
-        } else {
-          alert(
-            "✅ La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar: " +
-            (emailError?.text || emailError?.message || "Error desconocido")
-          );
-        }
-      }
-
-      bookingForm.reset();
-      if (horaInput) horaInput.value = "";
-      if (metodoEfectivoInput) metodoEfectivoInput.checked = true;
-      if (cuentaBanreservasInput) cuentaBanreservasInput.checked = true;
-
-      updatePaymentMethodUI();
-      updateSummary();
-      renderHours();
-
-      window.location.href = "ver-citas.html";
-    } catch (firebaseError) {
-      console.error("Error guardando cita:", firebaseError);
-      if (firebaseError?.code === "SLOT_TAKEN") {
-        alert("Esa hora acaba de ocuparse. Por favor elige otra.");
-        renderHours();
+      if (day === 0) {
+        if (!sundayOpen && !override?.forceOpen) return null;
+        config = extendedHours ? extendedSundaySchedule : normalSundaySchedule;
+      } else if (day === 2) {
+        if (!tuesdayForcedOpen && !override?.forceOpen) return null;
+        config = extendedHours ? extendedTuesdaySchedule : normalTuesdaySchedule;
       } else {
-        alert(firebaseError?.message || "No se pudo guardar la cita.");
+        const source = extendedHours ? extendedWorkingDays : normalWorkingDays;
+        config = source[day] || null;
       }
-    } finally {
-      if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.textContent = originalButtonText;
+
+      if (!config && override?.forceOpen) {
+        config = getDefaultOpenSchedule();
       }
+
+      if (!config) return null;
+
+      return applySpecialClosingToConfig(dateString, cloneSchedule(config));
     }
-  });
-}
 
-function listenAppointments() {
-  appointmentsRef.on("value", snapshot => {
-    const data = snapshot.val() || {};
-    appointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+    function getServiceDurationForAppointment(app) {
+      const duration = Number(app?.duration || 60);
+      return Number.isFinite(duration) && duration > 0 ? duration : 60;
+    }
 
-    if (appointmentsList) renderAppointments();
-    renderHours();
-    updateSummary();
-  });
-}
+    function isKidsService(serviceName) {
+      return String(serviceName || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .includes("nino");
+    }
 
-function listenShopStatus() {
-  shopStatusRef.on("value", snapshot => {
-    const data = snapshot.val() || {};
-    shopIsOpen = data.isOpen !== false;
-    sundayOpen = data.sundayOpen === true;
-    tuesdayForcedOpen = data.tuesdayOpen === true;
-    extendedHours = data.extendedHours === true;
+    function shouldShowSlot(slot, app) {
+      if (isKidsService(app?.servicio)) return true;
+      return convertToMinutes(slot) % 60 === 0;
+    }
 
-    updateShopStatusBadge();
-    renderHours();
-    updateSummary();
-  });
-}
+    function isPastDateTime(dateISO, slot) {
+      if (!dateISO || !slot) return false;
+      if (dateISO !== getTodayISO()) return false;
 
-function listenCustomClosures() {
-  customClosuresRef.on("value", snapshot => {
-    customClosures = snapshot.val() || {};
-    renderHours();
-    updateShopStatusBadge();
-    updateSummary();
-  });
-}
+      const now = new Date();
+      const currentMinutes = (now.getHours() * 60) + now.getMinutes();
+      return convertToMinutes(slot) <= currentMinutes;
+    }
 
-function populateServiceOptions() {
-  if (!servicioInput) return;
+    function isSlotBlockedByCustomClosure(dateISO, startSlot, duration) {
+      const blocks = getTimeBlocksForDate(dateISO);
+      if (!blocks.length) return false;
 
-  const currentValue = servicioInput.value || requestedServiceFromURL;
-  const services = Object.values(servicesData || {}).filter(service => service && service.nombre);
+      const slotStartMinutes = convertToMinutes(startSlot);
+      const slotEndMinutes = slotStartMinutes + Number(duration || 60);
 
-  servicioInput.innerHTML = '<option value="">Selecciona un servicio</option>';
+      return blocks.some(block => {
+        return rangesOverlapMinutes(
+          slotStartMinutes,
+          slotEndMinutes,
+          convertToMinutes(block.start),
+          convertToMinutes(block.end)
+        );
+      });
+    }
 
-  if (!services.length) {
-    servicioInput.innerHTML = '<option value="">No hay servicios disponibles</option>';
-    return;
-  }
+    function getAppointmentSlots(app) {
+      if (Array.isArray(app?.slots) && app.slots.length) return app.slots;
+      return buildSlotsFromStart(app?.hora, getServiceDurationForAppointment(app));
+    }
 
-  services.forEach(servicio => {
-    const option = document.createElement("option");
-    option.value = servicio.nombre;
-    option.textContent = `${servicio.nombre} - RD$${Number(servicio.precio || 0)}`;
-    option.dataset.duracion = String(servicio.duracion || "");
-    servicioInput.appendChild(option);
-  });
+    function isEditSlotAvailable(app, dateISO, startSlot) {
+      const config = getWorkingConfigByDate(dateISO);
+      if (!config) return false;
 
-  if (currentValue) {
-    const normalizedCurrentValue = normalizeLookupText(currentValue);
-    const serviceAliases = {
-      "corte clasico": ["corte clasico", "corte normal"],
-      "cortes ninos": ["cortes ninos", "corte ninos"]
-    };
-    const acceptedNames = new Set([
-      normalizedCurrentValue,
-      ...(serviceAliases[normalizedCurrentValue] || [])
-    ]);
-    const matchingService = services.find(servicio => {
-      return acceptedNames.has(normalizeLookupText(servicio.nombre));
+      const allSlots = generateTimeSlots(config.start, config.end, 30);
+      const startIndex = allSlots.indexOf(startSlot);
+      const neededBlocks = Math.max(1, Math.ceil(getServiceDurationForAppointment(app) / 30));
+
+      if (startIndex === -1) return false;
+      if (isPastDateTime(dateISO, startSlot)) return false;
+      if (isSlotBlockedByCustomClosure(dateISO, startSlot, getServiceDurationForAppointment(app))) return false;
+
+      for (let i = 0; i < neededBlocks; i++) {
+        const currentSlot = allSlots[startIndex + i];
+        if (!currentSlot || (config.breaks || []).includes(currentSlot)) return false;
+        if (dateISO === getTodayISO() && isPastDateTime(dateISO, currentSlot)) return false;
+
+        const hasConflict = currentAppointments.some(otherApp => {
+          if (String(otherApp.id) === String(app.id)) return false;
+          if (otherApp.status === "cancelled") return false;
+          if (otherApp.fecha !== dateISO || otherApp.barbero !== app.barbero) return false;
+          return getAppointmentSlots(otherApp).includes(currentSlot);
+        });
+
+        if (hasConflict) return false;
+      }
+
+      return true;
+    }
+
+    function getAvailableEditHourOptions(app, dateISO, selectedHour = "") {
+      const config = getWorkingConfigByDate(dateISO);
+      if (!config) {
+        return '<option value="">No hay horas disponibles</option>';
+      }
+
+      const options = generateTimeSlots(config.start, config.end, 30)
+        .filter(slot => shouldShowSlot(slot, app))
+        .filter(slot => isEditSlotAvailable(app, dateISO, slot));
+
+      if (!options.length) {
+        return '<option value="">No hay horas disponibles</option>';
+      }
+
+      return options.map(label => {
+        const selected = label === selectedHour ? "selected" : "";
+        return `<option value="${escapeHTML(label)}" ${selected}>${escapeHTML(label)}</option>`;
+      }).join("");
+    }
+
+    function buildEditWhatsAppMessage(app, oldDate, oldHour, newDate, newHour) {
+      return [
+        "Hola, edité mi cita y quiero que me la apruebes de nuevo.",
+        "",
+        `Cliente: ${app.nombre || publicClientName(app) || "Sin nombre"}`,
+        `Teléfono registrado: ${app.telefono || "No disponible"}`,
+        `Servicio: ${app.servicio || "No indicado"}`,
+        `Barbero: ${app.barbero || "No indicado"}`,
+        "",
+        `Cita anterior: ${formatDateSafe(oldDate)} a las ${oldHour || "Sin hora"}`,
+        `Nueva solicitud: ${formatDateSafe(newDate)} a las ${newHour || "Sin hora"}`,
+        "",
+        "La cita quedó en estado PENDIENTE y necesita aprobación nuevamente."
+      ].join("\n");
+    }
+
+    function buildCancelWhatsAppMessage(app) {
+      return [
+        "Hola, cancelé mi cita. Será en otro momento.",
+        "",
+        `Cliente: ${app.nombre || publicClientName(app) || "Sin nombre"}`,
+        `Teléfono registrado: ${app.telefono || "No disponible"}`,
+        `Servicio: ${app.servicio || "No indicado"}`,
+        `Fecha: ${formatDateSafe(app.fecha)}`,
+        `Hora: ${app.hora || "Sin hora"}`
+      ].join("\n");
+    }
+
+    function splitTime(timeValue) {
+      const value = String(timeValue || "-").trim();
+      const match = value.match(/^(.*?)(AM|PM)$/i);
+      if (!match) return `<span>${escapeHTML(value)}</span>`;
+      return `<span>${escapeHTML(match[1].trim())}</span><span>${escapeHTML(match[2].toUpperCase())}</span>`;
+    }
+
+    function publicClientName(app) {
+      if (app.anonimo === true) return "Anónimo";
+      return app.nombre || "Sin nombre";
+    }
+
+    function normalizeAppointment(id, app) {
+      return {
+        id,
+        nombre: app?.nombre || "",
+        telefono: app?.telefono || "",
+        servicio: app?.servicio || "",
+        barbero: app?.barbero || "",
+        fecha: app?.fecha || "",
+        hora: app?.hora || "",
+        precio: app?.precio || "",
+        duration: app?.duration || app?.duracion || "",
+        metodoPago: app?.metodoPago || app?.metodo_pago || "",
+        anonimo: Boolean(app?.anonimo),
+        status: normalizeStatus(app?.status),
+        clientToken: app?.clientToken || "",
+        createdAt: app?.createdAt || "",
+        slots: Array.isArray(app?.slots) ? app.slots : []
+      };
+    }
+
+    function isMine(app) {
+      refreshMyAppointmentData();
+
+      if (!app?.clientToken) return false;
+
+      return myAppointments.some(item => {
+        return String(item.id) === String(app.id) &&
+               String(item.token) === String(app.clientToken);
+      });
+    }
+
+    function isPastAppointment(dateISO, hour) {
+      if (!dateISO) return false;
+
+      const todayISO = getTodayISO();
+      if (dateISO < todayISO) return true;
+      if (dateISO > todayISO) return false;
+
+      return convertToMinutes(hour) < ((new Date().getHours() * 60) + new Date().getMinutes());
+    }
+
+    function canManageAppointment(app) {
+      return isMine(app) && app.status !== "cancelled" && !isPastAppointment(app.fecha, app.hora);
+    }
+
+    function isAppointmentExpiredForAutoDelete(app) {
+      if (!app?.fecha || !app?.hora) return false;
+
+      const todayISO = getTodayISO();
+
+      if (app.fecha < todayISO) return true;
+      if (app.fecha > todayISO) return false;
+
+      const now = new Date();
+      const currentMinutes = (now.getHours() * 60) + now.getMinutes();
+      const deleteAtMinutes = convertToMinutes(app.hora) + AUTO_DELETE_AFTER_MINUTES;
+
+      return currentMinutes >= deleteAtMinutes;
+    }
+
+    async function cleanupExpiredAppointments(apps = currentAppointments) {
+      const expiredAppointments = apps.filter(app => {
+        return app.status !== "cancelled" && isAppointmentExpiredForAutoDelete(app);
+      });
+
+      if (!expiredAppointments.length) return;
+
+      await Promise.all(expiredAppointments.map(async app => {
+        try {
+          await releaseAppointmentLocks(app.id, app);
+          await appointmentsRef.child(app.id).remove();
+          forgetClientAppointment(app.id);
+        } catch (error) {
+          console.warn("No se pudo eliminar automáticamente la cita vencida:", app.id, error);
+        }
+      }));
+    }
+
+    function getVisibleAppointmentsForDate(dateISO) {
+      return currentAppointments
+        .filter(app => app.fecha === dateISO && app.status !== "cancelled" && !isAppointmentExpiredForAutoDelete(app))
+        .sort((a, b) => {
+          const byTime = convertToMinutes(a.hora) - convertToMinutes(b.hora);
+          if (byTime !== 0) return byTime;
+          return publicClientName(a).localeCompare(publicClientName(b), "es", { sensitivity: "base" });
+        });
+    }
+
+    function formatTime12(time24) {
+      if (!time24) return "";
+      if (/AM|PM/i.test(time24)) return time24;
+      const [h, m] = time24.split(":").map(Number);
+      const suffix = h >= 12 ? "PM" : "AM";
+      const hour = h % 12 || 12;
+      return `${hour}:${String(m).padStart(2, "0")} ${suffix}`;
+    }
+
+    function renderAgenda(target, list, emptyText, dateISO) {
+      if (!target) return;
+
+      const blocks = dateISO ? getTimeBlocksForDate(dateISO) : [];
+
+      if (!list.length && !blocks.length) {
+        target.className = "empty-state";
+        target.innerHTML = escapeHTML(emptyText);
+        return;
+      }
+
+      // Build combined items: appointments + block rows, sorted by time
+      const items = [];
+
+      list.forEach(app => {
+        items.push({ type: "appointment", minutes: convertToMinutes(app.hora), app });
+      });
+
+      blocks.forEach(block => {
+        items.push({ type: "block", minutes: convertToMinutes(block.start), block });
+      });
+
+      items.sort((a, b) => a.minutes - b.minutes);
+
+      const rows = items.map(item => {
+        if (item.type === "block") {
+          const b = item.block;
+          const label = b.reason ? `🔒 Cerrado — ${b.reason}` : "🔒 Cerrado";
+          const timeLabel = `${formatTime12(b.start)} – ${formatTime12(b.end)}`;
+          return `
+            <div class="block-row">
+              <div class="block-row-label">
+                <span class="block-time-pill">${escapeHTML(timeLabel)}</span>
+                <span>${escapeHTML(label)}</span>
+              </div>
+            </div>
+          `;
+        }
+
+        const app = item.app;
+        const statusText = getStatusText(app.status);
+        const mineBadge = isMine(app) ? '<span class="mine-pill">Tu cita</span>' : "";
+        const actionHTML = canManageAppointment(app)
+          ? `<button class="view-btn edit-row-btn" type="button" data-id="${escapeHTML(app.id)}">Editar</button>`
+          : '<span class="row-note">Solo ver</span>';
+        return `
+          <div class="agenda-row agenda-grid">
+            <div class="client-name">${escapeHTML(publicClientName(app))}${mineBadge}</div>
+            <div class="time-cell">${splitTime(app.hora)}</div>
+            <div><span class="status-pill status-${escapeHTML(app.status)}">${escapeHTML(statusText)}</span></div>
+            ${actionHTML}
+          </div>
+        `;
+      }).join("");
+
+      target.className = "agenda-card";
+      target.innerHTML = `
+        <div class="agenda-head agenda-grid">
+          <div>Cliente</div>
+          <div>Hora</div>
+          <div>Estado</div>
+          <div>Acción</div>
+        </div>
+        ${rows}
+      `;
+
+      target.querySelectorAll(".edit-row-btn").forEach(btn => {
+        btn.addEventListener("click", () => openDetails(btn.dataset.id));
+      });
+    }
+
+    function renderAll() {
+      const today = getTodayISO();
+      const tomorrow = addDaysISO(today, 1);
+
+      const todayList = getVisibleAppointmentsForDate(today);
+      const tomorrowList = getVisibleAppointmentsForDate(tomorrow);
+
+      countToday.textContent = String(todayList.length);
+      countTomorrow.textContent = String(tomorrowList.length);
+
+      renderAgenda(todayView, todayList, "No hay citas programadas para hoy.", today);
+      renderAgenda(tomorrowView, tomorrowList, "No hay citas programadas para mañana.", tomorrow);
+
+      const now = new Date();
+      lastUpdated.textContent = `Agenda actualizada ${now.toLocaleTimeString("es-DO", { hour: "numeric", minute: "2-digit" })}. Las pendientes se muestran; solo su dueño puede editarlas.`;
+    }
+
+    function detailRow(label, value) {
+      return `
+        <div class="detail-item">
+          <span>${escapeHTML(label)}</span>
+          <strong>${escapeHTML(value || "-")}</strong>
+        </div>
+      `;
+    }
+
+    function openDetails(id) {
+      const app = currentAppointments.find(item => String(item.id) === String(id));
+      if (!app) return;
+
+      currentModalAppointmentId = app.id;
+      modalTitle.textContent = publicClientName(app);
+      modalSubtitle.textContent = `${formatDateSafe(app.fecha)} · ${app.hora || "Sin hora"}`;
+      modalBody.innerHTML = [
+        detailRow("Cliente", publicClientName(app)),
+        detailRow("Servicio", app.servicio || "-"),
+        detailRow("Barbero", app.barbero || "-"),
+        detailRow("Fecha", formatDateSafe(app.fecha)),
+        detailRow("Hora", app.hora || "-"),
+        detailRow("Estado", getStatusText(app.status)),
+        detailRow("Precio", app.precio ? `RD$${app.precio}` : "-"),
+        detailRow("Duración", app.duration ? `${app.duration} minutos` : "-")
+      ].join("");
+
+      const canManage = canManageAppointment(app);
+
+      modalActions.innerHTML = canManage ? `
+        <div class="edit-box">
+          <h4>Cambiar día u hora</h4>
+          <p>Como esta cita es tuya, puedes cambiar el día o la hora. El nuevo cambio quedará pendiente hasta que el barbero lo apruebe.</p>
+          <div class="edit-form">
+            <label>
+              Nuevo día
+              <input type="date" id="editDateInput" min="${getTodayISO()}" value="${escapeHTML(app.fecha || getTodayISO())}" />
+            </label>
+            <label>
+              Nueva hora
+              <select id="editHourInput">
+                ${getAvailableEditHourOptions(app, app.fecha, app.hora)}
+              </select>
+            </label>
+            <button class="edit-btn" type="button" id="editAppointmentBtn">Solicitar cambio</button>
+          </div>
+          <div class="edit-message" id="editMessage"></div>
+        </div>
+
+        <div class="cancel-box">
+          <h4>Cancelar mi cita</h4>
+          <p>Solo tú puedes cancelar esta cita desde este dispositivo.</p>
+          <div class="cancel-form">
+            <button class="cancel-btn" type="button" id="cancelAppointmentBtn">Cancelar cita</button>
+          </div>
+          <div class="cancel-message" id="cancelMessage"></div>
+        </div>
+      ` : `
+        <div class="owner-note">
+          Solo quien creó esta cita puede editarla o cancelarla desde el dispositivo donde la reservó.
+        </div>
+      `;
+
+      const editDateInput = document.getElementById("editDateInput");
+      const editHourInput = document.getElementById("editHourInput");
+      const editAppointmentBtn = document.getElementById("editAppointmentBtn");
+      const editMessage = document.getElementById("editMessage");
+
+      editDateInput?.addEventListener("change", () => {
+        editHourInput.innerHTML = getAvailableEditHourOptions(app, editDateInput.value, "");
+      });
+
+      editAppointmentBtn?.addEventListener("click", async () => {
+        const freshApp = currentAppointments.find(item => String(item.id) === String(currentModalAppointmentId));
+        if (!freshApp) return;
+
+        editMessage.className = "edit-message";
+        editMessage.textContent = "";
+
+        const newDate = editDateInput.value;
+        const newHour = editHourInput.value;
+
+        if (!canManageAppointment(freshApp)) {
+          editMessage.className = "edit-message error";
+          editMessage.textContent = "Solo el dueño de esta cita puede editarla.";
+          return;
+        }
+
+        if (!newDate || !newHour) {
+          editMessage.className = "edit-message error";
+          editMessage.textContent = "Selecciona el nuevo día y la nueva hora.";
+          return;
+        }
+
+        if (!isEditSlotAvailable(freshApp, newDate, newHour)) {
+          editMessage.className = "edit-message error";
+          editMessage.textContent = "Esa hora ya no está disponible. Elige otra.";
+          editHourInput.innerHTML = getAvailableEditHourOptions(freshApp, newDate, "");
+          return;
+        }
+
+        if (newDate === freshApp.fecha && newHour === freshApp.hora) {
+          editMessage.className = "edit-message error";
+          editMessage.textContent = "Elige un día u hora diferente para solicitar el cambio.";
+          return;
+        }
+
+        const accepted = window.confirm("¿Deseas solicitar este cambio? La cita quedará pendiente hasta que el barbero la apruebe.");
+        if (!accepted) return;
+
+        const oldDate = freshApp.fecha;
+        const oldHour = freshApp.hora;
+        const requestedAt = new Date().toISOString();
+        const slots = buildSlotsFromStart(newHour, freshApp.duration || 60);
+        const whatsappMessage = buildEditWhatsAppMessage(freshApp, oldDate, oldHour, newDate, newHour);
+        const whatsappWindow = openWhatsAppPlaceholder();
+
+        try {
+          editAppointmentBtn.disabled = true;
+          editAppointmentBtn.textContent = "Guardando...";
+
+          const nextAppointment = {
+            ...freshApp,
+            fecha: newDate,
+            hora: newHour,
+            slots
+          };
+          const locksMoved = await replaceAppointmentLocks(freshApp.id, freshApp, nextAppointment);
+
+          if (!locksMoved) {
+            editMessage.className = "edit-message error";
+            editMessage.textContent = "Esa hora acaba de ocuparse. Elige otra.";
+            editAppointmentBtn.disabled = false;
+            editAppointmentBtn.textContent = "Solicitar cambio";
+            return;
+          }
+
+          try {
+            await appointmentsRef.child(freshApp.id).update({
+              fecha: newDate,
+              hora: newHour,
+              slots,
+              status: "pending",
+              editedAt: requestedAt,
+              editedFrom: "public-agenda",
+              editPendingReview: true,
+              editRequest: {
+                previousFecha: oldDate,
+                previousHora: oldHour,
+                requestedFecha: newDate,
+                requestedHora: newHour,
+                requestedAt,
+                phoneLast4: phoneLast4(freshApp.telefono)
+              }
+            });
+          } catch (error) {
+            await replaceAppointmentLocks(freshApp.id, nextAppointment, freshApp);
+            throw error;
+          }
+
+          openWhatsAppMessage(whatsappMessage, whatsappWindow);
+
+          editMessage.className = "edit-message ok";
+          editMessage.innerHTML = `Cambio solicitado. Si WhatsApp no abre solo, toca aquí: ${buildWhatsAppManualLink(whatsappMessage)}`;
+          setTimeout(closeDetails, isMobileDevice() ? 2600 : 1600);
+        } catch (error) {
+          closePreparedWhatsAppWindow(whatsappWindow);
+          console.error(error);
+          editMessage.className = "edit-message error";
+          editMessage.textContent = "No se pudo solicitar el cambio. Intenta nuevamente.";
+          editAppointmentBtn.disabled = false;
+          editAppointmentBtn.textContent = "Solicitar cambio";
+        }
+      });
+
+      const cancelAppointmentBtn = document.getElementById("cancelAppointmentBtn");
+      const cancelMessage = document.getElementById("cancelMessage");
+
+      cancelAppointmentBtn?.addEventListener("click", async () => {
+        const freshApp = currentAppointments.find(item => String(item.id) === String(currentModalAppointmentId));
+        if (!freshApp) return;
+
+        cancelMessage.className = "cancel-message";
+        cancelMessage.textContent = "";
+
+        if (!canManageAppointment(freshApp)) {
+          cancelMessage.className = "cancel-message error";
+          cancelMessage.textContent = "Solo el dueño de esta cita puede cancelarla.";
+          return;
+        }
+
+        const accepted = window.confirm("¿Seguro que deseas cancelar esta cita?");
+        if (!accepted) return;
+
+        const whatsappMessage = buildCancelWhatsAppMessage(freshApp);
+        const whatsappWindow = openWhatsAppPlaceholder();
+
+        try {
+          cancelAppointmentBtn.disabled = true;
+          cancelAppointmentBtn.textContent = "Cancelando...";
+          await appointmentsRef.child(freshApp.id).update({
+            status: "cancelled",
+            cancelledAt: new Date().toISOString(),
+            cancelledFrom: "public-agenda"
+          });
+          await releaseAppointmentLocks(freshApp.id, freshApp);
+          openWhatsAppMessage(whatsappMessage, whatsappWindow);
+          forgetClientAppointment(freshApp.id);
+          cancelMessage.className = "cancel-message ok";
+          cancelMessage.innerHTML = `Cita cancelada correctamente. Si WhatsApp no abre solo, toca aquí: ${buildWhatsAppManualLink(whatsappMessage)}`;
+          setTimeout(closeDetails, isMobileDevice() ? 2600 : 1200);
+        } catch (error) {
+          closePreparedWhatsAppWindow(whatsappWindow);
+          console.error(error);
+          cancelMessage.className = "cancel-message error";
+          cancelMessage.textContent = "No se pudo cancelar la cita. Intenta nuevamente.";
+          cancelAppointmentBtn.disabled = false;
+          cancelAppointmentBtn.textContent = "Cancelar cita";
+        }
+      });
+
+      detailsModal.classList.add("open");
+      detailsModal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeDetails() {
+      detailsModal.classList.remove("open");
+      detailsModal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      currentModalAppointmentId = "";
+      if (modalActions) modalActions.innerHTML = "";
+    }
+
+    closeModalBtn.addEventListener("click", closeDetails);
+
+    detailsModal.addEventListener("click", event => {
+      if (event.target === detailsModal) closeDetails();
     });
 
-    if (matchingService) {
-      servicioInput.value = matchingService.nombre;
-    }
-  }
-}
-
-function listenServices() {
-  servicesRef.on("value", snapshot => {
-    servicesData = snapshot.val() || {};
-    populateServiceOptions();
-    updateSummary();
-    renderHours();
-    if (appointmentsList) renderAppointments();
-  });
-}
-
-function applyServiceFromURL() {
-  if (!servicioInput) return;
-
-  const params = new URLSearchParams(window.location.search);
-  const servicioURL = params.get("servicio");
-
-  if (servicioURL) {
-    requestedServiceFromURL = servicioURL;
-    servicioInput.value = servicioURL;
-  }
-}
-
-if (menuToggle && navPanel) {
-  menuToggle.addEventListener("click", function () {
-    navPanel.classList.toggle("open");
-    menuToggle.classList.toggle("active");
-
-    const expanded = menuToggle.getAttribute("aria-expanded") === "true";
-    menuToggle.setAttribute("aria-expanded", String(!expanded));
-  });
-
-  navPanel.querySelectorAll("a").forEach(link => {
-    link.addEventListener("click", function () {
-      navPanel.classList.remove("open");
-      menuToggle.classList.remove("active");
-      menuToggle.setAttribute("aria-expanded", "false");
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") closeDetails();
     });
-  });
 
-  document.addEventListener("click", function (e) {
-    if (
-      window.innerWidth <= 1100 &&
-      !navPanel.contains(e.target) &&
-      !menuToggle.contains(e.target)
-    ) {
-      navPanel.classList.remove("open");
-      menuToggle.classList.remove("active");
-      menuToggle.setAttribute("aria-expanded", "false");
-    }
-  });
-}
+    menuBtn.addEventListener("click", () => {
+      const isOpen = menuPanel.classList.toggle("open");
+      menuBtn.classList.toggle("active", isOpen);
+      menuBtn.setAttribute("aria-expanded", String(isOpen));
+    });
 
-document.querySelectorAll(".select-service-btn").forEach(btn => {
-  btn.addEventListener("click", function (e) {
-    if (!servicioInput) return;
+    document.querySelectorAll(".menu-panel a").forEach(link => {
+      link.addEventListener("click", () => {
+        menuPanel.classList.remove("open");
+        menuBtn.classList.remove("active");
+        menuBtn.setAttribute("aria-expanded", "false");
+      });
+    });
 
-    e.preventDefault();
-    servicioInput.value = this.getAttribute("data-service") || "";
+    setInterval(() => {
+      cleanupExpiredAppointments(currentAppointments);
+      renderAll();
+    }, 30000);
 
-    if (horaInput) horaInput.value = "";
-    renderHours();
-    updateSummary();
+    appointmentsRef.on("value", snapshot => {
+      const data = snapshot.val() || {};
+      currentAppointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+      cleanupExpiredAppointments(currentAppointments);
+      renderAll();
+    }, error => {
+      todayView.className = "empty-state";
+      tomorrowView.className = "empty-state";
+      todayView.textContent = "No se pudo cargar la agenda.";
+      tomorrowView.textContent = "Revisa la conexión o la configuración de Firebase.";
+      lastUpdated.textContent = "Error al cargar los datos.";
+      console.error(error);
+    });
 
-    const target =
-      document.getElementById("bookingForm") ||
-      document.getElementById("reservas") ||
-      bookingForm;
+    shopStatusRef.on("value", snapshot => {
+      const data = snapshot.val() || {};
+      shopIsOpen = data.isOpen !== false;
+      sundayOpen = data.sundayOpen === true;
+      tuesdayForcedOpen = data.tuesdayOpen === true;
+      extendedHours = data.extendedHours === true;
+    });
 
-    target?.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-});
+    customClosuresRef.on("value", snapshot => {
+      customClosures = snapshot.val() || {};
+    });
 
-fechaInput?.addEventListener("change", () => {
-  if (horaInput) horaInput.value = "";
-  renderHours();
-  updateSummary();
-});
-
-barberoInput?.addEventListener("change", () => {
-  if (horaInput) horaInput.value = "";
-  renderHours();
-  updateSummary();
-});
-
-servicioInput?.addEventListener("change", () => {
-  if (horaInput) horaInput.value = "";
-  renderHours();
-  updateSummary();
-});
-
-[nombreInput].forEach(input => {
-  input?.addEventListener("input", updateSummary);
-});
-
-anonimoInput?.addEventListener("change", updateSummary);
-
-metodoEfectivoInput?.addEventListener("change", () => {
-  updatePaymentMethodUI();
-  updateSummary();
-});
-
-metodoTransferenciaInput?.addEventListener("change", () => {
-  updatePaymentMethodUI();
-  updateSummary();
-});
-
-cuentaBanreservasInput?.addEventListener("change", updateSummary);
-cuentaPopularInput?.addEventListener("change", updateSummary);
-
-applyServiceFromURL();
-setMinDate();
-hideApproveButtons();
-bindHiddenApproveButtons();
-bindSecretShortcut();
-configurarInputTelefono();
-
-listenAppointments();
-listenShopStatus();
-listenCustomClosures();
-listenServices();
-listenDailyOverrides();
-
-updatePaymentMethodUI();
-renderHours();
-updateSummary();
-updateShopStatusBadge();
-
-setInterval(() => {
-  updateShopStatusBadge();
-
-  const selectedDate = fechaInput?.value || "";
-  const selectedBarber = barberoInput?.value || "";
-  const selectedService = servicioInput?.value || "";
-  const selectedHour = horaInput?.value || "";
-
-  if (!selectedDate || !selectedBarber || !selectedService) return;
-
-  if (selectedDate === getTodayISO()) {
-    renderHours();
-
-    if (
-      selectedHour &&
-      !isSlotAvailable(selectedDate, selectedBarber, selectedHour, selectedService, appointments)
-    ) {
-      if (horaInput) horaInput.value = "";
-      updateSummary();
-    }
-  }
-}, 30000);
+    dailyOverridesRef.on("value", snapshot => {
+      dailyOverrides = snapshot.val() || {};
+    });
+  </script>
+</body>
+</html>
