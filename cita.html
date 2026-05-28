@@ -1993,11 +1993,18 @@
 
       if (!config) return null;
 
-      return applySpecialClosingToConfig(dateString, {
+      const finalConfig = applySpecialClosingToConfig(dateString, {
         start: config.start,
         end: config.end,
         breaks: Array.isArray(config.breaks) ? [...config.breaks] : []
       });
+
+      // Si hay bloques manuales en esta fecha, quitar el almuerzo automático
+      if (finalConfig && getTimeBlocksForDate(dateString).length > 0) {
+        finalConfig.breaks = [];
+      }
+
+      return finalConfig;
     }
 
     function getServiceBlocks(serviceName) {
