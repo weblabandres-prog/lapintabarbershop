@@ -110,11 +110,8 @@
     .two-line-status{display:flex;flex-direction:column;gap:10px;}
     .status-help,.shop-status-text{margin:0 0 18px;font-size:.95rem;line-height:1.65;}
     .filters-grid,.tools-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}
-    .time-block-form{display:grid;grid-template-columns:1fr 1fr 1fr 1.5fr auto;gap:14px;align-items:end;}
-    .block-presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
-    .preset-btn{padding:8px 14px;border-radius:999px;border:1px solid rgba(31,134,255,.22);background:rgba(31,134,255,.08);color:#cfe5ff;font-size:.84rem;font-weight:700;cursor:pointer;transition:.2s ease;}
-    .preset-btn:hover{background:rgba(31,134,255,.18);border-color:rgba(31,134,255,.4);transform:translateY(-1px);}
-    .field input[type=time]{color-scheme:dark;}
+    .time-block-form{display:grid;grid-template-columns:1.1fr .8fr .8fr 1.4fr auto;gap:14px;align-items:end;}
+    .time-select-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
     .time-block-list{display:grid;gap:12px;margin-top:18px;}
     .time-block-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.02);}
     .time-block-item h4{margin:0 0 5px;color:#fff;font-size:1rem;}
@@ -186,7 +183,7 @@
     .modal-close-btn{padding:0 16px;}
     .services-scroll{overflow-y:auto;padding-right:8px;margin-top:10px;flex-grow:1;}
     @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important;}}
-    @media (max-width:1180px){.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.filters-grid,.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form{grid-template-columns:1fr 1fr;}}
+    @media (max-width:1180px){.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.filters-grid,.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form{grid-template-columns:repeat(2,minmax(0,1fr));}}
     @media (max-width:920px){
       .mobile-topbar{display:flex;}
       .admin-shell{grid-template-columns:1fr;}
@@ -664,18 +661,68 @@
           </div>
           <div id="timeBlockCountBadge" class="badge-inline">0 bloques activos</div>
         </div>
-        <p class="status-help">Bloquea un rango de horas para que no entren citas. Usa los atajos rápidos o pon la hora manualmente.</p>
-        <div class="block-presets">
-          <button class="preset-btn" type="button" data-preset="almuerzo">🍽️ Almuerzo (12–2 PM)</button>
-          <button class="preset-btn" type="button" data-preset="tarde">🌇 Tarde (5–9 PM)</button>
-          <button class="preset-btn" type="button" data-preset="manana">☀️ Mañana (8–12 PM)</button>
-          <button class="preset-btn" type="button" data-preset="diaCompleto">📅 Día completo</button>
-        </div>
+        <p class="status-help">Elige una fecha y un rango de tiempo para bloquear citas solo durante esas horas. Ejemplo: hoy de 1:00 PM a 8:00 PM.</p>
         <div class="time-block-form">
           <div class="field"><label for="blockDateInput">Fecha</label><input id="blockDateInput" type="date" /></div>
-          <div class="field"><label for="blockStartTime">Desde</label><input id="blockStartTime" type="time" min="08:00" max="22:00" step="1800" /></div>
-          <div class="field"><label for="blockEndTime">Hasta</label><input id="blockEndTime" type="time" min="08:00" max="22:00" step="1800" /></div>
-          <div class="field"><label for="blockReasonInput">Motivo (opcional)</label><input id="blockReasonInput" type="text" placeholder="Almuerzo, evento, diligencia..." maxlength="80" /></div>
+          <div class="field">
+            <label>Desde</label>
+            <div class="time-select-grid">
+              <select id="blockStartHour">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+              </select>
+              <select id="blockStartMinute">
+                <option value="00">00</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+              </select>
+              <select id="blockStartPeriod">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Hasta</label>
+            <div class="time-select-grid">
+              <select id="blockEndHour">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+              </select>
+              <select id="blockEndMinute">
+                <option value="00">00</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+              </select>
+              <select id="blockEndPeriod">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label for="blockReasonInput">Motivo</label><input id="blockReasonInput" type="text" placeholder="Almuerzo, evento, diligencia..." maxlength="80" /></div>
           <button id="saveTimeBlockBtn" class="primary-btn" type="button">Bloquear</button>
         </div>
         <div id="timeBlocksList" class="time-block-list"></div>
@@ -849,8 +896,12 @@
     const servicesContainer = document.getElementById("servicesContainer");
     const addNewServiceBtn = document.getElementById("addNewServiceBtn");
     const blockDateInput = document.getElementById("blockDateInput");
-    const blockStartTime = document.getElementById("blockStartTime");
-    const blockEndTime = document.getElementById("blockEndTime");
+    const blockStartHour = document.getElementById("blockStartHour");
+    const blockStartMinute = document.getElementById("blockStartMinute");
+    const blockStartPeriod = document.getElementById("blockStartPeriod");
+    const blockEndHour = document.getElementById("blockEndHour");
+    const blockEndMinute = document.getElementById("blockEndMinute");
+    const blockEndPeriod = document.getElementById("blockEndPeriod");
     const blockReasonInput = document.getElementById("blockReasonInput");
     const saveTimeBlockBtn = document.getElementById("saveTimeBlockBtn");
     const timeBlocksList = document.getElementById("timeBlocksList");
@@ -1194,7 +1245,16 @@
         config = getDefaultOpenSchedule();
       }
 
-      return config ? cloneSchedule(config) : null;
+      if (!config) return null;
+
+      const finalConfig = cloneSchedule(config);
+
+      // Si hay bloques manuales en esta fecha, quitar el almuerzo automático
+      if (finalConfig && getTimeBlocksForDate(dateString).length > 0) {
+        finalConfig.breaks = [];
+      }
+
+      return finalConfig;
     }
 
     function getCurrentBreak(config) {
@@ -1324,10 +1384,19 @@
     }
 
     function getTimeBlockInputsAs24() {
-      return {
-        start: blockStartTime?.value || "",
-        end: blockEndTime?.value || ""
-      };
+      const start = convert12To24(
+        blockStartHour?.value || "1",
+        blockStartMinute?.value || "00",
+        blockStartPeriod?.value || "PM"
+      );
+
+      const end = convert12To24(
+        blockEndHour?.value || "1",
+        blockEndMinute?.value || "00",
+        blockEndPeriod?.value || "PM"
+      );
+
+      return { start, end };
     }
 
     function setDefaultTimeBlockValues() {
@@ -1336,26 +1405,17 @@
         blockDateInput.min = today;
         if (!blockDateInput.value) blockDateInput.value = today;
       }
-      if (blockStartTime && !blockStartTime.value) blockStartTime.value = "13:00";
-      if (blockEndTime && !blockEndTime.value) blockEndTime.value = "20:00";
-    }
 
-    function applyPreset(preset) {
-      const today = getTodayISO();
-      if (blockDateInput && !blockDateInput.value) blockDateInput.value = today;
+      const defaultStart = convert24To12("13:00");
+      const defaultEnd = convert24To12("20:00");
 
-      const presets = {
-        almuerzo:    { start: "12:00", end: "14:00", reason: "Almuerzo" },
-        tarde:       { start: "17:00", end: "21:00", reason: "Tarde" },
-        manana:      { start: "08:00", end: "12:00", reason: "Mañana" },
-        diaCompleto: { start: "08:00", end: "22:00", reason: "Día completo" }
-      };
+      if (blockStartHour) blockStartHour.value = defaultStart.hour;
+      if (blockStartMinute) blockStartMinute.value = defaultStart.minute;
+      if (blockStartPeriod) blockStartPeriod.value = defaultStart.period;
 
-      const p = presets[preset];
-      if (!p) return;
-      if (blockStartTime) blockStartTime.value = p.start;
-      if (blockEndTime) blockEndTime.value = p.end;
-      if (blockReasonInput && !blockReasonInput.value) blockReasonInput.value = p.reason;
+      if (blockEndHour) blockEndHour.value = defaultEnd.hour;
+      if (blockEndMinute) blockEndMinute.value = defaultEnd.minute;
+      if (blockEndPeriod) blockEndPeriod.value = defaultEnd.period;
     }
 
     function isValid24HourTime(time) {
@@ -2116,10 +2176,6 @@
       toggleTuesdayBtn?.addEventListener("click", toggleTuesdayState);
       toggleExtendedHoursBtn?.addEventListener("click", toggleExtendedHoursState);
       saveTimeBlockBtn?.addEventListener("click", saveTimeBlock);
-
-      document.querySelectorAll(".preset-btn[data-preset]").forEach(btn => {
-        btn.addEventListener("click", () => applyPreset(btn.dataset.preset));
-      });
       timeBlocksList?.addEventListener("click", handleTimeBlocksListClick);
       appointmentsTableBody?.addEventListener("click", handleAppointmentActionClick);
       mobileCards?.addEventListener("click", handleAppointmentActionClick);
