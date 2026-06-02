@@ -114,6 +114,9 @@
     .time-select-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
     .time-block-list{display:grid;gap:12px;margin-top:18px;}
     .time-block-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.02);}
+    .time-block-actions{display:flex;gap:8px;flex-shrink:0;}
+    .edit-block-btn{padding:10px 14px;border-radius:12px;border:1px solid rgba(31,134,255,.28);background:rgba(31,134,255,.10);color:#cfe5ff;font-weight:700;min-height:42px;}
+    .edit-block-btn:hover{background:rgba(31,134,255,.2);transform:translateY(-1px);}
     .time-block-item h4{margin:0 0 5px;color:#fff;font-size:1rem;}
     .time-block-item p{margin:0;color:var(--muted);line-height:1.5;}
     .time-block-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;}
@@ -1568,18 +1571,88 @@
       }
 
       customScheduleList.innerHTML = entries.map(([fecha, data]) => `
-        <article class="time-block-item">
-          <div>
-            <h4>${escapeHTML(formatDate(fecha))}</h4>
-            <p><strong>${escapeHTML(formatStatusTime(data.customStart))} – ${escapeHTML(formatStatusTime(data.customEnd))}</strong>${data.reason ? " • " + escapeHTML(data.reason) : ""}</p>
-            <div class="time-block-meta">
-              <span class="mini-pill">Horario personalizado</span>
-              ${fecha === today ? '<span class="mini-pill">Hoy</span>' : ""}
+        <article class="time-block-item" id="custom-sched-${escapeHTMLAttr(fecha)}">
+          <div style="flex:1;min-width:0;">
+            <div class="custom-sched-view">
+              <h4>${escapeHTML(formatDate(fecha))}</h4>
+              <p><strong>${escapeHTML(formatStatusTime(data.customStart))} – ${escapeHTML(formatStatusTime(data.customEnd))}</strong>${data.reason ? " • " + escapeHTML(data.reason) : ""}</p>
+              <div class="time-block-meta">
+                <span class="mini-pill">Horario personalizado</span>
+                ${fecha === today ? '<span class="mini-pill">Hoy</span>' : ""}
+              </div>
+            </div>
+            <div class="custom-sched-edit" style="display:none;margin-top:12px;">
+              <div class="time-block-form" style="grid-template-columns:1fr 1fr 1fr 1.5fr auto;">
+                <div class="field"><label>Fecha</label><input type="date" class="edit-cs-date" value="${escapeHTMLAttr(fecha)}" min="${escapeHTMLAttr(today)}" /></div>
+                <div class="field"><label>Abre a las</label><input type="time" class="edit-cs-start" value="${escapeHTMLAttr(data.customStart)}" step="1800" /></div>
+                <div class="field"><label>Cierra a las</label><input type="time" class="edit-cs-end" value="${escapeHTMLAttr(data.customEnd)}" step="1800" /></div>
+                <div class="field"><label>Nota</label><input type="text" class="edit-cs-reason" value="${escapeHTMLAttr(data.reason || "")}" placeholder="Festivo, evento..." maxlength="80" /></div>
+                <button class="primary-btn save-cs-edit-btn" type="button" data-fecha="${escapeHTMLAttr(fecha)}">Guardar</button>
+              </div>
             </div>
           </div>
-          <button class="danger-btn" type="button" data-delete-custom-sched="${escapeHTMLAttr(fecha)}">Quitar</button>
+          <div class="time-block-actions">
+            <button class="edit-block-btn toggle-cs-edit-btn" type="button" data-fecha="${escapeHTMLAttr(fecha)}">Editar</button>
+            <button class="danger-btn" type="button" data-delete-custom-sched="${escapeHTMLAttr(fecha)}">Quitar</button>
+          </div>
         </article>
       `).join("");
+
+      // Bind toggle edit
+      customScheduleList.querySelectorAll(".toggle-cs-edit-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const article = document.getElementById(`custom-sched-${btn.dataset.fecha}`);
+          const view = article.querySelector(".custom-sched-view");
+          const edit = article.querySelector(".custom-sched-edit");
+          const isEditing = edit.style.display !== "none";
+          view.style.display = isEditing ? "" : "none";
+          edit.style.display = isEditing ? "none" : "";
+          btn.textContent = isEditing ? "Editar" : "Cancelar";
+        });
+      });
+
+      // Bind save edit
+      customScheduleList.querySelectorAll(".save-cs-edit-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!requireAuthAction()) return;
+          const oldFecha = btn.dataset.fecha;
+          const article = document.getElementById(`custom-sched-${oldFecha}`);
+          const newFecha = article.querySelector(".edit-cs-date").value;
+          const newStart = article.querySelector(".edit-cs-start").value;
+          const newEnd = article.querySelector(".edit-cs-end").value;
+          const newReason = article.querySelector(".edit-cs-reason").value.trim();
+          const today = getTodayISO();
+
+          if (!newFecha || !newStart || !newEnd) return showToast("Completa todos los campos");
+          if (newFecha < today) return showToast("No puedes poner una fecha pasada");
+          if (timeToMinutes(newStart) >= timeToMinutes(newEnd)) return showToast("La hora de cierre debe ser mayor");
+
+          btn.disabled = true;
+          btn.textContent = "Guardando...";
+
+          try {
+            // If date changed, remove old and create new
+            if (newFecha !== oldFecha) {
+              await firebase.database().ref(`dailyOverrides/${oldFecha}`).update({
+                customStart: null, customEnd: null, forceOpen: false, reason: null
+              });
+            }
+            await firebase.database().ref(`dailyOverrides/${newFecha}`).update({
+              customStart: newStart,
+              customEnd: newEnd,
+              forceOpen: true,
+              forceClosed: false,
+              reason: newReason || null,
+              updatedAt: new Date().toISOString()
+            });
+            showToast("Horario actualizado");
+          } catch (e) {
+            showToast("No se pudo guardar");
+            btn.disabled = false;
+            btn.textContent = "Guardar";
+          }
+        });
+      });
     }
 
         function saveTimeBlock() {
@@ -1645,18 +1718,82 @@
       }
 
       timeBlocksList.innerHTML = orderedBlocks.map(block => `
-        <article class="time-block-item">
-          <div>
-            <h4>${escapeHTML(formatDate(block.fecha))}</h4>
-            <p><strong>${escapeHTML(formatStatusTime(block.start))} - ${escapeHTML(formatStatusTime(block.end))}</strong> ${block.reason ? "• " + escapeHTML(block.reason) : ""}</p>
-            <div class="time-block-meta">
-              <span class="mini-pill">${isTimeBlockCurrentOrFuture(block) ? "Activo" : "Pasado"}</span>
-              <span class="mini-pill">${escapeHTML(String(timeBlockDuration(block.start, block.end)))} horas</span>
+        <article class="time-block-item" id="block-${escapeHTMLAttr(block.id)}">
+          <div style="flex:1;min-width:0;">
+            <div class="tb-view">
+              <h4>${escapeHTML(formatDate(block.fecha))}</h4>
+              <p><strong>${escapeHTML(formatStatusTime(block.start))} - ${escapeHTML(formatStatusTime(block.end))}</strong> ${block.reason ? "• " + escapeHTML(block.reason) : ""}</p>
+              <div class="time-block-meta">
+                <span class="mini-pill">${isTimeBlockCurrentOrFuture(block) ? "Activo" : "Pasado"}</span>
+                <span class="mini-pill">${escapeHTML(String(timeBlockDuration(block.start, block.end)))} horas</span>
+              </div>
+            </div>
+            <div class="tb-edit" style="display:none;margin-top:12px;">
+              <div class="time-block-form" style="grid-template-columns:1fr 1fr 1fr 1.5fr auto;">
+                <div class="field"><label>Fecha</label><input type="date" class="edit-tb-date" value="${escapeHTMLAttr(block.fecha)}" min="${escapeHTMLAttr(getTodayISO())}" /></div>
+                <div class="field"><label>Desde</label><input type="time" class="edit-tb-start" value="${escapeHTMLAttr(block.start)}" step="1800" /></div>
+                <div class="field"><label>Hasta</label><input type="time" class="edit-tb-end" value="${escapeHTMLAttr(block.end)}" step="1800" /></div>
+                <div class="field"><label>Motivo</label><input type="text" class="edit-tb-reason" value="${escapeHTMLAttr(block.reason || "")}" placeholder="Almuerzo, evento..." maxlength="80" /></div>
+                <button class="primary-btn save-tb-edit-btn" type="button" data-id="${escapeHTMLAttr(block.id)}">Guardar</button>
+              </div>
             </div>
           </div>
-          <button class="danger-btn" type="button" data-time-block-id="${escapeHTMLAttr(block.id)}">Eliminar</button>
+          <div class="time-block-actions">
+            <button class="edit-block-btn toggle-tb-edit-btn" type="button" data-id="${escapeHTMLAttr(block.id)}">Editar</button>
+            <button class="danger-btn" type="button" data-time-block-id="${escapeHTMLAttr(block.id)}">Eliminar</button>
+          </div>
         </article>
       `).join("");
+
+      // Bind toggle edit
+      timeBlocksList.querySelectorAll(".toggle-tb-edit-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const article = document.getElementById(`block-${btn.dataset.id}`);
+          const view = article.querySelector(".tb-view");
+          const edit = article.querySelector(".tb-edit");
+          const isEditing = edit.style.display !== "none";
+          view.style.display = isEditing ? "" : "none";
+          edit.style.display = isEditing ? "none" : "";
+          btn.textContent = isEditing ? "Editar" : "Cancelar";
+        });
+      });
+
+      // Bind save edit
+      timeBlocksList.querySelectorAll(".save-tb-edit-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!requireAuthAction()) return;
+          const id = btn.dataset.id;
+          const article = document.getElementById(`block-${id}`);
+          const newFecha = article.querySelector(".edit-tb-date").value;
+          const newStart = article.querySelector(".edit-tb-start").value;
+          const newEnd = article.querySelector(".edit-tb-end").value;
+          const newReason = article.querySelector(".edit-tb-reason").value.trim();
+          const today = getTodayISO();
+
+          if (!newFecha || !newStart || !newEnd) return showToast("Completa todos los campos");
+          if (newFecha < today) return showToast("No puedes poner una fecha pasada");
+          if (!isValid24HourTime(newStart) || !isValid24HourTime(newEnd)) return showToast("Formato de hora inválido");
+          if (timeToMinutes(newStart) >= timeToMinutes(newEnd)) return showToast("La hora final debe ser mayor que la inicial");
+
+          btn.disabled = true;
+          btn.textContent = "Guardando...";
+
+          try {
+            await customClosuresRef.child(id).update({
+              fecha: newFecha,
+              start: newStart,
+              end: newEnd,
+              reason: newReason || "",
+              updatedAt: new Date().toISOString()
+            });
+            showToast("Bloque actualizado");
+          } catch (e) {
+            showToast("No se pudo guardar");
+            btn.disabled = false;
+            btn.textContent = "Guardar";
+          }
+        });
+      });
     }
 
     function renderServicesEditor() {
