@@ -1262,117 +1262,83 @@
 
   <main class="main-shell" id="contenido-principal">
     <section class="layout">
-      <div class="panel form-panel">
-        <div class="panel-head">
-          <span class="eyebrow">Reserva online</span>
-          <h2>Agenda tu cita</h2>
-          <p>
-            Hazlo simple: servicio, día, hora, nombre y teléfono.
-          </p>
+  <div class="panel form-panel">
+  <div class="panel-head">
+    <span class="eyebrow">Reserva online</span>
+    <h2>Agenda tu cita</h2>
+    <p>Hazlo simple: nombre, teléfono, servicio, día y hora.</p>
+  </div>
+
+  <div class="closed-banner" id="shopClosedBanner" style="display:none;">
+    La barbería está cerrada en este momento. Puedes revisar disponibilidad para otro día.
+  </div>
+  <div class="booking-notice" id="bookingNotice" role="status" aria-live="polite"></div>
+
+  <form id="bookingForm" autocomplete="on">
+    <input type="hidden" id="barbero" name="barbero" value="Chocho la pinta" />
+    <div class="simple-hidden-fields" style="display:none;" aria-hidden="true">
+      <input type="checkbox" id="anonimo" name="anonimo" />
+    </div>
+
+    <!-- === SECCIÓN 1: Datos personales + Servicio === -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-number">1</div>
+        <div class="section-title">
+          <h3>Tus datos y servicio</h3>
+          <p>Nombre, teléfono y qué servicio quieres</p>
         </div>
-
-        <div class="closed-banner" id="shopClosedBanner">
-          La barbería está cerrada en este momento. Puedes revisar disponibilidad para otro día.
-        </div>
-
-        <div class="booking-notice" id="bookingNotice" role="status" aria-live="polite"></div>
-
-        
-
-        <form id="bookingForm" autocomplete="on">
-          <input type="hidden" id="barbero" name="barbero" value="Chocho la pinta" />
-
-          <div class="simple-hidden-fields" style="display:none;" aria-hidden="true">
-            <input type="checkbox" id="anonimo" name="anonimo" />
-          </div>
-
-          <div class="section-card">
-            <div class="section-head">
-              <div class="section-number">1</div>
-              <div class="section-title">
-                <h3>¿Qué quieres hacerte?</h3>
-                <p>Elige el servicio y el día que quieres venir.</p>
-              </div>
-            </div>
-
-            <div class="form-grid two-cols">
-              <div class="form-group">
-                <label for="servicio">Servicio que quieres</label>
-                <select id="servicio" name="servicio" required>
-                  <option value="">Cargando servicios...</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-  <label for="fecha">Día de la cita</label>
-  <input 
-    type="date" 
-    id="fecha" 
-    name="fecha" 
-    required 
-    class="date-input"
-  />
-</div>
-            </div>
-          </div>
-
-          <div class="section-card">
-            <div class="section-head">
-              <div class="section-number">2</div>
-              <div class="section-title">
-                <h3>Toca una hora libre</h3>
-                <p>Las horas ocupadas no aparecen.</p>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Horas libres</label>
-              <div class="hours-wrap">
-                <p class="hours-note">
-                  Primero elige servicio y día. Luego toca la hora que prefieras.
-                </p>
-                <div class="hours-grid" id="hoursGrid" role="list" aria-live="polite" aria-label="Horas disponibles"></div>
-              </div>
-              <input type="hidden" id="hora" name="hora" required />
-            </div>
-          </div>
-
-          <div class="section-card">
-            <div class="section-head">
-              <div class="section-number">3</div>
-              <div class="section-title">
-                <h3>¿A nombre de quién?</h3>
-                <p>Pon tu nombre y un teléfono para avisarte si hace falta.</p>
-              </div>
-            </div>
-
-            <div class="form-grid two-cols">
-              <div class="form-group">
-                <label for="nombre">Tu nombre</label>
-                <input type="text" id="nombre" name="nombre" required autocomplete="name" minlength="2" maxlength="80" placeholder="Tu nombre" />
-              </div>
-
-              <div class="form-group">
-                <label for="telefono">Teléfono</label>
-                <input
-                  type="tel"
-                  id="telefono"
-                  name="telefono"
-                  required
-                  autocomplete="tel"
-                  inputmode="tel"
-                  maxlength="16"
-                  placeholder="Tu WhatsApp o teléfono"
-                />
-              </div>
-            </div>
-          </div>
-
-          
-
-          <button type="submit" class="submit-btn" id="submitButton">Agendar mi cita</button>
-        </form>
       </div>
+      <div class="form-grid two-cols">
+        <div class="form-group">
+          <label for="nombre">Tu nombre</label>
+          <input type="text" id="nombre" name="nombre" required autocomplete="name" minlength="2" maxlength="80" placeholder="Tu nombre completo" />
+        </div>
+        <div class="form-group">
+          <label for="telefono">Teléfono / WhatsApp</label>
+          <input type="tel" id="telefono" name="telefono" required autocomplete="tel" inputmode="tel" maxlength="16" placeholder="Ej: 809-123-4567" />
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 18px;">
+        <label for="servicio">Servicio que quieres</label>
+        <select id="servicio" name="servicio" required>
+          <option value="">Cargando servicios...</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- === SECCIÓN 2: Fecha y Hora === -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-number">2</div>
+        <div class="section-title">
+          <h3>Fecha y hora</h3>
+          <p>Elige el día y una hora disponible</p>
+        </div>
+      </div>
+
+      <div class="form-grid two-cols">
+        <div class="form-group">
+          <label for="fecha">Día de la cita</label>
+          <input type="date" id="fecha" name="fecha" required class="date-input" />
+        </div>
+        <div class="form-group">
+          <label for="hora">Hora</label>
+          <div class="hours-wrap">
+            <p class="hours-note" id="hoursNote">
+              Selecciona primero el servicio y día
+            </p>
+            <div class="hours-grid" id="hoursGrid" role="list" aria-live="polite" aria-label="Horas disponibles"></div>
+          </div>
+          <input type="hidden" id="hora" name="hora" required />
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitButton">Agendar mi cita</button>
+  </form>
+</div>
 
       <aside class="panel side-panel horario-panel" aria-label="Horario de atención">
         <div class="booking-summary" id="bookingSummary" style="display: none;" aria-hidden="true">
