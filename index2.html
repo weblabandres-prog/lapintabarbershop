@@ -110,7 +110,9 @@
     .two-line-status{display:flex;flex-direction:column;gap:10px;}
     .status-help,.shop-status-text{margin:0 0 18px;font-size:.95rem;line-height:1.65;}
     .filters-grid,.tools-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}
-    .time-block-form{display:grid;grid-template-columns:1.1fr .8fr .8fr 1.4fr auto;gap:14px;align-items:end;}
+    .time-block-form{display:grid;grid-template-columns:1.1fr .8fr .8fr 1.4fr auto;gap:14px;align-items:end;min-width:0;}
+    .time-block-edit-form{grid-template-columns:1fr 1fr 1fr 1.5fr auto;}
+    .time-block-form .primary-btn{width:100%;justify-content:center;}
     .time-select-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
     .time-block-list{display:grid;gap:12px;margin-top:18px;}
     .time-block-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.02);}
@@ -186,7 +188,7 @@
     .modal-close-btn{padding:0 16px;}
     .services-scroll{overflow-y:auto;padding-right:8px;margin-top:10px;flex-grow:1;}
     @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important;}}
-    @media (max-width:1180px){.stats-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.filters-grid,.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    @media (max-width:1180px){.stats-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.filters-grid,.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form .field:nth-child(4),.time-block-form .primary-btn{grid-column:1 / -1;}}
     @media (max-width:920px){
       .mobile-topbar{display:flex;}
       .admin-shell{grid-template-columns:1fr;}
@@ -196,6 +198,8 @@
       .topbar,.status-head,.filters-header,.table-header{flex-direction:column;align-items:stretch;}
       .table-wrap{display:none;}
       .mobile-cards{display:grid;}
+      .time-block-item{align-items:stretch;}
+      .time-block-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;}
     }
     @media (max-width:640px){
       .main-content{padding:16px;}
@@ -203,6 +207,11 @@
       .stat-card{padding:10px 12px;}
       .stat-card strong{font-size:1.4rem;}
       .filters-grid,.tools-grid,.service-editor-mode,.time-block-form{grid-template-columns:1fr;}
+      .status-card{padding:18px;border-radius:22px;}
+      .time-block-form{gap:12px;}
+      .time-block-form .field,.time-block-form .primary-btn{grid-column:1 / -1;}
+      .time-block-actions{grid-template-columns:1fr 1fr;}
+      .time-block-actions button{min-width:0;padding-inline:12px;}
       .topbar h2{font-size:1.6rem;}
       .topbar>div>p{font-size:.86rem;margin-top:4px;}
       .topbar-actions,.table-actions{flex-direction:column;}
@@ -789,12 +798,7 @@
       </section>
 
       <section class="tools-grid" id="toolsSection">
-        <article class="tool-card">
-          <span class="eyebrow">Mantenimiento</span>
-          <h3>Eliminar citas vencidas</h3>
-          <p>Borra citas de dias anteriores o de hoy si su hora ya paso.</p>
-          <button id="deletePastBtn" class="danger-btn">Eliminar vencidas</button>
-        </article>
+        
         <article class="tool-card">
           <span class="eyebrow">Mantenimiento</span>
           <h3>Vaciar todo</h3>
@@ -1586,7 +1590,7 @@
               </div>
             </div>
             <div class="custom-sched-edit" style="display:none;margin-top:12px;">
-              <div class="time-block-form" style="grid-template-columns:1fr 1fr 1fr 1.5fr auto;">
+              <div class="time-block-form time-block-edit-form">
                 <div class="field"><label>Fecha</label><input type="date" class="edit-cs-date" value="${escapeHTMLAttr(fecha)}" min="${escapeHTMLAttr(today)}" /></div>
                 <div class="field"><label>Abre a las</label><input type="time" class="edit-cs-start" value="${escapeHTMLAttr(data.customStart)}" step="1800" /></div>
                 <div class="field"><label>Cierra a las</label><input type="time" class="edit-cs-end" value="${escapeHTMLAttr(data.customEnd)}" step="1800" /></div>
@@ -1733,7 +1737,7 @@
               </div>
             </div>
             <div class="tb-edit" style="display:none;margin-top:12px;">
-              <div class="time-block-form" style="grid-template-columns:1fr 1fr 1fr 1.5fr auto;">
+              <div class="time-block-form time-block-edit-form">
                 <div class="field"><label>Fecha</label><input type="date" class="edit-tb-date" value="${escapeHTMLAttr(block.fecha)}" min="${escapeHTMLAttr(getTodayISO())}" /></div>
                 <div class="field"><label>Desde</label><input type="time" class="edit-tb-start" value="${escapeHTMLAttr(block.start)}" step="1800" /></div>
                 <div class="field"><label>Hasta</label><input type="time" class="edit-tb-end" value="${escapeHTMLAttr(block.end)}" step="1800" /></div>
