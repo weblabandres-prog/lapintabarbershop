@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>La Pinta Barber | Reserva tu cita</title>
-  <meta name="description" content="Agenda tu cita en La Pinta Barber de forma rápida y sencilla." />
+  <meta name="description" content="Agenda tu cita en La Pinta Barber de forma rapida y sencilla." />
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -13,12 +13,11 @@
   <style>
     :root {
       --bg: #050912;
-      --card: rgba(9, 16, 27, .82);
-      --card-2: rgba(13, 23, 38, .94);
-      --line: rgba(255,255,255,.12);
+      --panel: rgba(9, 16, 27, .88);
+      --panel-strong: rgba(13, 23, 38, .96);
+      --line: rgba(255, 255, 255, .13);
       --text: #f7f9ff;
       --muted: #aebdd4;
-      --muted-2: #8293ac;
       --blue: #1f86ff;
       --blue-2: #72baff;
       --green: #8ff0bc;
@@ -26,64 +25,72 @@
       --yellow: #ffd27a;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
-      --shadow: 0 26px 76px rgba(0,0,0,.40);
+      --shadow: 0 24px 70px rgba(0, 0, 0, .42);
     }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
+
     html {
       scroll-behavior: smooth;
     }
+
     body {
       min-height: 100svh;
       font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       color: var(--text);
       background:
-        radial-gradient(circle at top right, rgba(31,134,255,.22), transparent 34%),
-        linear-gradient(180deg, #050912 0%, #07101d 48%, #03060c 100%);
+        radial-gradient(circle at 78% 0%, rgba(31, 134, 255, .20), transparent 30%),
+        linear-gradient(180deg, #050912 0%, #07101d 52%, #03060c 100%);
       overflow-x: hidden;
     }
+
     a {
       color: inherit;
       text-decoration: none;
     }
+
     button {
       font: inherit;
     }
+
     .page {
-      width: min(1180px, calc(100% - 28px));
+      width: min(1120px, calc(100% - 28px));
       min-height: 100svh;
       margin: 0 auto;
-      padding: calc(16px + var(--safe-top)) 0 calc(16px + var(--safe-bottom));
+      padding: calc(14px + var(--safe-top)) 0 calc(18px + var(--safe-bottom));
       display: grid;
-      grid-template-rows: auto auto auto;
       gap: 14px;
     }
+
     .topbar {
-      min-height: 72px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      padding: 10px 12px;
+      gap: 12px;
+      min-height: 68px;
+      padding: 9px 10px;
       border: 1px solid var(--line);
-      border-radius: 26px;
+      border-radius: 24px;
       background: rgba(5, 9, 18, .82);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      box-shadow: 0 18px 48px rgba(0,0,0,.28);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 16px 42px rgba(0, 0, 0, .28);
     }
+
     .brand {
       min-width: 0;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 11px;
     }
+
     .brand-logo-wrap {
-      width: 52px;
-      height: 52px;
+      width: 50px;
+      height: 50px;
       flex: 0 0 auto;
       display: grid;
       place-items: center;
@@ -92,107 +99,133 @@
       padding: 5px;
       overflow: hidden;
     }
+
     .brand-logo {
       width: 100%;
       height: 100%;
       object-fit: contain;
       display: block;
     }
+
     .brand small {
       display: block;
-      margin-bottom: 5px;
-      color: var(--muted-2);
-      font-size: .64rem;
+      margin-bottom: 4px;
+      color: #8293ac;
+      font-size: .62rem;
       font-weight: 900;
-      letter-spacing: .18em;
+      letter-spacing: .16em;
       text-transform: uppercase;
       white-space: nowrap;
     }
+
     .brand strong {
       display: block;
       font-family: "Cormorant Garamond", serif;
-      font-size: clamp(1.15rem, 2.2vw, 1.55rem);
+      font-size: clamp(1.12rem, 2.2vw, 1.48rem);
       line-height: .95;
       white-space: nowrap;
     }
+
     .nav-actions {
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      gap: 9px;
-      flex-wrap: wrap;
+      gap: 8px;
     }
+
     .btn,
-    .mini-btn {
+    .mini-btn,
+    .bank-pay-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.13);
-      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255, 255, 255, .14);
+      background: rgba(255, 255, 255, .07);
       color: #fff;
       font-weight: 900;
       white-space: nowrap;
       transition: transform .2s ease, background .2s ease, border-color .2s ease;
+      cursor: pointer;
     }
+
+    .btn:hover,
+    .mini-btn:hover,
+    .bank-pay-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, .11);
+      border-color: rgba(255, 255, 255, .24);
+    }
+
     .mini-btn {
       min-height: 42px;
       padding: 10px 14px;
       font-size: .86rem;
     }
+
     .btn {
-      min-height: 64px;
-      padding: 18px 32px;
-      font-size: 1.08rem;
+      min-height: 62px;
+      padding: 17px 28px;
+      font-size: 1.05rem;
     }
-    .btn:hover,
-    .mini-btn:hover {
-      transform: translateY(-1px);
-      background: rgba(255,255,255,.11);
-      border-color: rgba(255,255,255,.22);
-    }
+
     .primary {
       background: linear-gradient(135deg, var(--blue), var(--blue-2));
       color: #04101d;
       border-color: transparent;
-      box-shadow: 0 18px 34px rgba(31,134,255,.22);
+      box-shadow: 0 18px 34px rgba(31, 134, 255, .24);
     }
+
     .hero {
-      min-height: 430px;
+      position: relative;
+      min-height: 650px;
       display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(315px, .95fr);
-      gap: 14px;
-      align-items: stretch;
-    }
-    .hero-main,
-    .photo-card,
-    .compact-card {
+      align-items: end;
+      overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 32px;
-      background: var(--card);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      background: #07101d;
       box-shadow: var(--shadow);
-      overflow: hidden;
     }
-    .hero-main {
-      position: relative;
-      min-height: 100%;
-      padding: clamp(24px, 4vw, 46px);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+
+    .hero-photo {
+      position: absolute;
+      inset: 0;
+    }
+
+    .hero-photo img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      filter: saturate(1.05) contrast(1.03);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
       background:
-        linear-gradient(180deg, rgba(12,21,35,.86), rgba(6,11,20,.90)),
-        radial-gradient(circle at bottom right, rgba(31,134,255,.20), transparent 45%);
+        linear-gradient(90deg, rgba(3, 6, 12, .88) 0%, rgba(3, 6, 12, .58) 46%, rgba(3, 6, 12, .18) 100%),
+        linear-gradient(180deg, rgba(3, 6, 12, .10) 0%, rgba(3, 6, 12, .86) 100%);
+      pointer-events: none;
     }
-    .label-row {
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: min(720px, 100%);
+      padding: clamp(24px, 5vw, 54px);
+    }
+
+    .status-line {
       display: flex;
       align-items: center;
       gap: 9px;
       flex-wrap: wrap;
       margin-bottom: 14px;
     }
+
     .kicker,
     .status-badge {
       display: inline-flex;
@@ -203,302 +236,263 @@
       font-size: .72rem;
       font-weight: 900;
     }
+
     .kicker {
       color: #cce6ff;
-      background: rgba(31,134,255,.15);
-      border: 1px solid rgba(31,134,255,.25);
+      background: rgba(31, 134, 255, .16);
+      border: 1px solid rgba(31, 134, 255, .28);
       letter-spacing: .12em;
       text-transform: uppercase;
     }
+
     .status-badge {
       color: var(--yellow);
       background: rgba(255, 210, 122, .12);
       border: 1px solid rgba(255, 210, 122, .23);
     }
+
     .status-badge.open {
       color: var(--green);
-      background: rgba(43,198,130,.12);
-      border-color: rgba(43,198,130,.25);
+      background: rgba(43, 198, 130, .13);
+      border-color: rgba(43, 198, 130, .26);
     }
+
     .status-badge.closed {
       color: var(--red);
-      background: rgba(229,57,53,.12);
-      border-color: rgba(229,57,53,.24);
+      background: rgba(229, 57, 53, .13);
+      border-color: rgba(229, 57, 53, .26);
     }
+
     h1 {
-      max-width: 700px;
+      max-width: 660px;
       margin-bottom: 12px;
       font-family: "Cormorant Garamond", serif;
-      font-size: clamp(2.8rem, 6.5vw, 5.6rem);
+      font-size: clamp(3.3rem, 7vw, 6.2rem);
       line-height: .84;
-      letter-spacing: -.055em;
+      letter-spacing: 0;
     }
+
     .lead {
-      max-width: 610px;
+      max-width: 560px;
       margin-bottom: 22px;
       color: var(--muted);
-      font-size: clamp(.96rem, 1.5vw, 1.08rem);
-      line-height: 1.5;
+      font-size: clamp(.98rem, 1.5vw, 1.1rem);
+      line-height: 1.52;
     }
+
     .hero-buttons {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
-    .photo-card {
-      min-height: 100%;
-      position: relative;
-      background: #08111f;
-    }
-    .photo-card img {
-      width: 100%;
-      height: 100%;
-      min-height: 430px;
-      object-fit: cover;
-      display: block;
-      filter: saturate(1.06) contrast(1.02);
-    }
-    .photo-badge {
-      position: absolute;
-      left: 16px;
-      right: 16px;
-      bottom: 16px;
-      padding: 14px;
-      border-radius: 22px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(4,8,15,.72);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-    }
-    .photo-badge strong {
-      display: block;
-      margin-bottom: 4px;
-      font-size: .98rem;
-    }
-    .photo-badge span {
-      display: block;
-      color: var(--muted);
-      font-size: .84rem;
-      line-height: 1.35;
-    }
+
     .info-grid {
       display: grid;
-      grid-template-columns: 1.1fr .9fr .95fr;
+      grid-template-columns: minmax(0, .86fr) minmax(0, 1.14fr);
       gap: 14px;
     }
-    .compact-card {
-      padding: 16px;
-      background: var(--card-2);
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: var(--panel-strong);
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
+
+    .payment-card {
+      padding: 18px;
+    }
+
     .card-title {
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
+      margin-bottom: 14px;
     }
+
     .card-title span {
+      display: block;
+      margin-bottom: 5px;
       color: #7dbbff;
       font-size: .7rem;
       font-weight: 900;
       letter-spacing: .16em;
       text-transform: uppercase;
     }
+
     .card-title h2 {
-      margin-top: 4px;
-      font-size: 1.08rem;
-      line-height: 1.1;
+      font-size: 1.15rem;
+      line-height: 1.15;
     }
-    .services {
+
+    .bank-list {
       display: grid;
-      gap: 8px;
+      gap: 9px;
     }
-    .bank-services {
-      grid-template-columns: 1fr;
-    }
-    .service,
+
     .bank-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
-      gap: 9px;
-      padding: 10px 11px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.045);
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, .10);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .045);
     }
-    .service strong,
+
     .bank-row strong {
       display: block;
       margin-bottom: 2px;
-      font-size: .86rem;
+      font-size: .9rem;
       line-height: 1.14;
     }
-    .service small,
+
     .bank-row small {
       color: var(--muted);
-      font-size: .74rem;
+      font-size: .76rem;
       font-weight: 700;
     }
-    .price,
-    .copy-number {
-      color: #dcecff;
-      font-size: .82rem;
-      font-weight: 900;
-      white-space: nowrap;
-    }
+
     .bank-pay-btn {
-      border: none;
-      outline: none;
-      cursor: pointer;
-      color: #dcecff;
-      background: rgba(31,134,255,.14);
-      border: 1px solid rgba(31,134,255,.24);
-      border-radius: 999px;
+      min-height: 40px;
       padding: 9px 12px;
-      font-size: .78rem;
-      font-weight: 900;
-      white-space: nowrap;
-      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+      color: #dcecff;
+      background: rgba(31, 134, 255, .14);
+      border-color: rgba(31, 134, 255, .25);
+      font-size: .8rem;
     }
-    .bank-pay-btn:hover {
-      transform: translateY(-1px);
-      background: rgba(31,134,255,.22);
-      border-color: rgba(31,134,255,.36);
-    }
+
     .bank-note {
-      margin-top: 10px;
+      margin-top: 12px;
       color: var(--muted);
-      font-size: .78rem;
-      line-height: 1.35;
+      font-size: .8rem;
+      line-height: 1.4;
     }
-    .map-card {
-      padding: 0;
-      min-height: 245px;
-    }
+
     .map-card iframe {
       width: 100%;
       height: 100%;
-      min-height: 245px;
+      min-height: 300px;
       border: 0;
       display: block;
-      filter: saturate(.92) contrast(.98);
+      filter: saturate(.94) contrast(.98);
     }
-    @media (max-width: 980px) {
+
+    @media (max-width: 860px) {
       .hero {
-        grid-template-columns: 1fr;
-        min-height: auto;
+        min-height: 590px;
       }
-      .photo-card img {
-        min-height: 260px;
-        max-height: 290px;
+
+      .hero::after {
+        background:
+          linear-gradient(180deg, rgba(3, 6, 12, .18) 0%, rgba(3, 6, 12, .92) 72%, rgba(3, 6, 12, .98) 100%);
       }
+
       .info-grid {
         grid-template-columns: 1fr;
       }
-      .map-card iframe {
-        min-height: 260px;
-      }
     }
+
     @media (max-width: 560px) {
       .page {
-        width: min(100% - 18px, 760px);
-        padding-top: calc(10px + var(--safe-top));
+        width: min(100% - 16px, 760px);
+        padding-top: calc(8px + var(--safe-top));
         gap: 10px;
       }
+
       .topbar {
-        min-height: 60px;
-        border-radius: 22px;
+        min-height: 58px;
+        border-radius: 20px;
         padding: 8px;
       }
+
       .brand-logo-wrap {
-        width: 43px;
-        height: 43px;
+        width: 42px;
+        height: 42px;
       }
-      .brand small {
-        display: none;
-      }
-      .brand strong {
-        font-size: 1.12rem;
-      }
-      .mini-btn {
-        min-height: 38px;
-        padding: 9px 11px;
-        font-size: .78rem;
-      }
+
+      .brand small,
       .mini-btn.hide-mobile {
         display: none;
       }
-      .hero-main {
-        border-radius: 26px;
-        padding: 20px;
+
+      .brand strong {
+        font-size: 1.1rem;
       }
-      .label-row {
+
+      .mini-btn {
+        min-height: 38px;
+        padding: 9px 12px;
+        font-size: .78rem;
+      }
+
+      .hero {
+        min-height: calc(100svh - 84px);
+        border-radius: 24px;
+      }
+
+      .hero-photo img {
+        object-position: center top;
+      }
+
+      .hero-content {
+        padding: 18px;
+      }
+
+      .status-line {
         margin-bottom: 10px;
       }
+
       .kicker,
       .status-badge {
         min-height: 30px;
         padding: 7px 10px;
-        font-size: .66rem;
+        font-size: .65rem;
       }
+
       h1 {
         margin-bottom: 9px;
-        font-size: clamp(2.32rem, 14vw, 3.8rem);
+        font-size: clamp(3rem, 15vw, 4.4rem);
+        line-height: .82;
       }
+
       .lead {
         margin-bottom: 15px;
-        font-size: .9rem;
-        line-height: 1.38;
+        font-size: .93rem;
+        line-height: 1.42;
       }
+
+      .hero-buttons {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 9px;
+      }
+
       .btn {
-        min-height: 56px;
-        padding: 15px 22px;
-        font-size: .98rem;
+        width: 100%;
+        min-height: 58px;
+        padding: 15px 18px;
+        font-size: 1rem;
       }
-      .photo-card img {
-        min-height: 210px;
-        max-height: 230px;
+
+      .payment-card {
+        padding: 14px;
       }
-      .photo-badge {
-        left: 12px;
-        right: 12px;
-        bottom: 12px;
-        padding: 12px;
-        border-radius: 18px;
+
+      .card {
+        border-radius: 22px;
       }
-      .compact-card {
-        padding: 12px;
-        border-radius: 24px;
-      }
-      .services {
-        grid-template-columns: 1fr 1fr;
-      }
-      .bank-services {
-        grid-template-columns: 1fr;
-      }
-      .service {
-        grid-template-columns: 1fr;
-        gap: 4px;
-        padding: 9px;
-      }
-      .service strong {
-        font-size: .76rem;
-      }
-      .service small {
-        display: none;
-      }
+
       .bank-row {
         grid-template-columns: 1fr;
-        gap: 7px;
+        gap: 8px;
       }
+
       .bank-pay-btn {
         width: 100%;
-        justify-content: center;
-        padding: 10px 12px;
       }
+
       .map-card iframe {
-        min-height: 220px;
+        min-height: 235px;
       }
     }
   </style>
@@ -511,77 +505,60 @@
           <img src="logo.jpeg" alt="La Pinta Barber" class="brand-logo" />
         </div>
         <div>
-          <small>Barbería premium</small>
+          <small>Barberia premium</small>
           <strong>La Pinta Barber</strong>
         </div>
       </a>
-      <nav class="nav-actions" aria-label="Accesos rápidos">
+      <nav class="nav-actions" aria-label="Accesos rapidos">
         <a class="mini-btn hide-mobile" href="ver-citas.html">Ver citas</a>
         <a class="mini-btn primary" href="cita.html">Agendar</a>
       </nav>
     </header>
 
     <main class="hero" id="inicio">
-      <section class="hero-main">
-        <div class="label-row">
-          <span class="kicker">Reserva en minutos</span>
+      <div class="hero-photo" aria-hidden="true">
+        <img src="Barberia.jfif" alt="" />
+      </div>
+      <section class="hero-content">
+        <div class="status-line">
+          <span class="kicker">Reserva online</span>
           <div class="status-badge" id="shopStatusBadge">Consultando horario...</div>
         </div>
-        
+        <h1>La Pinta Barber</h1>
+        <p class="lead">Agenda tu cita rapido. Elige tu servicio, confirma tu horario y llega directo al corte.</p>
         <div class="hero-buttons">
           <a href="cita.html" class="btn primary">Agendar cita</a>
           <a href="ver-citas.html" class="btn">Ver citas</a>
         </div>
       </section>
-      <aside class="photo-card" aria-label="Foto de la barbería">
-        <img src="Barberia.jfif" alt="Interior de La Pinta Barber" />
-        <div class="photo-badge">
-          <strong>La Pinta Barber</strong>
-          <span>Ambiente cómodo, cortes limpios y reserva online.</span>
-        </div>
-      </aside>
     </main>
 
     <section class="info-grid">
-      <article class="compact-card">
+      <article class="card payment-card">
         <div class="card-title">
-          <div>
-            <span>Cuentas</span>
-            <h2>Pago por transferencia</h2>
-          </div>
+          <span>Pagos</span>
+          <h2>Cuentas para transferencia</h2>
         </div>
-        <div class="services bank-services">
+        <div class="bank-list">
           <div class="bank-row">
             <span>
               <strong>Banreservas</strong>
               <small>Cuenta de ahorro</small>
             </span>
-            <button
-              type="button"
-              class="bank-pay-btn"
-              onclick="copyAndOpenBank('9602003811', 'banreservas')">
-              9602003811
-            </button>
+            <button type="button" class="bank-pay-btn" onclick="copyAndOpenBank('9602003811', 'banreservas')">9602003811</button>
           </div>
           <div class="bank-row">
             <span>
               <strong>Popular</strong>
               <small>Cuenta de ahorro</small>
             </span>
-            <button
-              type="button"
-              class="bank-pay-btn"
-              onclick="copyAndOpenBank('853557841', 'popular')">
-              853557841
-            </button>
+            <button type="button" class="bank-pay-btn" onclick="copyAndOpenBank('853557841', 'popular')">853557841</button>
           </div>
         </div>
-        <p class="bank-note">
-          Toca la cuenta: se copia el número y se intenta abrir la app del banco para hacer la transferencia más fácil.
-        </p>
+        <p class="bank-note">Toca la cuenta para copiar el numero y abrir la app del banco.</p>
       </article>
 
-      <article class="compact-card map-card" aria-label="Mapa de ubicación">
+      <article class="card map-card" aria-label="Mapa de ubicacion">
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3781.0045146839834!2d-69.49556079999999!3d18.618866699999998!2m3!1f0!3f0!0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8eaf710073f004cf%3A0xba6e8449aff7acca!2sLa%20Pinta%20Barber!5e0!3m2!1ses-419!2sdo!4v1775521244096!5m2!1ses-419!2sdo"
           allowfullscreen
@@ -627,22 +604,20 @@
 
     async function copyAndOpenBank(accountNumber, bank) {
       const copied = await copyAccountNumber(accountNumber);
-      const bankName = bank === 'banreservas' ? 'Banreservas' : 'Popular';
+      const bankName = bank === "banreservas" ? "Banreservas" : "Popular";
 
       if (copied) {
-        alert(`✅ Número copiado: ${accountNumber}\n\nSe intentará abrir la app de ${bankName} para que puedas pegar el número y hacer la transferencia.`);
+        alert(`Numero copiado: ${accountNumber}\n\nSe intentara abrir la app de ${bankName}.`);
       } else {
-        alert(`Número: ${accountNumber}\nCópialo manualmente.`);
+        alert(`Numero: ${accountNumber}\nCopialo manualmente.`);
       }
 
-      // Intentar abrir la app del banco
       if (bank === "popular") {
         window.location.href = "https://deeplink.popularenlinea.com/dashboard";
         setTimeout(() => {
           window.location.href = "https://play.google.com/store/apps/details?id=com.popular.app.android";
         }, 700);
-      } 
-      else if (bank === "banreservas") {
+      } else if (bank === "banreservas") {
         const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
         const isAndroid = /Android/i.test(navigator.userAgent);
 
@@ -670,6 +645,7 @@
       appId: "1:763008264452:web:4adb64267606266deb4851",
       measurementId: "G-QHN4PX48D4"
     };
+
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const shopStatusRef = db.ref("shopStatus");
@@ -681,8 +657,8 @@
       statusBadge.classList.toggle("open", isOpen);
       statusBadge.classList.toggle("closed", !isOpen);
       statusBadge.textContent = isOpen
-        ? "Abierto · agenda tu cita"
-        : "Cerrado por el momento · agenda para otro día";
+        ? "Abierto ahora"
+        : "Cerrado por el momento";
     }
 
     shopStatusRef.on("value", snapshot => {
