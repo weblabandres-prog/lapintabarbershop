@@ -1220,7 +1220,1307 @@
       }
     }
 
-  </style>
+
+    .booking-page {
+      background:
+        linear-gradient(rgba(255,255,255,.72), rgba(255,255,255,.72)),
+        repeating-linear-gradient(0deg, rgba(9,17,32,.045) 0 1px, transparent 1px 22px),
+        repeating-linear-gradient(90deg, rgba(9,17,32,.04) 0 1px, transparent 1px 22px),
+        #f7f9ff;
+      color: #0e1728;
+    }
+
+    .booking-page .topbar {
+      background: rgba(255,255,255,.82);
+      border-bottom-color: rgba(14,23,40,.08);
+      box-shadow: 0 12px 40px rgba(15,23,42,.06);
+    }
+
+    .booking-page .brand-copy small,
+    .booking-page .hero-content p,
+    .booking-page .panel-head p,
+    .booking-page .section-title p,
+    .booking-page .hours-note {
+      color: #8492a8;
+    }
+
+    .booking-page .brand-copy strong,
+    .booking-page .hero-content h1,
+    .booking-page .panel-head h2,
+    .booking-page .section-title h3,
+    .booking-page .form-group label {
+      color: #0e1728;
+    }
+
+    .booking-page .hero {
+      display: none;
+    }
+
+    .booking-page .main-shell {
+      margin-top: 20px;
+    }
+
+    .booking-flow {
+      display: grid;
+      gap: 18px;
+    }
+
+    .booking-steps {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      align-items: start;
+      margin-bottom: 6px;
+    }
+
+    .step-pill {
+      position: relative;
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      color: #9aa8ba;
+      font-size: .78rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .step-pill::before {
+      content: "";
+      position: absolute;
+      top: 20px;
+      left: calc(-50% + 34px);
+      width: calc(100% - 68px);
+      height: 3px;
+      background: rgba(148,163,184,.25);
+    }
+
+    .step-pill:first-child::before {
+      display: none;
+    }
+
+    .step-dot {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,.88);
+      color: #94a3b8;
+      box-shadow: 0 10px 25px rgba(15,23,42,.08);
+      border: 1px solid rgba(15,23,42,.06);
+      font-size: 1rem;
+    }
+
+    .step-pill.active {
+      color: #0e1728;
+    }
+
+    .step-pill.active .step-dot {
+      color: #fff;
+      background: linear-gradient(135deg, #7c1dff, #9827ff);
+      box-shadow: 0 16px 32px rgba(124,29,255,.22);
+      border-color: transparent;
+    }
+
+    .step-pill.done .step-dot {
+      color: #fff;
+      background: #0e1728;
+      border-color: transparent;
+    }
+
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .form-panel {
+      max-width: 900px;
+      margin: 0 auto;
+      background: rgba(255,255,255,.76);
+      border: 1px solid rgba(15,23,42,.06);
+      box-shadow: 0 30px 80px rgba(15,23,42,.10);
+      border-radius: 34px;
+      color: #0e1728;
+    }
+
+    .side-panel {
+      display: none;
+    }
+
+    .section-card {
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(15,23,42,.06);
+      border-radius: 28px;
+      box-shadow: 0 20px 50px rgba(15,23,42,.06);
+    }
+
+    .section-number {
+      background: linear-gradient(135deg, #7c1dff, #9827ff);
+      color: #fff;
+    }
+
+    .native-service-select {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .service-cards {
+      display: grid;
+      gap: 14px;
+    }
+
+    .service-card {
+      width: 100%;
+      min-height: 128px;
+      display: grid;
+      grid-template-columns: 118px minmax(0, 1fr) 52px;
+      align-items: center;
+      gap: 18px;
+      border: 1px solid rgba(15,23,42,.06);
+      border-radius: 24px;
+      padding: 18px;
+      background: rgba(255,255,255,.88);
+      color: #0e1728;
+      box-shadow: 0 18px 42px rgba(15,23,42,.06);
+      cursor: pointer;
+      text-align: left;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .service-card:hover,
+    .service-card.active {
+      transform: translateY(-2px);
+      border-color: rgba(124,29,255,.28);
+      box-shadow: 0 24px 54px rgba(124,29,255,.12);
+    }
+
+    .service-icon {
+      width: 100%;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: 20px;
+      background: linear-gradient(180deg, #f8fbff, #eef3fb);
+      color: #cbd5e1;
+      font-size: 2.1rem;
+      font-weight: 700;
+    }
+
+    .service-name {
+      display: block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #0f172a;
+      font-size: clamp(1.15rem, 3vw, 1.8rem);
+      line-height: 1.05;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .service-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 9px;
+      color: #718096;
+      font-weight: 900;
+      font-size: .95rem;
+    }
+
+    .service-price {
+      color: #00844e;
+      font-size: 1.25rem;
+      font-weight: 900;
+    }
+
+    .service-arrow {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #fff;
+      color: #cbd5e1;
+      box-shadow: 0 8px 22px rgba(15,23,42,.10);
+      font-size: 1.6rem;
+    }
+
+    .selected-service-card {
+      display: grid;
+      grid-template-columns: 84px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding: 16px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #f7faff, #eef4ff);
+      border: 1px solid rgba(15,23,42,.05);
+    }
+
+    .selected-service-card .service-icon {
+      border-radius: 18px;
+    }
+
+    .selected-service-card h4 {
+      margin: 0 0 8px;
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      line-height: 1.1;
+      color: #0f172a;
+      text-transform: uppercase;
+    }
+
+    .change-service-btn {
+      border: none;
+      background: transparent;
+      color: #8492a8;
+      font-weight: 900;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .date-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .date-chip {
+      min-height: 92px;
+      display: grid;
+      place-items: center;
+      gap: 4px;
+      border: 1px solid rgba(15,23,42,.05);
+      border-radius: 22px;
+      background: rgba(255,255,255,.78);
+      color: #718096;
+      box-shadow: 0 12px 30px rgba(15,23,42,.04);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .date-chip span {
+      font-size: .8rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .date-chip strong {
+      color: #64748b;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .date-chip.active {
+      background: #0e1728;
+      color: #fff;
+      box-shadow: 0 18px 40px rgba(15,23,42,.20);
+    }
+
+    .date-chip.active strong {
+      color: #fff;
+    }
+
+    .form-group input,
+    .form-group select,
+    .hours-wrap {
+      background: rgba(255,255,255,.82);
+      border-color: rgba(15,23,42,.08);
+      color: #0e1728;
+    }
+
+    .hours-wrap {
+      padding: 0;
+      border: none;
+      background: transparent;
+    }
+
+    .hours-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .hour-btn {
+      min-height: 64px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.76);
+      border-color: rgba(15,23,42,.05);
+      color: #405066;
+      font-size: 1.1rem;
+      box-shadow: 0 12px 28px rgba(15,23,42,.04);
+    }
+
+    .hour-btn.active {
+      background: linear-gradient(135deg, #7c1dff, #9827ff);
+      color: #fff;
+      box-shadow: 0 18px 35px rgba(124,29,255,.24);
+    }
+
+    .confirm-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, #7c1dff, #9827ff);
+      color: #fff;
+      border: none;
+      box-shadow: 0 20px 45px rgba(124,29,255,.25);
+    }
+
+    @media (max-width: 700px) {
+      .booking-page .main-shell {
+        width: min(100% - 20px, var(--max));
+        margin-top: 12px;
+      }
+
+      .booking-steps {
+        gap: 4px;
+      }
+
+      .step-pill {
+        font-size: .68rem;
+      }
+
+      .step-dot {
+        width: 42px;
+        height: 42px;
+      }
+
+      .form-panel {
+        border-radius: 28px;
+        padding: 18px;
+      }
+
+      .service-card {
+        min-height: 126px;
+        grid-template-columns: 94px minmax(0, 1fr) 46px;
+        gap: 14px;
+        padding: 14px;
+        border-radius: 22px;
+      }
+
+      .service-name {
+        font-size: 1.15rem;
+      }
+
+      .service-price {
+        font-size: 1.12rem;
+      }
+
+      .service-arrow {
+        width: 46px;
+        height: 46px;
+      }
+
+      .selected-service-card {
+        grid-template-columns: 64px minmax(0, 1fr);
+      }
+
+      .change-service-btn {
+        grid-column: 1 / -1;
+        justify-self: start;
+      }
+
+      .date-strip {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      .date-chip {
+        min-width: 86px;
+        min-height: 86px;
+      }
+
+      .confirm-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Ajuste final: colores originales oscuros y orden simple */
+    .booking-page {
+      background:
+        radial-gradient(circle at 12% 8%, rgba(31,134,255,0.08), transparent 26%),
+        radial-gradient(circle at 86% 18%, rgba(31,134,255,0.11), transparent 28%),
+        linear-gradient(180deg, #05070b 0%, #0b1018 48%, #03050a 100%);
+      color: var(--text);
+    }
+
+    .booking-page .topbar {
+      background: rgba(5, 8, 14, 0.84);
+      border-bottom-color: rgba(255,255,255,0.07);
+      box-shadow: 0 14px 36px rgba(0,0,0,0.22);
+    }
+
+    .booking-page .hero {
+      display: none;
+    }
+
+    .booking-page .main-shell {
+      margin-top: 20px;
+    }
+
+    .booking-page .brand-copy strong,
+    .booking-page .panel-head h2,
+    .booking-page .section-title h3,
+    .booking-page .form-group label {
+      color: var(--text);
+    }
+
+    .booking-page .brand-copy small,
+    .booking-page .panel-head p,
+    .booking-page .section-title p,
+    .booking-page .hours-note {
+      color: var(--muted-2);
+    }
+
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .form-panel {
+      width: min(100%, 920px);
+      margin: 0 auto;
+      background: rgba(14,20,30,.92);
+      border: 1px solid var(--line);
+      color: var(--text);
+      box-shadow: var(--shadow-lg);
+      border-radius: 28px;
+    }
+
+    .side-panel {
+      display: none;
+    }
+
+    .booking-flow {
+      display: grid;
+      gap: 18px;
+    }
+
+    .section-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: none;
+    }
+
+    .section-card:hover {
+      background: rgba(255,255,255,.04);
+      border-color: rgba(31,134,255,.18);
+    }
+
+    .section-number {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #07111f;
+    }
+
+    .booking-steps {
+      max-width: 760px;
+      margin-inline: auto;
+    }
+
+    .step-pill {
+      color: var(--muted-2);
+    }
+
+    .step-pill::before {
+      background: rgba(255,255,255,.14);
+    }
+
+    .step-dot {
+      background: rgba(255,255,255,.045);
+      color: var(--muted);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .step-pill.active {
+      color: var(--text);
+    }
+
+    .step-pill.active .step-dot,
+    .step-pill.done .step-dot {
+      color: #07111f;
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      border-color: transparent;
+      box-shadow: 0 14px 28px rgba(31,134,255,.22);
+    }
+
+    .service-cards {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    #serviceSection {
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.96), rgba(239,246,255,.92));
+      border-color: rgba(255,255,255,.22);
+      border-radius: 30px;
+      padding: clamp(18px, 3vw, 28px);
+      box-shadow: 0 28px 70px rgba(0,0,0,.20);
+    }
+
+    #serviceSection .section-title h3 {
+      color: #0f172a;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    #serviceSection .section-title p {
+      color: #8492a8;
+      font-weight: 800;
+    }
+
+    #serviceSection .section-number {
+      background: linear-gradient(135deg, #7c1dff, #9827ff);
+      color: #fff;
+    }
+
+    .service-card {
+      min-height: 132px;
+      grid-template-columns: 118px minmax(0, 1fr) 54px;
+      gap: 18px;
+      padding: 18px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(15,23,42,.04);
+      color: #0f172a;
+      box-shadow: 0 18px 45px rgba(15,23,42,.08);
+    }
+
+    .service-card:hover,
+    .service-card.active {
+      border-color: rgba(124,29,255,.22);
+      background: #fff;
+      box-shadow: 0 24px 58px rgba(124,29,255,.13);
+    }
+
+    .service-icon {
+      border-radius: 20px;
+      background: linear-gradient(180deg, #fbfdff, #f1f5fb);
+      color: #cbd5e1;
+      font-size: 2rem;
+    }
+
+    .service-name {
+      color: #0f172a;
+      font-size: clamp(1.28rem, 3vw, 1.95rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .service-meta {
+      color: #718096;
+      font-size: .95rem;
+      gap: 10px;
+    }
+
+    .service-price {
+      color: #00844e;
+      font-size: 1.28rem;
+    }
+
+    .service-arrow {
+      width: 54px;
+      height: 54px;
+      background: #fff;
+      color: #cbd5e1;
+      box-shadow: 0 8px 22px rgba(15,23,42,.12);
+      border: 1px solid rgba(15,23,42,.04);
+    }
+
+    .selected-service-card {
+      grid-template-columns: 68px minmax(0, 1fr) auto;
+      background: rgba(31,134,255,.08);
+      border: 1px solid rgba(31,134,255,.18);
+      border-radius: 20px;
+    }
+
+    .selected-service-card h4 {
+      color: var(--text);
+      font-size: clamp(.98rem, 1.6vw, 1.2rem);
+    }
+
+    .change-service-btn {
+      color: var(--primary-strong);
+    }
+
+    .date-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .date-chip {
+      min-height: 80px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.045);
+      color: var(--muted);
+      box-shadow: none;
+    }
+
+    .date-chip strong {
+      color: var(--text);
+      font-size: 1.8rem;
+    }
+
+    .date-chip.active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #07111f;
+      box-shadow: 0 18px 36px rgba(31,134,255,.22);
+    }
+
+    .date-chip.active strong {
+      color: #07111f;
+    }
+
+    .form-group input,
+    .form-group select {
+      background: rgba(255,255,255,.05);
+      border-color: var(--line);
+      color: var(--text);
+    }
+
+    .hours-wrap {
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+
+    .hours-grid {
+      grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+      gap: 10px;
+    }
+
+    .hour-btn {
+      min-height: 54px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border-color: var(--line);
+      color: var(--text);
+      box-shadow: none;
+    }
+
+    .hour-btn.active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #07111f;
+      box-shadow: 0 14px 28px rgba(31,134,255,.20);
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #07111f;
+      border: none;
+      box-shadow: 0 18px 36px rgba(31,134,255,.26);
+    }
+
+    @media (max-width: 720px) {
+      .booking-page .main-shell {
+        width: min(100% - 20px, var(--max));
+        margin-top: 12px;
+      }
+
+      .form-panel {
+        border-radius: 24px;
+        padding: 16px;
+      }
+
+      .booking-steps {
+        gap: 4px;
+      }
+
+      .step-pill {
+        font-size: .66rem;
+        letter-spacing: .06em;
+      }
+
+      .step-dot {
+        width: 40px;
+        height: 40px;
+      }
+
+      .service-cards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      #serviceSection {
+        border-radius: 28px;
+        padding: 18px 14px;
+      }
+
+      .service-card {
+        min-height: 126px;
+        grid-template-columns: 94px minmax(0, 1fr) 46px;
+        gap: 14px;
+        padding: 14px;
+        border-radius: 22px;
+      }
+
+      .service-name {
+        font-size: 1.16rem;
+      }
+
+      .service-meta {
+        font-size: .82rem;
+      }
+
+      .service-price {
+        font-size: 1.08rem;
+      }
+
+      .service-arrow {
+        width: 46px;
+        height: 46px;
+      }
+
+      .selected-service-card {
+        grid-template-columns: 58px minmax(0, 1fr);
+      }
+
+      .change-service-btn {
+        grid-column: 1 / -1;
+        justify-self: start;
+      }
+
+      .two-cols {
+        grid-template-columns: 1fr;
+      }
+
+      .date-strip {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      .date-chip {
+        min-width: 82px;
+        min-height: 76px;
+      }
+
+      .hours-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    /* Estilo final tipo referencia: claro, limpio y por pasos */
+    .booking-page {
+      background:
+        linear-gradient(rgba(255,255,255,.74), rgba(255,255,255,.78)),
+        repeating-linear-gradient(0deg, rgba(15,23,42,.045) 0 1px, transparent 1px 22px),
+        repeating-linear-gradient(90deg, rgba(15,23,42,.04) 0 1px, transparent 1px 22px),
+        #f7f9ff;
+      color: #0f172a;
+    }
+
+    .booking-page .topbar {
+      background: rgba(255,255,255,.82);
+      border-bottom-color: rgba(15,23,42,.07);
+      box-shadow: 0 12px 38px rgba(15,23,42,.06);
+    }
+
+    .booking-page .brand-copy strong,
+    .booking-page .panel-head h2,
+    .booking-page .section-title h3,
+    .booking-page .form-group label {
+      color: #0f172a;
+    }
+
+    .booking-page .brand-copy small,
+    .booking-page .panel-head p,
+    .booking-page .section-title p,
+    .booking-page .hours-note {
+      color: #8492a8;
+    }
+
+    .booking-page .hero,
+    .side-panel {
+      display: none;
+    }
+
+    .booking-page .main-shell {
+      margin-top: 20px;
+    }
+
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .form-panel {
+      width: min(100%, 920px);
+      margin: 0 auto;
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(15,23,42,.06);
+      border-radius: 34px;
+      color: #0f172a;
+      box-shadow: 0 30px 80px rgba(15,23,42,.10);
+    }
+
+    .booking-flow {
+      display: grid;
+      gap: 18px;
+    }
+
+    .booking-steps {
+      max-width: 760px;
+      margin-inline: auto;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .step-pill {
+      color: #9aa8ba;
+    }
+
+    .step-pill::before {
+      background: rgba(148,163,184,.25);
+    }
+
+    .step-dot {
+      background: rgba(255,255,255,.9);
+      color: #94a3b8;
+      border: 1px solid rgba(15,23,42,.06);
+      box-shadow: 0 10px 25px rgba(15,23,42,.08);
+    }
+
+    .step-pill.active {
+      color: #0f172a;
+    }
+
+    .step-pill.active .step-dot {
+      color: #fff;
+      background: linear-gradient(135deg, #7c1dff, #9827ff);
+      border-color: transparent;
+      box-shadow: 0 16px 32px rgba(124,29,255,.22);
+    }
+
+    .step-pill.done .step-dot {
+      color: #fff;
+      background: #0f172a;
+      border-color: transparent;
+      box-shadow: 0 12px 28px rgba(15,23,42,.16);
+    }
+
+    .section-card,
+    #serviceSection {
+      background: linear-gradient(135deg, rgba(255,255,255,.94), rgba(239,246,255,.88));
+      border: 1px solid rgba(15,23,42,.05);
+      border-radius: 30px;
+      box-shadow: 0 24px 64px rgba(15,23,42,.08);
+    }
+
+    .section-number,
+    #serviceSection .section-number {
+      background: linear-gradient(135deg, #7c1dff, #9827ff);
+      color: #fff;
+      box-shadow: 0 12px 26px rgba(124,29,255,.20);
+    }
+
+    #serviceSection .section-head {
+      align-items: center;
+      margin-bottom: 28px;
+      padding-left: 6px;
+    }
+
+    #serviceSection .section-number {
+      display: none;
+    }
+
+    #serviceSection .section-title h3 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #8492a8;
+      font-size: clamp(1.05rem, 2.5vw, 1.55rem);
+      letter-spacing: .12em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    #serviceSection .section-title h3::before {
+      content: "•";
+      color: #9aa8ba;
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    #serviceSection .section-title p {
+      display: none;
+    }
+
+    .service-cards {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .service-card {
+      min-height: 132px;
+      grid-template-columns: 118px minmax(0, 1fr) 54px;
+      gap: 18px;
+      padding: 18px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(15,23,42,.04);
+      color: #0f172a;
+      box-shadow: 0 18px 45px rgba(15,23,42,.08);
+    }
+
+    .service-card:hover,
+    .service-card.active {
+      background: #fff;
+      border-color: rgba(124,29,255,.22);
+      box-shadow: 0 24px 58px rgba(124,29,255,.13);
+    }
+
+    .service-icon {
+      border-radius: 20px;
+      background: linear-gradient(180deg, #fbfdff, #f1f5fb);
+      color: #cbd5e1;
+      font-size: 2rem;
+    }
+
+    .service-name {
+      color: #0f172a;
+      font-size: clamp(1.28rem, 3vw, 1.95rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .service-meta {
+      color: #718096;
+      font-size: .95rem;
+      gap: 10px;
+    }
+
+    .service-price {
+      color: #00844e;
+      font-size: 1.28rem;
+    }
+
+    .service-arrow {
+      width: 54px;
+      height: 54px;
+      background: #fff;
+      color: #cbd5e1;
+      border: 1px solid rgba(15,23,42,.04);
+      box-shadow: 0 8px 22px rgba(15,23,42,.12);
+    }
+
+    .selected-service-card {
+      background: linear-gradient(135deg, #f7faff, #eef4ff);
+      border: 1px solid rgba(15,23,42,.05);
+      border-radius: 24px;
+    }
+
+    .selected-service-card h4 {
+      color: #0f172a;
+    }
+
+    .change-service-btn {
+      color: #8492a8;
+    }
+
+    .date-chip {
+      background: rgba(255,255,255,.82);
+      border: 1px solid rgba(15,23,42,.05);
+      color: #718096;
+      box-shadow: 0 12px 30px rgba(15,23,42,.04);
+    }
+
+    .date-chip strong {
+      color: #64748b;
+    }
+
+    .date-chip.active {
+      background: #0f172a;
+      color: #fff;
+      box-shadow: 0 18px 40px rgba(15,23,42,.20);
+    }
+
+    .date-chip.active strong {
+      color: #fff;
+    }
+
+    .form-group input,
+    .form-group select {
+      background: rgba(255,255,255,.86);
+      border-color: rgba(15,23,42,.08);
+      color: #0f172a;
+    }
+
+    .hours-wrap {
+      padding: 0;
+      border: none;
+      background: transparent;
+    }
+
+    .hours-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .hour-btn {
+      min-height: 64px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(15,23,42,.05);
+      color: #405066;
+      font-size: 1.1rem;
+      box-shadow: 0 12px 28px rgba(15,23,42,.04);
+    }
+
+    .hour-btn.active {
+      background: linear-gradient(135deg, #7c1dff, #9827ff);
+      color: #fff;
+      box-shadow: 0 18px 35px rgba(124,29,255,.24);
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, #7c1dff, #9827ff);
+      color: #fff;
+      border: none;
+      box-shadow: 0 20px 45px rgba(124,29,255,.25);
+    }
+
+    @media (max-width: 720px) {
+      .booking-page .main-shell {
+        width: min(100% - 20px, var(--max));
+        margin-top: 12px;
+      }
+
+      .form-panel {
+        border-radius: 28px;
+        padding: 18px;
+      }
+
+      .step-pill {
+        font-size: .68rem;
+      }
+
+      .step-dot {
+        width: 42px;
+        height: 42px;
+      }
+
+      #serviceSection,
+      .section-card {
+        border-radius: 28px;
+        padding: 18px 14px;
+      }
+
+      .service-cards {
+        gap: 16px;
+      }
+
+      .service-card {
+        min-height: 126px;
+        grid-template-columns: 94px minmax(0, 1fr) 46px;
+        gap: 14px;
+        padding: 14px;
+        border-radius: 22px;
+      }
+
+      .service-name {
+        font-size: 1.16rem;
+      }
+
+      .service-meta {
+        font-size: .82rem;
+      }
+
+      .service-price {
+        font-size: 1.08rem;
+      }
+
+      .service-arrow {
+        width: 46px;
+        height: 46px;
+      }
+
+      .selected-service-card {
+        grid-template-columns: 58px minmax(0, 1fr);
+      }
+
+      .date-strip {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      .date-chip {
+        min-width: 86px;
+        min-height: 86px;
+      }
+
+      .confirm-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Colores La Pinta: oscuro/azul manteniendo el orden tipo referencia */
+    .booking-page {
+      background:
+        radial-gradient(circle at 12% 8%, rgba(31,134,255,.10), transparent 26%),
+        radial-gradient(circle at 86% 18%, rgba(31,134,255,.13), transparent 28%),
+        linear-gradient(180deg, #05070b 0%, #0b1018 48%, #03050a 100%);
+      color: var(--text);
+    }
+
+    .booking-page .topbar {
+      background: rgba(5,8,14,.86);
+      border-bottom-color: rgba(255,255,255,.07);
+      box-shadow: 0 14px 36px rgba(0,0,0,.22);
+    }
+
+    .booking-page .brand-copy strong,
+    .booking-page .panel-head h2,
+    .booking-page .section-title h3,
+    .booking-page .form-group label {
+      color: var(--text);
+    }
+
+    .booking-page .brand-copy small,
+    .booking-page .panel-head p,
+    .booking-page .section-title p,
+    .booking-page .hours-note {
+      color: var(--muted-2);
+    }
+
+    .form-panel {
+      background: rgba(14,20,30,.92);
+      border-color: var(--line);
+      color: var(--text);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .step-pill {
+      color: var(--muted-2);
+    }
+
+    .step-pill::before {
+      background: rgba(255,255,255,.14);
+    }
+
+    .step-dot {
+      background: rgba(255,255,255,.045);
+      color: var(--muted);
+      border-color: var(--line);
+      box-shadow: none;
+    }
+
+    .step-pill.active {
+      color: var(--text);
+    }
+
+    .step-pill.active .step-dot,
+    .step-pill.done .step-dot,
+    .section-number,
+    #serviceSection .section-number {
+      color: #07111f;
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      border-color: transparent;
+      box-shadow: 0 14px 28px rgba(31,134,255,.22);
+    }
+
+    .section-card,
+    #serviceSection {
+      background: rgba(255,255,255,.03);
+      border-color: var(--line);
+      box-shadow: none;
+    }
+
+    #serviceSection .section-title h3 {
+      color: #8fc0ff;
+    }
+
+    #serviceSection .section-title h3::before {
+      color: #8fc0ff;
+    }
+
+    .service-card {
+      background: rgba(255,255,255,.045);
+      border-color: var(--line);
+      color: var(--text);
+      box-shadow: none;
+    }
+
+    .service-card:hover,
+    .service-card.active {
+      background: rgba(31,134,255,.10);
+      border-color: rgba(31,134,255,.30);
+      box-shadow: 0 16px 34px rgba(31,134,255,.10);
+    }
+
+    .service-icon {
+      background: rgba(255,255,255,.045);
+      color: rgba(207,229,255,.62);
+    }
+
+    .service-name,
+    .selected-service-card h4 {
+      color: var(--text);
+    }
+
+    .service-meta {
+      color: var(--muted);
+    }
+
+    .service-price,
+    .change-service-btn {
+      color: var(--primary-strong);
+    }
+
+    .service-arrow {
+      background: rgba(255,255,255,.05);
+      color: var(--muted);
+      border-color: var(--line);
+      box-shadow: none;
+    }
+
+    .selected-service-card {
+      background: rgba(31,134,255,.08);
+      border-color: rgba(31,134,255,.18);
+    }
+
+    .date-chip,
+    .hour-btn {
+      background: rgba(255,255,255,.045);
+      border-color: var(--line);
+      color: var(--text);
+      box-shadow: none;
+    }
+
+    .date-chip strong {
+      color: var(--text);
+    }
+
+    .date-chip.active,
+    .hour-btn.active,
+    .submit-btn {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #07111f;
+      box-shadow: 0 18px 36px rgba(31,134,255,.24);
+    }
+
+    .date-chip.active strong {
+      color: #07111f;
+    }
+
+    .form-group input,
+    .form-group select {
+      background: rgba(255,255,255,.05);
+      border-color: var(--line);
+      color: var(--text);
+    }
+
+    </style>
 </head>
 <body class="booking-page">
 
@@ -1263,82 +2563,79 @@
   <main class="main-shell" id="contenido-principal">
     <section class="layout">
   <div class="panel form-panel">
-  <div class="panel-head">
-    <span class="eyebrow">Reserva online</span>
-    <h2>Agenda tu cita</h2>
-    <p>Hazlo simple: nombre, teléfono, servicio, día y hora.</p>
-  </div>
-
-  <div class="closed-banner" id="shopClosedBanner" style="display:none;">
-    La barbería está cerrada en este momento. Puedes revisar disponibilidad para otro día.
-  </div>
-  <div class="booking-notice" id="bookingNotice" role="status" aria-live="polite"></div>
-
-  <form id="bookingForm" autocomplete="on">
-    <input type="hidden" id="barbero" name="barbero" value="Chocho la pinta" />
-    <div class="simple-hidden-fields" style="display:none;" aria-hidden="true">
-      <input type="checkbox" id="anonimo" name="anonimo" />
-    </div>
-
-    <!-- === SECCIÓN 1: Datos personales + Servicio === -->
-    <div class="section-card">
-      <div class="section-head">
-        <div class="section-number">1</div>
-        <div class="section-title">
-          <h3>Tus datos y servicio</h3>
-          <p>Nombre, teléfono y qué servicio quieres</p>
-        </div>
-      </div>
-      <div class="form-grid two-cols">
-        <div class="form-group">
-          <label for="nombre">Tu nombre</label>
-          <input type="text" id="nombre" name="nombre" required autocomplete="name" minlength="2" maxlength="80" placeholder="Tu nombre completo" />
-        </div>
-        <div class="form-group">
-          <label for="telefono">Teléfono / WhatsApp</label>
-          <input type="tel" id="telefono" name="telefono" required autocomplete="tel" inputmode="tel" maxlength="16" placeholder="Ej: 809-123-4567" />
-        </div>
+    <div class="booking-flow">
+      <div class="panel-head">
+        <span class="eyebrow">Reserva online</span>
+        <h2>Agenda tu cita</h2>
+        <p>Completa tus datos, elige servicio, día y hora.</p>
       </div>
 
-      <div class="form-group" style="margin-top: 18px;">
-        <label for="servicio">Servicio que quieres</label>
-        <select id="servicio" name="servicio" required>
-          <option value="">Cargando servicios...</option>
-        </select>
+      <div class="closed-banner" id="shopClosedBanner" style="display:none;">
+        La barbería está cerrada en este momento. Puedes revisar disponibilidad para otro día.
       </div>
-    </div>
+      <div class="booking-notice" id="bookingNotice" role="status" aria-live="polite"></div>
 
-    <!-- === SECCIÓN 2: Fecha y Hora === -->
-    <div class="section-card">
-      <div class="section-head">
-        <div class="section-number">2</div>
-        <div class="section-title">
-          <h3>Fecha y hora</h3>
-          <p>Elige el día y una hora disponible</p>
+      <form id="bookingForm" autocomplete="on">
+        <input type="hidden" id="barbero" name="barbero" value="Chocho la pinta" />
+        <div class="simple-hidden-fields" style="display:none;" aria-hidden="true">
+          <input type="checkbox" id="anonimo" name="anonimo" />
         </div>
-      </div>
 
-      <div class="form-grid two-cols">
-        <div class="form-group">
-          <label for="fecha">Día de la cita</label>
-          <input type="date" id="fecha" name="fecha" required class="date-input" />
-        </div>
-        <div class="form-group">
-          <label for="hora">Hora</label>
-          <div class="hours-wrap">
-            <p class="hours-note" id="hoursNote">
-              Selecciona primero el servicio y día
-            </p>
-            <div class="hours-grid" id="hoursGrid" role="list" aria-live="polite" aria-label="Horas disponibles"></div>
+        <div class="section-card" id="serviceSection">
+          <div class="section-head">
+            <div class="section-number">1</div>
+            <div class="section-title">
+              <h3>Tus datos y servicio</h3>
+              <p>Nombre, número y servicio en un solo lugar</p>
+            </div>
           </div>
-          <input type="hidden" id="hora" name="hora" required />
+          <div class="form-grid two-cols">
+            <div class="form-group">
+              <label for="nombre">Tu nombre</label>
+              <input type="text" id="nombre" name="nombre" required autocomplete="name" minlength="2" maxlength="80" placeholder="Tu nombre completo" />
+            </div>
+            <div class="form-group">
+              <label for="telefono">Teléfono / WhatsApp</label>
+              <input type="tel" id="telefono" name="telefono" required autocomplete="tel" inputmode="tel" maxlength="16" placeholder="Ej: 809-123-4567" />
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 16px;">
+            <label for="servicio">Servicio que quieres</label>
+            <select id="servicio" name="servicio" required>
+              <option value="">Cargando servicios...</option>
+            </select>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <button type="submit" class="submit-btn" id="submitButton">Agendar mi cita</button>
-  </form>
-</div>
+        <div class="section-card" id="dateTimeSection">
+          <div class="section-head">
+            <div class="section-number">2</div>
+            <div class="section-title">
+              <h3>Fecha y hora</h3>
+              <p>Elige el día y una hora disponible</p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="fecha">Selecciona el día</label>
+            <div class="date-strip" id="dateStrip" aria-label="Días disponibles"></div>
+            <input type="date" id="fecha" name="fecha" required class="date-input" />
+          </div>
+
+          <div class="form-group" style="margin-top: 18px;">
+            <label for="hora">Horarios disponibles</label>
+            <div class="hours-wrap">
+              <p class="hours-note" id="hoursNote">Selecciona primero un servicio y un día</p>
+              <div class="hours-grid" id="hoursGrid" role="list" aria-live="polite" aria-label="Horas disponibles"></div>
+            </div>
+            <input type="hidden" id="hora" name="hora" required />
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitButton">Agendar mi cita</button>
+      </form>
+    </div>
+  </div>
 
       <aside class="panel side-panel horario-panel" aria-label="Horario de atención">
         <div class="booking-summary" id="bookingSummary" style="display: none;" aria-hidden="true">
@@ -1392,6 +2689,16 @@
     const fechaInput = document.getElementById("fecha");
     const horaInput = document.getElementById("hora");
     const hoursGrid = document.getElementById("hoursGrid");
+    const serviceCards = document.getElementById("serviceCards");
+    const dateStrip = document.getElementById("dateStrip");
+    const selectedServiceCard = document.getElementById("selectedServiceCard");
+    const selectedServiceName = document.getElementById("selectedServiceName");
+    const selectedServiceDuration = document.getElementById("selectedServiceDuration");
+    const selectedServicePrice = document.getElementById("selectedServicePrice");
+    const changeServiceBtn = document.getElementById("changeServiceBtn");
+    const stepService = document.getElementById("stepService");
+    const stepDate = document.getElementById("stepDate");
+    const stepConfirm = document.getElementById("stepConfirm");
     const bookingSummary = document.getElementById("bookingSummary");
     const nombreInput = document.getElementById("nombre");
     const telefonoInput = document.getElementById("telefono");
@@ -1422,6 +2729,8 @@
     let customClosures = {};
     let dailyOverrides = {};
     let requestedServiceFromURL = "";
+    let requestedDateFromURL = "";
+    let requestedHourFromURL = "";
     let appointmentsReady = false;
     let isSubmitting = false;
 
@@ -1510,6 +2819,97 @@
     function getServicesWithFallback(data) {
       const savedServices = data && typeof data === "object" ? data : {};
       return Object.keys(savedServices).length ? savedServices : defaultServicesData;
+    }
+
+    function shortServiceName(name) {
+      const text = String(name || "").trim();
+      return text.length > 19 ? `${text.slice(0, 18)}...` : text;
+    }
+
+    function formatDurationLabel(minutes) {
+      const value = Number(minutes || 60);
+      if (value < 60) return `${value} min`;
+      const hours = value / 60;
+      return Number.isInteger(hours) ? `${hours} h` : `${hours.toFixed(1)} h`;
+    }
+
+    function getNextDateISO(offset) {
+      const date = new Date();
+      date.setDate(date.getDate() + offset);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function updateBookingSteps() {
+      const hasService = Boolean(servicioInput?.value);
+      const hasDateTime = Boolean(fechaInput?.value && horaInput?.value);
+      const hasContact = Boolean(nombreInput?.value.trim() && telefonoInput?.value.trim());
+
+      stepService?.classList.toggle("done", hasService);
+      stepService?.classList.toggle("active", !hasService);
+      stepDate?.classList.toggle("done", hasDateTime);
+      stepDate?.classList.toggle("active", hasService && !hasDateTime);
+      stepConfirm?.classList.toggle("active", hasDateTime && !hasContact);
+      stepConfirm?.classList.toggle("done", hasDateTime && hasContact);
+    }
+
+    function updateSelectedServiceCard() {
+      const service = getServiceByName(servicioInput?.value || "");
+      if (!selectedServiceCard) return;
+
+      if (!service) {
+        selectedServiceCard.style.display = "none";
+        return;
+      }
+
+      selectedServiceCard.style.display = "";
+      if (selectedServiceName) selectedServiceName.textContent = service.nombre || "Servicio";
+      if (selectedServiceDuration) selectedServiceDuration.textContent = formatDurationLabel(service.duracion || 60);
+      if (selectedServicePrice) selectedServicePrice.textContent = `RD$${Number(service.precio || 0)}`;
+    }
+
+    function renderServiceCards() {
+      if (!serviceCards) return;
+
+      const services = Object.values(servicesData || {}).filter(service => service && service.nombre);
+      const selected = servicioInput?.value || "";
+
+      if (!services.length) {
+        serviceCards.innerHTML = '<p class="hours-message">No hay servicios disponibles.</p>';
+        return;
+      }
+
+      serviceCards.innerHTML = services.map(service => {
+        const active = service.nombre === selected ? " active" : "";
+        return `
+          <button class="service-card${active}" type="button" data-service="${escapeHTML(service.nombre)}">
+            <span class="service-icon" aria-hidden="true">✂</span>
+            <span>
+              <strong class="service-name">${escapeHTML(shortServiceName(service.nombre))}</strong>
+              <span class="service-meta"><span>${escapeHTML(formatDurationLabel(service.duracion || 60))}</span><span class="service-price">RD$${Number(service.precio || 0)}</span></span>
+            </span>
+            <span class="service-arrow" aria-hidden="true">›</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function renderDateStrip() {
+      if (!dateStrip || !fechaInput) return;
+
+      const selected = fechaInput.value || getTodayISO();
+      const days = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
+
+      dateStrip.innerHTML = Array.from({ length: 5 }, (_, offset) => {
+        const iso = getNextDateISO(offset);
+        const date = new Date(`${iso}T00:00:00`);
+        const active = iso === selected ? " active" : "";
+        return `
+          <button class="date-chip${active}" type="button" data-date="${iso}">
+            <span>${days[date.getDay()]}</span>
+            <strong>${date.getDate()}</strong>
+          </button>
+        `;
+      }).join("");
     }
 
     function showBookingNotice(message = "", type = "info") {
@@ -2351,6 +3751,9 @@
 
       if (!services.length) {
         servicioInput.innerHTML = '<option value="">No hay servicios disponibles</option>';
+        renderServiceCards();
+        updateSelectedServiceCard();
+        updateBookingSteps();
         return;
       }
 
@@ -2380,6 +3783,10 @@
           servicioInput.value = matchingService.nombre;
         }
       }
+
+      renderServiceCards();
+      updateSelectedServiceCard();
+      updateBookingSteps();
     }
 
     function createHoursMessage(text) {
@@ -2446,7 +3853,9 @@
         btn.type = "button";
         btn.classList.add("hour-btn");
         btn.textContent = slot;
-        btn.setAttribute("aria-pressed", "false");
+        const isSelected = horaInput?.value === slot;
+        btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
+        if (isSelected) btn.classList.add("active");
 
         const available = isSlotAvailable(
           selectedDate,
@@ -2472,6 +3881,7 @@
             btn.setAttribute("aria-pressed", "true");
             if (horaInput) horaInput.value = slot;
             updateSummary();
+            updateBookingSteps();
           });
         }
 
@@ -2759,13 +4169,20 @@
       }
     }
 
-    function applyServiceFromURL() {
-      if (!servicioInput) return;
-
+    function applyURLParams() {
       const params = new URLSearchParams(window.location.search);
       requestedServiceFromURL = params.get("servicio") || "";
-      if (requestedServiceFromURL) {
+      requestedDateFromURL = params.get("fecha") || "";
+      requestedHourFromURL = params.get("hora") || "";
+
+      if (requestedServiceFromURL && servicioInput) {
         servicioInput.value = requestedServiceFromURL;
+      }
+      if (requestedDateFromURL && fechaInput) {
+        fechaInput.value = requestedDateFromURL;
+      }
+      if (requestedHourFromURL && horaInput) {
+        horaInput.value = requestedHourFromURL;
       }
     }
 
@@ -2987,8 +4404,10 @@
 
     fechaInput?.addEventListener("change", () => {
       if (horaInput) horaInput.value = "";
+      renderDateStrip();
       renderHours();
       updateSummary();
+      updateBookingSteps();
     });
 
     barberoInput?.addEventListener("change", () => {
@@ -2999,12 +4418,37 @@
 
     servicioInput?.addEventListener("change", () => {
       if (horaInput) horaInput.value = "";
+      renderServiceCards();
+      updateSelectedServiceCard();
       renderHours();
       updateSummary();
+      updateBookingSteps();
+    });
+
+    serviceCards?.addEventListener("click", event => {
+      const card = event.target.closest(".service-card");
+      if (!card || !servicioInput) return;
+      servicioInput.value = card.dataset.service || "";
+      servicioInput.dispatchEvent(new Event("change", { bubbles: true }));
+      document.getElementById("dateTimeSection")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    dateStrip?.addEventListener("click", event => {
+      const chip = event.target.closest(".date-chip");
+      if (!chip || !fechaInput) return;
+      fechaInput.value = chip.dataset.date || "";
+      fechaInput.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    changeServiceBtn?.addEventListener("click", () => {
+      document.getElementById("serviceSection")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
     [nombreInput, telefonoInput].forEach(input => {
-      input?.addEventListener("input", updateSummary);
+      input?.addEventListener("input", () => {
+        updateSummary();
+        updateBookingSteps();
+      });
     });
 
     anonimoInput?.addEventListener("change", updateSummary);
@@ -3031,12 +4475,15 @@
     });
 
     function boot() {
-      applyServiceFromURL();
+      applyURLParams();
       servicesData = defaultServicesData;
       populateServicesSelect();
       if (barberoInput) barberoInput.value = DEFAULT_BARBER;
       setMinDate();
       if (fechaInput && !fechaInput.value) fechaInput.value = getTodayISO();
+      renderDateStrip();
+      updateSelectedServiceCard();
+      updateBookingSteps();
       hideApproveButtons();
       bindHiddenApproveButtons();
       bindSecretShortcut();
@@ -3049,6 +4496,7 @@
       updatePaymentMethodUI();
       renderHours();
       updateSummary();
+      updateBookingSteps();
       updateShopStatusBadge();
 
       setInterval(() => {
