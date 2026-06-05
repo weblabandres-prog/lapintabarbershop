@@ -88,6 +88,10 @@
       gap: 11px;
     }
 
+    .brand > div:last-child {
+      min-width: 0;
+    }
+
     .brand-logo-wrap {
       width: 50px;
       height: 50px;
@@ -123,6 +127,8 @@
       font-family: "Cormorant Garamond", serif;
       font-size: clamp(1.12rem, 2.2vw, 1.48rem);
       line-height: .95;
+      overflow: hidden;
+      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
@@ -178,7 +184,7 @@
 
     .hero {
       position: relative;
-      min-height: 650px;
+      min-height: 520px;
       display: grid;
       align-items: end;
       overflow: hidden;
@@ -304,6 +310,10 @@
       padding: 18px;
     }
 
+    .availability-card {
+      padding: 18px;
+    }
+
     .card-title {
       margin-bottom: 14px;
     }
@@ -368,6 +378,93 @@
       line-height: 1.4;
     }
 
+    .availability-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    .date-field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .date-field label {
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 800;
+    }
+
+    .date-field input {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, .06);
+      color: #fff;
+      padding: 10px 12px;
+      outline: none;
+      font: inherit;
+      font-size: 16px;
+    }
+
+    .schedule-text {
+      min-height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 13px;
+      border: 1px solid rgba(31, 134, 255, .25);
+      border-radius: 999px;
+      background: rgba(31, 134, 255, .12);
+      color: #dcecff;
+      font-size: .82rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .hours-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+      gap: 8px;
+    }
+
+    .hour-link,
+    .hours-message {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, .12);
+      background: rgba(255, 255, 255, .055);
+      color: #fff;
+      font-weight: 900;
+      font-size: .88rem;
+      text-align: center;
+    }
+
+    .hour-link {
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+    }
+
+    .hour-link:hover {
+      transform: translateY(-1px);
+      background: rgba(31, 134, 255, .16);
+      border-color: rgba(31, 134, 255, .32);
+    }
+
+    .hours-message {
+      grid-column: 1 / -1;
+      min-height: 54px;
+      padding: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
     .map-card iframe {
       width: 100%;
       height: 100%;
@@ -379,7 +476,7 @@
 
     @media (max-width: 860px) {
       .hero {
-        min-height: 590px;
+        min-height: 500px;
       }
 
       .hero::after {
@@ -405,6 +502,10 @@
         padding: 8px;
       }
 
+      .brand {
+        gap: 8px;
+      }
+
       .brand-logo-wrap {
         width: 42px;
         height: 42px;
@@ -416,7 +517,7 @@
       }
 
       .brand strong {
-        font-size: 1.1rem;
+        font-size: clamp(.98rem, 5vw, 1.1rem);
       }
 
       .mini-btn {
@@ -426,7 +527,7 @@
       }
 
       .hero {
-        min-height: calc(100svh - 84px);
+        min-height: 430px;
         border-radius: 24px;
       }
 
@@ -451,8 +552,8 @@
 
       h1 {
         margin-bottom: 9px;
-        font-size: clamp(3rem, 15vw, 4.4rem);
-        line-height: .82;
+        font-size: clamp(2.35rem, 12vw, 3.4rem);
+        line-height: .9;
       }
 
       .lead {
@@ -478,8 +579,30 @@
         padding: 14px;
       }
 
+      .availability-card {
+        padding: 14px;
+      }
+
       .card {
         border-radius: 22px;
+      }
+
+      .availability-top {
+        grid-template-columns: 1fr;
+      }
+
+      .schedule-text {
+        width: 100%;
+      }
+
+      .hours-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hour-link {
+        min-height: 44px;
+        font-size: .84rem;
+        padding-inline: 8px;
       }
 
       .bank-row {
@@ -532,6 +655,23 @@
         </div>
       </section>
     </main>
+
+    <section class="card availability-card" aria-label="Horas disponibles">
+      <div class="card-title">
+        <span>Agenda</span>
+        <h2>Horas disponibles</h2>
+      </div>
+      <div class="availability-top">
+        <div class="date-field">
+          <label for="homeDateInput">Elige el día</label>
+          <input id="homeDateInput" type="date" />
+        </div>
+        <div class="schedule-text" id="homeScheduleText">Cargando horario...</div>
+      </div>
+      <div class="hours-grid" id="homeHoursGrid">
+        <div class="hours-message">Cargando horas disponibles...</div>
+      </div>
+    </section>
 
     <section class="info-grid">
       <article class="card payment-card">
@@ -648,17 +788,335 @@
 
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const appointmentsRef = db.ref("appointments");
+    const slotLocksRef = db.ref("slotLocks");
     const shopStatusRef = db.ref("shopStatus");
+    const customClosuresRef = db.ref("customClosures");
+    const dailyOverridesRef = db.ref("dailyOverrides");
     const statusBadge = document.getElementById("shopStatusBadge");
+    const homeDateInput = document.getElementById("homeDateInput");
+    const homeScheduleText = document.getElementById("homeScheduleText");
+    const homeHoursGrid = document.getElementById("homeHoursGrid");
+    const DEFAULT_BARBER = "Chocho la pinta";
+    const PREVIEW_SERVICE = "Corte + Fade";
+
+    let appointments = [];
+    let slotLocks = {};
+    let customClosures = {};
+    let dailyOverrides = {};
+    let shopIsOpen = true;
+    let sundayOpen = false;
+    let tuesdayOpen = false;
+    let extendedHours = false;
+
+    const normalWorkingDays = {
+      0: null,
+      1: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      2: null,
+      3: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      4: { start: "8:00 AM", end: "8:00 PM", breaks: ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"] },
+      5: { start: "8:00 AM", end: "9:00 PM", breaks: [] },
+      6: { start: "8:00 AM", end: "9:00 PM", breaks: [] }
+    };
+
+    const extendedWorkingDays = {
+      0: null,
+      1: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      2: null,
+      3: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      4: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      5: { start: "8:00 AM", end: "10:00 PM", breaks: [] },
+      6: { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+    };
+
+    const normalSundaySchedule = { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    const extendedSundaySchedule = { start: "8:00 AM", end: "10:00 PM", breaks: [] };
+    const normalTuesdaySchedule = { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+    const extendedTuesdaySchedule = { start: "8:00 AM", end: "10:00 PM", breaks: [] };
+
+    function getTodayISO() {
+      const today = new Date();
+      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    }
+
+    function getDayFromDate(dateString) {
+      return new Date(dateString + "T00:00:00").getDay();
+    }
+
+    function convertToMinutes(timeStr) {
+      if (!timeStr) return 0;
+      const value = String(timeStr).trim().toUpperCase();
+
+      if (/^\d{1,2}:\d{2}$/.test(value)) {
+        const [hour24, minute24] = value.split(":").map(Number);
+        return (hour24 * 60) + minute24;
+      }
+
+      const match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (!match) return 0;
+
+      let hour = Number(match[1]);
+      const minute = Number(match[2]);
+      const suffix = match[3].toUpperCase();
+
+      if (suffix === "PM" && hour !== 12) hour += 12;
+      if (suffix === "AM" && hour === 12) hour = 0;
+
+      return hour * 60 + minute;
+    }
+
+    function convertToTime(minutes) {
+      let hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      const suffix = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12 || 12;
+      return `${hours}:${String(mins).padStart(2, "0")} ${suffix}`;
+    }
+
+    function formatStatusTime(timeString) {
+      if (!timeString) return "";
+      if (/AM|PM/i.test(timeString)) return timeString;
+
+      const [hourValue, minuteValue] = String(timeString).split(":");
+      let hour = parseInt(hourValue, 10);
+      const suffix = hour >= 12 ? "PM" : "AM";
+
+      if (hour === 0) hour = 12;
+      else if (hour > 12) hour -= 12;
+
+      return `${hour}:${minuteValue} ${suffix}`;
+    }
+
+    function generateTimeSlots(start, end, interval = 30) {
+      const slots = [];
+      let current = convertToMinutes(start);
+      const finish = convertToMinutes(end);
+
+      while (current < finish) {
+        slots.push(convertToTime(current));
+        current += interval;
+      }
+
+      return slots;
+    }
+
+    function normalizeStatus(status) {
+      if (status === "approved") return "approved";
+      if (status === "cancelled") return "cancelled";
+      return "pending";
+    }
+
+    function normalizeAppointment(id, app) {
+      return {
+        id,
+        barbero: app?.barbero || "",
+        fecha: app?.fecha || "",
+        slots: Array.isArray(app?.slots) ? app.slots : [],
+        status: normalizeStatus(app?.status)
+      };
+    }
+
+    function lockKey(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    function normalizeCustomClosure(block, fallbackDate = "") {
+      if (!block || typeof block !== "object") return null;
+
+      const fecha = block.fecha || block.date || fallbackDate;
+      const start = block.start || block.inicio || block.startTime || "";
+      const end = block.end || block.fin || block.endTime || "";
+
+      if (!fecha || !end) return null;
+
+      return {
+        fecha,
+        start,
+        end,
+        type: block.type || "timeBlock"
+      };
+    }
+
+    function getTimeBlocksForDate(dateString) {
+      if (!dateString || !customClosures) return [];
+
+      return Object.entries(customClosures)
+        .map(([key, value]) => normalizeCustomClosure(value, key === dateString ? dateString : ""))
+        .filter(block => block && block.fecha === dateString && block.start && block.end)
+        .sort((a, b) => convertToMinutes(a.start) - convertToMinutes(b.start));
+    }
+
+    function getWorkingConfigByDate(dateString) {
+      if (!dateString) return null;
+
+      const today = getTodayISO();
+      const override = dailyOverrides[dateString] || null;
+
+      if (override?.forceClosed === true) return null;
+
+      if (override?.customStart && override?.customEnd) {
+        return {
+          start: formatStatusTime(override.customStart),
+          end: formatStatusTime(override.customEnd),
+          breaks: []
+        };
+      }
+
+      if (dateString === today && !shopIsOpen && !override?.forceOpen) return null;
+
+      const day = getDayFromDate(dateString);
+      let config = null;
+
+      if (day === 0) {
+        if (!sundayOpen && !override?.forceOpen) return null;
+        config = extendedHours ? extendedSundaySchedule : normalSundaySchedule;
+      } else if (day === 2) {
+        if (!tuesdayOpen && !override?.forceOpen) return null;
+        config = extendedHours ? extendedTuesdaySchedule : normalTuesdaySchedule;
+      } else {
+        const source = extendedHours ? extendedWorkingDays : normalWorkingDays;
+        config = source[day] || null;
+      }
+
+      if (!config && override?.forceOpen) {
+        config = extendedHours
+          ? { start: "8:00 AM", end: "10:00 PM", breaks: [] }
+          : { start: "8:00 AM", end: "8:00 PM", breaks: [] };
+      }
+
+      if (!config) return null;
+
+      const finalConfig = {
+        start: config.start,
+        end: config.end,
+        breaks: Array.isArray(config.breaks) ? [...config.breaks] : []
+      };
+
+      if (getTimeBlocksForDate(dateString).length > 0) finalConfig.breaks = [];
+
+      return finalConfig;
+    }
+
+    function isPastDateTime(date, slot) {
+      if (!date || !slot) return false;
+
+      const now = new Date();
+      const selectedDate = new Date(date + "T00:00:00");
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      if (selectedDate.getTime() !== today.getTime()) return false;
+
+      return convertToMinutes(slot) <= ((now.getHours() * 60) + now.getMinutes());
+    }
+
+    function isSlotBlockedByCustomClosure(date, startSlot) {
+      const blocks = getTimeBlocksForDate(date);
+      if (!blocks.length) return false;
+
+      const slotStartMinutes = convertToMinutes(startSlot);
+      const slotEndMinutes = slotStartMinutes + 60;
+
+      return blocks.some(block => {
+        const blockStartMinutes = convertToMinutes(block.start);
+        const blockEndMinutes = convertToMinutes(block.end);
+        return slotStartMinutes < blockEndMinutes && slotEndMinutes > blockStartMinutes;
+      });
+    }
+
+    function getLockForSlot(date, barber, slot) {
+      const barberKey = lockKey(barber);
+      const slotKey = lockKey(slot);
+      return slotLocks?.[date]?.[barberKey]?.[slotKey] || null;
+    }
+
+    function isSlotAvailable(date, slot) {
+      const config = getWorkingConfigByDate(date);
+      if (!config) return false;
+
+      const slots = generateTimeSlots(config.start, config.end, 30);
+      const startIndex = slots.indexOf(slot);
+      if (startIndex === -1) return false;
+      if (isPastDateTime(date, slot)) return false;
+      if (isSlotBlockedByCustomClosure(date, slot)) return false;
+      if (getLockForSlot(date, DEFAULT_BARBER, slot)) return false;
+
+      for (let i = 0; i < 2; i++) {
+        const currentSlot = slots[startIndex + i];
+        if (!currentSlot || (config.breaks || []).includes(currentSlot)) return false;
+
+        const taken = appointments.some(app => {
+          if (app.status === "cancelled") return false;
+          return app.fecha === date &&
+            app.barbero === DEFAULT_BARBER &&
+            Array.isArray(app.slots) &&
+            app.slots.includes(currentSlot);
+        });
+
+        if (taken) return false;
+      }
+
+      return true;
+    }
+
+    function showHoursMessage(message) {
+      if (!homeHoursGrid) return;
+      homeHoursGrid.innerHTML = `<div class="hours-message">${message}</div>`;
+    }
+
+    function renderHomeAvailability() {
+      if (!homeDateInput || !homeHoursGrid || !homeScheduleText) return;
+
+      const selectedDate = homeDateInput.value || getTodayISO();
+      const config = getWorkingConfigByDate(selectedDate);
+
+      homeHoursGrid.innerHTML = "";
+
+      if (!config) {
+        homeScheduleText.textContent = "Cerrado";
+        showHoursMessage("No hay horas disponibles para este día.");
+        return;
+      }
+
+      homeScheduleText.textContent = `${formatStatusTime(config.start)} - ${formatStatusTime(config.end)}`;
+
+      const slots = generateTimeSlots(config.start, config.end, 30)
+        .filter(slot => convertToMinutes(slot) % 60 === 0);
+
+      const availableSlots = slots.filter(slot => isSlotAvailable(selectedDate, slot)).slice(0, 12);
+
+      if (!availableSlots.length) {
+        showHoursMessage("No quedan horas disponibles para este día.");
+        return;
+      }
+
+      availableSlots.forEach(slot => {
+        const link = document.createElement("a");
+        link.className = "hour-link";
+        link.href = `cita.html?fecha=${encodeURIComponent(selectedDate)}&hora=${encodeURIComponent(slot)}&servicio=${encodeURIComponent(PREVIEW_SERVICE)}`;
+        link.textContent = slot;
+        link.setAttribute("aria-label", `Agendar a las ${slot}`);
+        homeHoursGrid.appendChild(link);
+      });
+    }
 
     function updateStatus(data = {}) {
       if (!statusBadge) return;
       const isOpen = data.isOpen !== false;
+      shopIsOpen = isOpen;
+      sundayOpen = data.sundayOpen === true;
+      tuesdayOpen = data.tuesdayOpen === true;
+      extendedHours = data.extendedHours === true;
       statusBadge.classList.toggle("open", isOpen);
       statusBadge.classList.toggle("closed", !isOpen);
       statusBadge.textContent = isOpen
         ? "Abierto ahora"
         : "Cerrado por el momento";
+      renderHomeAvailability();
     }
 
     shopStatusRef.on("value", snapshot => {
@@ -666,6 +1124,35 @@
     }, () => {
       statusBadge.textContent = "Agenda disponible";
     });
+
+    appointmentsRef.on("value", snapshot => {
+      const data = snapshot.val() || {};
+      appointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
+      renderHomeAvailability();
+    });
+
+    slotLocksRef.on("value", snapshot => {
+      slotLocks = snapshot.val() || {};
+      renderHomeAvailability();
+    });
+
+    customClosuresRef.on("value", snapshot => {
+      customClosures = snapshot.val() || {};
+      renderHomeAvailability();
+    });
+
+    dailyOverridesRef.on("value", snapshot => {
+      dailyOverrides = snapshot.val() || {};
+      renderHomeAvailability();
+    });
+
+    if (homeDateInput) {
+      homeDateInput.min = getTodayISO();
+      homeDateInput.value = getTodayISO();
+      homeDateInput.addEventListener("change", renderHomeAvailability);
+    }
+
+    renderHomeAvailability();
 
     let logoTaps = 0;
     let logoTimer = null;
