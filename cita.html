@@ -2520,6 +2520,115 @@
       color: var(--text);
     }
 
+
+    /* Ajuste Andres: sección Fecha y hora un poco más pequeña */
+    #dateTimeSection {
+      padding: 14px !important;
+      border-radius: 20px !important;
+    }
+
+    #dateTimeSection .section-head {
+      gap: 9px !important;
+      margin-bottom: 10px !important;
+    }
+
+    #dateTimeSection .section-number {
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+      font-size: 0.84rem !important;
+    }
+
+    #dateTimeSection .section-title h3 {
+      font-size: 1rem !important;
+      margin-bottom: 2px !important;
+    }
+
+    #dateTimeSection .section-title p {
+      font-size: 0.84rem !important;
+      line-height: 1.35 !important;
+    }
+
+    #dateTimeSection .form-group label {
+      font-size: 0.9rem !important;
+    }
+
+    #dateTimeSection .date-strip {
+      gap: 7px !important;
+      margin-bottom: 12px !important;
+      padding-bottom: 3px !important;
+    }
+
+    #dateTimeSection .date-chip {
+      min-width: 72px !important;
+      min-height: 70px !important;
+      border-radius: 16px !important;
+      gap: 2px !important;
+      padding: 8px 6px !important;
+    }
+
+    #dateTimeSection .date-chip span {
+      font-size: 0.68rem !important;
+      letter-spacing: 0.06em !important;
+    }
+
+    #dateTimeSection .date-chip strong {
+      font-size: 1.55rem !important;
+    }
+
+    #dateTimeSection .date-input {
+      min-height: 46px !important;
+      padding: 11px 13px !important;
+      border-radius: 14px !important;
+      font-size: 0.9rem !important;
+    }
+
+    #dateTimeSection .hours-wrap {
+      margin-top: 0 !important;
+    }
+
+    #dateTimeSection .hours-note {
+      margin-bottom: 9px !important;
+      font-size: 0.82rem !important;
+    }
+
+    #dateTimeSection .hours-grid {
+      gap: 8px !important;
+    }
+
+    #dateTimeSection .hour-btn {
+      min-height: 48px !important;
+      border-radius: 14px !important;
+      padding: 9px 8px !important;
+      font-size: 0.92rem !important;
+    }
+
+    @media (max-width: 720px) {
+      #dateTimeSection {
+        padding: 12px !important;
+        border-radius: 18px !important;
+      }
+
+      #dateTimeSection .section-head {
+        margin-bottom: 9px !important;
+      }
+
+      #dateTimeSection .date-strip {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 7px !important;
+      }
+
+      #dateTimeSection .date-chip {
+        min-width: 70px !important;
+        min-height: 68px !important;
+        border-radius: 15px !important;
+      }
+
+      #dateTimeSection .date-chip strong {
+        font-size: 1.45rem !important;
+      }
+    }
+
     </style>
 </head>
 <body class="booking-page">
@@ -4357,15 +4466,18 @@
           } catch (emailError) {
             console.error("Error enviando correo:", emailError);
 
+            if (submitButton) {
+              submitButton.disabled = false;
+              submitButton.textContent = originalButtonText;
+              submitButton.removeAttribute("aria-busy");
+            }
+
             if (mostrarEnAgendaDosDiasAntes) {
               alert(
-                `La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
+                `Cita agendada correctamente. Quedó pendiente de aprobación. Tu cita está pautada para el ${formatDateSafe(selectedDate)} y aparecerá en la agenda desde el ${formatDateSafe(agendaDesde)}, porque fue reservada con más de 15 días de anticipación.`
               );
             } else {
-              alert(
-                "La cita fue agendada y quedó pendiente de aprobación, pero el correo no se pudo enviar: " +
-                (emailError?.text || emailError?.message || "Error desconocido")
-              );
+              alert("Cita agendada correctamente. Quedó pendiente de aprobación.");
             }
           }
 
