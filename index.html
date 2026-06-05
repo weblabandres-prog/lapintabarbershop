@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>La Pinta Barber | Reserva tu cita</title>
-  <meta name="description" content="Agenda tu cita en La Pinta Barber de forma rapida y sencilla." />
+  <meta name="description" content="Agenda tu cita en La Pinta Barber de forma rápida y sencilla." />
   <link rel="icon" type="image/jpeg" href="logo.jpeg" />
   <link rel="apple-touch-icon" href="logo.jpeg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -276,6 +276,7 @@
       font-size: clamp(3.3rem, 7vw, 6.2rem);
       line-height: .84;
       letter-spacing: 0;
+      word-spacing: .06em;
     }
 
     .lead {
@@ -335,40 +336,129 @@
 
     .bank-list {
       display: grid;
-      gap: 9px;
+      gap: 11px;
     }
 
     .bank-row {
+      position: relative;
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
-      gap: 10px;
-      padding: 12px;
-      border: 1px solid rgba(255, 255, 255, .10);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, .045);
+      gap: 12px;
+      padding: 13px;
+      border: 1px solid rgba(255, 255, 255, .11);
+      border-radius: 20px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .032)),
+        rgba(255, 255, 255, .045);
+      overflow: hidden;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
     }
 
-    .bank-row strong {
+    .bank-row::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: linear-gradient(180deg, var(--blue), var(--blue-2));
+      opacity: .9;
+    }
+
+    .bank-row:hover {
+      transform: translateY(-2px);
+      border-color: rgba(114, 186, 255, .34);
+      background:
+        linear-gradient(135deg, rgba(31, 134, 255, .13), rgba(255, 255, 255, .04)),
+        rgba(255, 255, 255, .05);
+      box-shadow: 0 16px 34px rgba(0, 0, 0, .18);
+    }
+
+    .bank-info {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bank-logo-wrap {
+      width: 48px;
+      height: 48px;
+      flex: 0 0 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .96);
+      border: 1px solid rgba(255, 255, 255, .16);
+      overflow: hidden;
+      box-shadow: 0 10px 22px rgba(0, 0, 0, .18);
+    }
+
+    .bank-logo {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
       display: block;
-      margin-bottom: 2px;
-      font-size: .9rem;
+    }
+
+    .bank-logo-fallback {
+      width: 100%;
+      height: 100%;
+      display: none;
+      place-items: center;
+      color: #fff;
+      font-size: .82rem;
+      font-weight: 950;
+      letter-spacing: .03em;
+    }
+
+    .bank-logo-fallback.banreservas {
+      background: linear-gradient(135deg, #003876, #0062b1);
+    }
+
+    .bank-logo-fallback.popular {
+      background: linear-gradient(135deg, #005baa, #00a3e0);
+    }
+
+    .bank-text {
+      min-width: 0;
+      display: block;
+    }
+
+    .bank-text strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: .93rem;
       line-height: 1.14;
     }
 
-    .bank-row small {
+    .bank-text small {
+      display: block;
       color: var(--muted);
       font-size: .76rem;
       font-weight: 700;
     }
 
     .bank-pay-btn {
-      min-height: 40px;
-      padding: 9px 12px;
-      color: #dcecff;
-      background: rgba(31, 134, 255, .14);
-      border-color: rgba(31, 134, 255, .25);
-      font-size: .8rem;
+      min-height: 42px;
+      padding: 9px 13px;
+      color: #eaf5ff;
+      background: rgba(31, 134, 255, .16);
+      border-color: rgba(31, 134, 255, .32);
+      font-size: .82rem;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+    }
+
+    .bank-pay-btn::after {
+      content: "Copiar";
+      margin-left: 8px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .10);
+      color: #cfe8ff;
+      font-size: .66rem;
+      font-weight: 950;
+      letter-spacing: .04em;
+      text-transform: uppercase;
     }
 
     .bank-note {
@@ -447,13 +537,13 @@
     }
 
     .hour-link {
-      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+      cursor: default;
+      user-select: none;
     }
 
     .hour-link:hover {
-      transform: translateY(-1px);
-      background: rgba(31, 134, 255, .16);
-      border-color: rgba(31, 134, 255, .32);
+      background: rgba(255, 255, 255, .055);
+      border-color: rgba(255, 255, 255, .12);
     }
 
     .hours-message {
@@ -491,9 +581,9 @@
 
     @media (max-width: 560px) {
       .page {
-        width: min(100% - 16px, 760px);
+        width: min(100% - 12px, 760px);
         padding-top: calc(8px + var(--safe-top));
-        gap: 10px;
+        gap: 9px;
       }
 
       .topbar {
@@ -527,8 +617,8 @@
       }
 
       .hero {
-        min-height: 430px;
-        border-radius: 24px;
+        min-height: 360px;
+        border-radius: 22px;
       }
 
       .hero-photo img {
@@ -536,7 +626,7 @@
       }
 
       .hero-content {
-        padding: 18px;
+        padding: 16px;
       }
 
       .status-line {
@@ -545,21 +635,21 @@
 
       .kicker,
       .status-badge {
-        min-height: 30px;
-        padding: 7px 10px;
-        font-size: .65rem;
+        min-height: 28px;
+        padding: 6px 9px;
+        font-size: .62rem;
       }
 
       h1 {
-        margin-bottom: 9px;
-        font-size: clamp(2.35rem, 12vw, 3.4rem);
-        line-height: .9;
+        margin-bottom: 8px;
+        font-size: clamp(2.15rem, 10.5vw, 3rem);
+        line-height: .92;
       }
 
       .lead {
-        margin-bottom: 15px;
-        font-size: .93rem;
-        line-height: 1.42;
+        margin-bottom: 13px;
+        font-size: .86rem;
+        line-height: 1.38;
       }
 
       .hero-buttons {
@@ -570,17 +660,17 @@
 
       .btn {
         width: 100%;
-        min-height: 58px;
-        padding: 15px 18px;
-        font-size: 1rem;
+        min-height: 52px;
+        padding: 13px 16px;
+        font-size: .94rem;
       }
 
       .payment-card {
-        padding: 14px;
+        padding: 13px;
       }
 
       .availability-card {
-        padding: 14px;
+        padding: 13px;
       }
 
       .card {
@@ -592,16 +682,21 @@
       }
 
       .schedule-text {
+        min-height: 42px;
+        border-radius: 18px;
         width: 100%;
+        white-space: normal;
+        text-align: center;
       }
 
       .hours-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
       }
 
       .hour-link {
-        min-height: 44px;
-        font-size: .84rem;
+        min-height: 42px;
+        font-size: .82rem;
         padding-inline: 8px;
       }
 
@@ -628,11 +723,11 @@
           <img src="logo.jpeg" alt="La Pinta Barber" class="brand-logo" />
         </div>
         <div>
-          <small>Barberia premium</small>
+          <small>Barbería premium</small>
           <strong>La Pinta Barber</strong>
         </div>
       </a>
-      <nav class="nav-actions" aria-label="Accesos rapidos">
+      <nav class="nav-actions" aria-label="Accesos rápidos">
         <a class="mini-btn hide-mobile" href="ver-citas.html">Ver citas</a>
         <a class="mini-btn primary" href="cita.html">Agendar</a>
       </nav>
@@ -648,7 +743,7 @@
           <div class="status-badge" id="shopStatusBadge">Consultando horario...</div>
         </div>
         <h1>La Pinta Barber</h1>
-        <p class="lead">Agenda tu cita rapido. Elige tu servicio, confirma tu horario y llega directo al corte.</p>
+        <p class="lead">Agenda tu cita rápido. Elige tu servicio, confirma tu horario y llega directo al corte.</p>
         <div class="hero-buttons">
           <a href="cita.html" class="btn primary">Agendar cita</a>
           <a href="ver-citas.html" class="btn">Ver citas</a>
@@ -679,26 +774,69 @@
           <span>Pagos</span>
           <h2>Cuentas para transferencia</h2>
         </div>
+
         <div class="bank-list">
           <div class="bank-row">
-            <span>
-              <strong>Banreservas</strong>
-              <small>Cuenta de ahorro</small>
-            </span>
-            <button type="button" class="bank-pay-btn" onclick="copyAndOpenBank('9602003811', 'banreservas')">9602003811</button>
+            <div class="bank-info">
+              <div class="bank-logo-wrap" aria-hidden="true">
+                <img
+                  src="banreservas.png"
+                  alt=""
+                  class="bank-logo"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+                />
+                <div class="bank-logo-fallback banreservas">BR</div>
+              </div>
+
+              <span class="bank-text">
+                <strong>Banreservas</strong>
+                <small>Cuenta de ahorro</small>
+              </span>
+            </div>
+
+            <button
+              type="button"
+              class="bank-pay-btn"
+              aria-label="Copiar cuenta de Banreservas y abrir la app del banco"
+              onclick="copyAndOpenBank('9602003811', 'banreservas')"
+            >
+              9602003811
+            </button>
           </div>
+
           <div class="bank-row">
-            <span>
-              <strong>Popular</strong>
-              <small>Cuenta de ahorro</small>
-            </span>
-            <button type="button" class="bank-pay-btn" onclick="copyAndOpenBank('853557841', 'popular')">853557841</button>
+            <div class="bank-info">
+              <div class="bank-logo-wrap" aria-hidden="true">
+                <img
+                  src="popular.png"
+                  alt=""
+                  class="bank-logo"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+                />
+                <div class="bank-logo-fallback popular">BP</div>
+              </div>
+
+              <span class="bank-text">
+                <strong>Popular</strong>
+                <small>Cuenta de ahorro</small>
+              </span>
+            </div>
+
+            <button
+              type="button"
+              class="bank-pay-btn"
+              aria-label="Copiar cuenta de Popular y abrir la app del banco"
+              onclick="copyAndOpenBank('853557841', 'popular')"
+            >
+              853557841
+            </button>
           </div>
         </div>
-        <p class="bank-note">Toca la cuenta para copiar el numero y abrir la app del banco.</p>
+
+        <p class="bank-note">Toca el número para copiarlo y abrir la app del banco.</p>
       </article>
 
-      <article class="card map-card" aria-label="Mapa de ubicacion">
+      <article class="card map-card" aria-label="Mapa de ubicación">
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3781.0045146839834!2d-69.49556079999999!3d18.618866699999998!2m3!1f0!3f0!0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8eaf710073f004cf%3A0xba6e8449aff7acca!2sLa%20Pinta%20Barber!5e0!3m2!1ses-419!2sdo!4v1775521244096!5m2!1ses-419!2sdo"
           allowfullscreen
@@ -747,9 +885,9 @@
       const bankName = bank === "banreservas" ? "Banreservas" : "Popular";
 
       if (copied) {
-        alert(`Numero copiado: ${accountNumber}\n\nSe intentara abrir la app de ${bankName}.`);
+        alert(`Número copiado: ${accountNumber}\n\nSe intentará abrir la app de ${bankName}.`);
       } else {
-        alert(`Numero: ${accountNumber}\nCopialo manualmente.`);
+        alert(`Número: ${accountNumber}\nCópialo manualmente.`);
       }
 
       if (bank === "popular") {
@@ -1095,12 +1233,11 @@
       }
 
       availableSlots.forEach(slot => {
-        const link = document.createElement("a");
-        link.className = "hour-link";
-        link.href = `cita.html?fecha=${encodeURIComponent(selectedDate)}&hora=${encodeURIComponent(slot)}&servicio=${encodeURIComponent(PREVIEW_SERVICE)}`;
-        link.textContent = slot;
-        link.setAttribute("aria-label", `Agendar a las ${slot}`);
-        homeHoursGrid.appendChild(link);
+        const hourItem = document.createElement("div");
+        hourItem.className = "hour-link";
+        hourItem.textContent = slot;
+        hourItem.setAttribute("aria-label", `Hora disponible: ${slot}`);
+        homeHoursGrid.appendChild(hourItem);
       });
     }
 
