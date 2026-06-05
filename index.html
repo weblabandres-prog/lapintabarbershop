@@ -713,6 +713,56 @@
         min-height: 235px;
       }
     }
+
+
+    /* Ajuste: evita que el campo de fecha se salga en celular */
+    .date-field,
+    .date-field input,
+    .availability-top {
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .date-field input {
+      display: block;
+      overflow: hidden;
+      text-align: center;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .date-field input::-webkit-date-and-time-value {
+      min-width: 0;
+      text-align: center;
+    }
+
+    @media (max-width: 560px) {
+      .availability-card {
+        padding: 12px;
+      }
+
+      .availability-top {
+        width: 100%;
+        gap: 10px;
+        overflow: hidden;
+      }
+
+      .date-field {
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .date-field input {
+        width: 100%;
+        max-width: 100%;
+        min-height: 44px;
+        padding: 9px 10px;
+        border-radius: 14px;
+        font-size: 15px;
+      }
+    }
+
   </style>
 </head>
 <body>
