@@ -1931,10 +1931,6 @@
       const today = getTodayISO();
       const override = dailyOverrides[dateString] || null;
 
-      if (dateString === today && !shopIsOpen && !override?.forceOpen) {
-        return null;
-      }
-
       if (override?.forceClosed === true) {
         return null;
       }
@@ -1946,6 +1942,10 @@
           end: formatStatusTime(override.customEnd),
           breaks: []
         };
+      }
+
+      if (dateString === today && !shopIsOpen && !override?.forceOpen) {
+        return null;
       }
 
       const day = getDayFromDate(dateString);
