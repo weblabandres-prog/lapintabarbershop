@@ -113,6 +113,8 @@
     .time-block-form{display:grid;grid-template-columns:1.1fr .8fr .8fr 1.4fr auto;gap:14px;align-items:end;min-width:0;}
     .time-block-edit-form{grid-template-columns:1fr 1fr 1fr 1.5fr auto;}
     .time-block-form .primary-btn{width:100%;justify-content:center;}
+    .custom-schedule-form{grid-template-columns:1.05fr .8fr .8fr 1.3fr auto auto;}
+    .custom-schedule-form .ghost-btn{width:100%;justify-content:center;}
     .time-select-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
     .time-block-list{display:grid;gap:12px;margin-top:18px;}
     .time-block-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.02);}
@@ -123,6 +125,9 @@
     .time-block-item p{margin:0;color:var(--muted);line-height:1.5;}
     .time-block-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;}
     .mini-pill{display:inline-flex;align-items:center;min-height:32px;padding:6px 10px;border:1px solid rgba(31,134,255,.2);border-radius:999px;background:rgba(31,134,255,.1);color:#cfe5ff;font-size:.82rem;font-weight:700;}
+    .custom-schedule-summary{display:grid;gap:8px;}
+    .custom-schedule-summary h4{font-size:1.06rem;}
+    .custom-schedule-hours{display:inline-flex;align-items:center;width:max-content;max-width:100%;min-height:38px;padding:8px 12px;border-radius:999px;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.24);color:#b8ffd7;font-weight:900;}
     .services-grid{display:grid;gap:14px;}
     .service-item-card{padding:20px;transition:.3s ease;}
     .service-view-mode{display:flex;justify-content:space-between;align-items:center;gap:15px;}
@@ -188,7 +193,7 @@
     .modal-close-btn{padding:0 16px;}
     .services-scroll{overflow-y:auto;padding-right:8px;margin-top:10px;flex-grow:1;}
     @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important;}}
-    @media (max-width:1180px){.stats-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.filters-grid,.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form .field:nth-child(4),.time-block-form .primary-btn{grid-column:1 / -1;}}
+    @media (max-width:1180px){.stats-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.filters-grid,.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form .field:nth-child(4),.time-block-form .primary-btn,.custom-schedule-form .ghost-btn{grid-column:1 / -1;}}
     @media (max-width:920px){
       .mobile-topbar{display:flex;}
       .admin-shell{grid-template-columns:1fr;}
@@ -209,7 +214,7 @@
       .filters-grid,.tools-grid,.service-editor-mode,.time-block-form{grid-template-columns:1fr;}
       .status-card{padding:18px;border-radius:22px;}
       .time-block-form{gap:12px;}
-      .time-block-form .field,.time-block-form .primary-btn{grid-column:1 / -1;}
+      .time-block-form .field,.time-block-form .primary-btn,.custom-schedule-form .ghost-btn{grid-column:1 / -1;}
       .time-block-actions{grid-template-columns:1fr 1fr;}
       .time-block-actions button{min-width:0;padding-inline:12px;}
       .topbar h2{font-size:1.6rem;}
@@ -678,13 +683,14 @@
           </div>
           <div id="customScheduleCountBadge" class="badge-inline">0 días personalizados</div>
         </div>
-        <p class="status-help">Pon el horario exacto que quieres para cualquier día. Ejemplo: el lunes próximo de 6:00 AM a 12:00 PM. Reemplaza el horario normal de ese día.</p>
-        <div class="time-block-form">
+        <p class="status-help">Pon el horario exacto de un día. Esto cambia las horas disponibles para los clientes en esa fecha.</p>
+        <div class="time-block-form custom-schedule-form">
           <div class="field"><label for="customSchedDate">Fecha</label><input id="customSchedDate" type="date" /></div>
           <div class="field"><label for="customSchedStart">Abre a las</label><input id="customSchedStart" type="time" step="1800" /></div>
           <div class="field"><label for="customSchedEnd">Cierra a las</label><input id="customSchedEnd" type="time" step="1800" /></div>
           <div class="field"><label for="customSchedReason">Nota (opcional)</label><input id="customSchedReason" type="text" placeholder="Festivo, evento especial..." maxlength="80" /></div>
           <button id="saveCustomSchedBtn" class="primary-btn" type="button">Guardar</button>
+          <button id="resetCustomSchedBtn" class="ghost-btn" type="button">Limpiar</button>
         </div>
         <div id="customScheduleList" class="time-block-list"></div>
       </section>
@@ -942,6 +948,7 @@
     const customSchedEnd = document.getElementById("customSchedEnd");
     const customSchedReason = document.getElementById("customSchedReason");
     const saveCustomSchedBtn = document.getElementById("saveCustomSchedBtn");
+    const resetCustomSchedBtn = document.getElementById("resetCustomSchedBtn");
     const customScheduleList = document.getElementById("customScheduleList");
     const customScheduleCountBadge = document.getElementById("customScheduleCountBadge");
 
@@ -1515,6 +1522,27 @@
       if (customSchedEnd && !customSchedEnd.value) customSchedEnd.value = "20:00";
     }
 
+    function resetCustomScheduleForm() {
+      if (customSchedDate) customSchedDate.value = getTodayISO();
+      if (customSchedStart) customSchedStart.value = "08:00";
+      if (customSchedEnd) customSchedEnd.value = "20:00";
+      if (customSchedReason) customSchedReason.value = "";
+    }
+
+    function loadCustomScheduleForSelectedDate() {
+      const fecha = customSchedDate?.value || "";
+      const data = fecha ? dailyOverrides[fecha] : null;
+      if (!data?.customStart || !data?.customEnd) {
+        if (customSchedStart) customSchedStart.value = "08:00";
+        if (customSchedEnd) customSchedEnd.value = "20:00";
+        if (customSchedReason) customSchedReason.value = "";
+        return;
+      }
+      if (customSchedStart) customSchedStart.value = data.customStart;
+      if (customSchedEnd) customSchedEnd.value = data.customEnd;
+      if (customSchedReason) customSchedReason.value = data.reason || "";
+    }
+
     function saveCustomSchedule() {
       if (!requireAuthAction()) return;
 
@@ -1526,6 +1554,7 @@
 
       if (!fecha || !start || !end) return showToast("Completa fecha, hora de apertura y hora de cierre");
       if (fecha < today) return showToast("No puedes editar una fecha pasada");
+      if (!isValid24HourTime(start) || !isValid24HourTime(end)) return showToast("Formato de hora inválido");
       if (timeToMinutes(start) >= timeToMinutes(end)) return showToast("La hora de cierre debe ser mayor que la de apertura");
 
       saveCustomSchedBtn.disabled = true;
@@ -1534,12 +1563,10 @@
       firebase.database().ref(`dailyOverrides/${fecha}`).update({
         customStart: start,
         customEnd: end,
-        forceOpen: true,
         forceClosed: false,
         reason: reason || null,
         updatedAt: new Date().toISOString()
       }).then(() => {
-        if (customSchedReason) customSchedReason.value = "";
         showToast("Horario personalizado guardado");
       }).catch(() => {
         showToast("No se pudo guardar el horario");
@@ -1556,7 +1583,6 @@
       firebase.database().ref(`dailyOverrides/${fecha}`).update({
         customStart: null,
         customEnd: null,
-        forceOpen: false,
         reason: null,
         updatedAt: new Date().toISOString()
       }).then(() => showToast("Horario personalizado quitado"))
@@ -1581,9 +1607,9 @@
       customScheduleList.innerHTML = entries.map(([fecha, data]) => `
         <article class="time-block-item" id="custom-sched-${escapeHTMLAttr(fecha)}">
           <div style="flex:1;min-width:0;">
-            <div class="custom-sched-view">
+            <div class="custom-sched-view custom-schedule-summary">
               <h4>${escapeHTML(formatDate(fecha))}</h4>
-              <p><strong>${escapeHTML(formatStatusTime(data.customStart))} – ${escapeHTML(formatStatusTime(data.customEnd))}</strong>${data.reason ? " • " + escapeHTML(data.reason) : ""}</p>
+              <p><span class="custom-schedule-hours">${escapeHTML(formatStatusTime(data.customStart))} - ${escapeHTML(formatStatusTime(data.customEnd))}</span>${data.reason ? " " + escapeHTML(data.reason) : ""}</p>
               <div class="time-block-meta">
                 <span class="mini-pill">Horario personalizado</span>
                 ${fecha === today ? '<span class="mini-pill">Hoy</span>' : ""}
@@ -1633,6 +1659,7 @@
 
           if (!newFecha || !newStart || !newEnd) return showToast("Completa todos los campos");
           if (newFecha < today) return showToast("No puedes poner una fecha pasada");
+          if (!isValid24HourTime(newStart) || !isValid24HourTime(newEnd)) return showToast("Formato de hora inválido");
           if (timeToMinutes(newStart) >= timeToMinutes(newEnd)) return showToast("La hora de cierre debe ser mayor");
 
           btn.disabled = true;
@@ -1642,13 +1669,15 @@
             // If date changed, remove old and create new
             if (newFecha !== oldFecha) {
               await firebase.database().ref(`dailyOverrides/${oldFecha}`).update({
-                customStart: null, customEnd: null, forceOpen: false, reason: null
+                customStart: null,
+                customEnd: null,
+                reason: null,
+                updatedAt: new Date().toISOString()
               });
             }
             await firebase.database().ref(`dailyOverrides/${newFecha}`).update({
               customStart: newStart,
               customEnd: newEnd,
-              forceOpen: true,
               forceClosed: false,
               reason: newReason || null,
               updatedAt: new Date().toISOString()
@@ -2447,6 +2476,13 @@
       toggleTuesdayBtn?.addEventListener("click", toggleTuesdayState);
       toggleExtendedHoursBtn?.addEventListener("click", toggleExtendedHoursState);
       saveCustomSchedBtn?.addEventListener("click", saveCustomSchedule);
+      resetCustomSchedBtn?.addEventListener("click", resetCustomScheduleForm);
+      customSchedDate?.addEventListener("change", loadCustomScheduleForSelectedDate);
+      [customSchedDate, customSchedStart, customSchedEnd, customSchedReason].forEach(input => {
+        input?.addEventListener("keydown", event => {
+          if (event.key === "Enter") saveCustomSchedule();
+        });
+      });
 
       customScheduleList?.addEventListener("click", event => {
         const btn = event.target.closest("button[data-delete-custom-sched]");
