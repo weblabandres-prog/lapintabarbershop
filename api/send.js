@@ -127,7 +127,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         from: "La Pinta Barber <citas@lapintabarbershop.com>",
-        to: ["weblabandres@gmail.com"],
+        to: ["castrovictory1@gmail.com"],
         subject: `Nueva cita de ${nombre}`,
         html
       })
