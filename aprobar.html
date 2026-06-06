@@ -1222,9 +1222,7 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
         fillAppointmentData(currentAppointment);
         setApprovedButtons();
         setStatus(
-          isIOSDevice() || isInAppBrowser()
-            ? "✅ Cita aprobada correctamente. Toca el botón para abrir WhatsApp."
-            : "✅ Cita aprobada correctamente. Toca el botón para abrir WhatsApp.",
+          "✅ Cita aprobada correctamente. Se abrirá WhatsApp para avisar al cliente.",
           "success"
         );
 
@@ -1233,6 +1231,8 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
           setStatus("✅ Cita aprobada correctamente, pero el número no es válido para WhatsApp.", "warning");
           return;
         }
+
+        redirectToWhatsApp(currentAppointment, "approved");
       } catch (error) {
         console.error("Error aprobando cita:", error);
         setPendingButtons();
@@ -1299,9 +1299,7 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
         fillAppointmentData(currentAppointment);
         setCancelledButtons();
         setStatus(
-          isIOSDevice() || isInAppBrowser()
-            ? "❌ Cita cancelada correctamente. Toca el botón para abrir WhatsApp."
-            : "❌ Cita cancelada correctamente. Toca el botón para abrir WhatsApp.",
+          "❌ Cita cancelada correctamente. Se abrirá WhatsApp para avisar al cliente.",
           "warning"
         );
 
@@ -1310,6 +1308,8 @@ Si deseas, puedes escribirnos para agendar una nueva cita.`;
           setStatus("❌ Cita cancelada correctamente, pero el número no es válido para WhatsApp.", "warning");
           return;
         }
+
+        redirectToWhatsApp(currentAppointment, "cancelled");
       } catch (error) {
         console.error("Error cancelando cita:", error);
         setPendingButtons();
