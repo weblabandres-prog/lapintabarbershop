@@ -384,6 +384,10 @@
       align-items: center;
     }
 
+    .agenda-grid > * {
+      min-width: 0;
+    }
+
     .agenda-head {
       min-height: 58px;
       padding: 0 14px;
@@ -398,6 +402,8 @@
       letter-spacing: .08em;
       text-transform: uppercase;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .agenda-row {
@@ -470,6 +476,8 @@
     }
 
     .view-btn {
+      width: 100%;
+      min-width: 0;
       min-height: 38px;
       border: 1px solid rgba(229,57,53,.34);
       border-radius: 999px;
@@ -479,7 +487,7 @@
       font-weight: 900;
       cursor: pointer;
       text-align: center;
-      padding: 8px 14px;
+      padding: 8px 6px;
       transition: transform .2s ease, background .2s ease, border-color .2s ease;
     }
 
@@ -493,10 +501,13 @@
     }
 
     .row-note {
+      display: block;
       color: var(--muted-2);
       font-size: .78rem;
       font-weight: 800;
+      line-height: 1.2;
       text-align: center;
+      overflow-wrap: anywhere;
     }
 
     .mine-pill {
@@ -593,14 +604,14 @@
 
     @media (min-width: 980px) {
       .block-row {
-        grid-template-columns: minmax(170px, 1fr) 92px 132px 62px;
+        grid-template-columns: minmax(170px, 1fr) 92px 132px 78px;
         padding: 12px 18px;
       }
     }
 
     @media (min-width: 1180px) {
       .block-row {
-        grid-template-columns: minmax(210px, 1fr) 102px 140px 66px;
+        grid-template-columns: minmax(210px, 1fr) 102px 140px 82px;
       }
     }
 
@@ -921,7 +932,7 @@
       }
 
       .agenda-grid {
-        grid-template-columns: minmax(150px, 1fr) 86px 124px 56px;
+        grid-template-columns: minmax(150px, 1fr) 86px 124px 74px;
       }
     }
 
@@ -1075,6 +1086,57 @@
       }
     }
 
+    @media (max-width: 480px) {
+      .agenda-grid {
+        grid-template-columns: minmax(0, 1fr) 56px 88px 64px;
+        column-gap: 5px;
+      }
+
+      .agenda-head,
+      .agenda-row {
+        padding-inline: 10px;
+      }
+
+      .agenda-head div {
+        font-size: .58rem;
+        letter-spacing: .05em;
+      }
+
+      .client-name {
+        font-size: .88rem;
+        line-height: 1.12;
+      }
+
+      .time-cell {
+        font-size: .88rem;
+        line-height: 1.18;
+      }
+
+      .status-pill {
+        min-height: 33px;
+        padding: 5px 4px;
+        font-size: .55rem;
+        letter-spacing: .02em;
+      }
+
+      .view-btn {
+        min-height: 33px;
+        padding: 6px 4px;
+        font-size: .64rem;
+      }
+
+      .row-note {
+        font-size: .64rem;
+      }
+
+      .mine-pill {
+        margin-top: 6px;
+        padding: 4px 7px;
+        font-size: .58rem;
+        letter-spacing: .05em;
+      }
+    }
+
     @media (max-width: 390px) {
       .nav {
         padding-inline: 14px;
@@ -1105,35 +1167,38 @@
       }
 
       .agenda-grid {
-        grid-template-columns: minmax(90px, 1fr) 60px 88px 36px;
-        column-gap: 6px;
+        grid-template-columns: minmax(0, 1fr) 54px 84px 60px;
+        column-gap: 4px;
       }
 
       .agenda-head,
       .agenda-row {
-        padding-inline: 12px;
+        padding-inline: 9px;
       }
 
       .agenda-head div {
-        font-size: .64rem;
+        font-size: .54rem;
+        letter-spacing: .04em;
       }
 
       .client-name {
-        font-size: .94rem;
+        font-size: .84rem;
       }
 
       .time-cell {
-        font-size: .94rem;
+        font-size: .84rem;
       }
 
       .status-pill {
-        min-height: 35px;
-        font-size: .60rem;
-        padding-inline: 6px;
+        min-height: 32px;
+        font-size: .52rem;
+        padding-inline: 4px;
       }
 
       .view-btn {
-        font-size: .78rem;
+        min-height: 32px;
+        font-size: .62rem;
+        padding-inline: 3px;
       }
     }
   </style>
@@ -1178,7 +1243,7 @@
       <section class="top-card" aria-label="Resumen de agenda">
         <span class="eyebrow">Agenda pública</span>
         <h1>Citas programadas</h1>
-        <p>Vista rápida y cómoda para celular y PC, organizada por hoy y mañana. Las citas pendientes también aparecen aquí para que su dueño pueda gestionarlas desde el dispositivo donde las creó.</p>
+        <p><br></p>
 
         <div class="quick-stats">
           <div class="quick-stat">
@@ -1212,7 +1277,7 @@
         </section>
       </div>
 
-      <p class="bottom-note" id="lastUpdated">Actualizando agenda pública en tiempo real. Las citas pendientes se muestran, pero solo su dueño puede editarlas.</p>
+      
     </main>
   </div>
 
@@ -2100,7 +2165,7 @@
       renderAgenda(tomorrowView, tomorrowList, "No hay citas programadas para mañana.", tomorrow);
 
       const now = new Date();
-      lastUpdated.textContent = `Agenda actualizada ${now.toLocaleTimeString("es-DO", { hour: "numeric", minute: "2-digit" })}. Las pendientes se muestran; solo su dueño puede editarlas.`;
+      if (lastUpdated) lastUpdated.textContent = `Agenda actualizada ${now.toLocaleTimeString("es-DO", { hour: "numeric", minute: "2-digit" })}. Las pendientes se muestran; solo su dueño puede editarlas.`;
     }
 
     function detailRow(label, value) {
@@ -2376,7 +2441,7 @@
       tomorrowView.className = "empty-state";
       todayView.textContent = "No se pudo cargar la agenda.";
       tomorrowView.textContent = "Revisa la conexión o la configuración de Firebase.";
-      lastUpdated.textContent = "Error al cargar los datos.";
+      if (lastUpdated) lastUpdated.textContent = "Error al cargar los datos.";
       console.error(error);
     });
 
@@ -2397,4 +2462,4 @@
     });
   </script>
 </body>
-</html>
+</html>xa
