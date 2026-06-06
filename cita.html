@@ -2768,8 +2768,6 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyD4WCEUcsgfjK_LgNkY5rexqvPMxQ-RdEE",
@@ -2843,14 +2841,7 @@
     let appointmentsReady = false;
     let isSubmitting = false;
 
-    const EMAILJS_PUBLIC_KEY = "TXQSraRTJ0Ro5hhuk";
-    const EMAILJS_SERVICE_ID = "service_15uyzin";
-    const EMAILJS_TEMPLATE_ID = "template_zck2x4i";
-    const BARBER_EMAIL = "castrovictory1@gmail.com";
-
-    if (typeof emailjs !== "undefined") {
-      emailjs.init(EMAILJS_PUBLIC_KEY);
-    }
+    const RESEND_API_URL = "https://lapintabarbershop.vercel.app/api/send";
 
     const normalWorkingDays = {
       0: null,
@@ -4110,32 +4101,45 @@
     }
 
     async function sendAppointmentEmail(appointment, appointmentId) {
-      if (typeof emailjs === "undefined") {
-        throw new Error("EmailJS no está cargado.");
-      }
-
       const approvalLink = buildApproveLink(appointmentId, appointment.approveToken);
 
-      const templateParams = {
-        to_email: BARBER_EMAIL,
+      const payload = {
         nombre: appointment.nombre || "",
         telefono: appointment.telefono || "",
         servicio: appointment.servicio || "",
         barbero: appointment.barbero || "",
-        fecha: formatDateSafe(appointment.fecha) || "",
-        fecha_iso: formatDateISOForSubject(appointment.fecha) || "",
+        fecha: formatDateSafe(appointment.fecha) || appointment.fecha || "",
+        fechaISO: appointment.fecha || "",
         hora: appointment.hora || "",
         duration: `${appointment.duration || 0} min`,
         precio: `RD$${appointment.precio || getServicePrice(appointment.servicio)}`,
-        metodo_pago: appointment.metodoPago || "Efectivo",
-        approval_link: approvalLink
+        metodoPago: appointment.metodoPago || "Efectivo",
+        banco: appointment.metodoPago || "",
+        mensaje: `Aprobar cita: ${approvalLink}`,
+        approvalLink,
+        appointmentId
       };
 
-      return emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        templateParams
-      );
+      const response = await fetch(RESEND_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      let result = {};
+      try {
+        result = await response.json();
+      } catch (error) {
+        result = {};
+      }
+
+      if (!response.ok || result.ok === false) {
+        throw new Error(result.message || "No se pudo enviar el correo con Resend.");
+      }
+
+      return result;
     }
 
     function withTimeout(promise, milliseconds, message) {
