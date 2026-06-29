@@ -101,6 +101,12 @@
     .stat-card{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
     .stat-card span{display:block;font-size:.82rem;color:var(--muted);font-weight:700;}
     .stat-card strong{font-family:"Cormorant Garamond",serif;font-size:1.7rem;color:#fff;line-height:1;}
+    .generated-section{padding:22px;margin-bottom:22px;}
+    .generated-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;}
+    .generated-card{padding:18px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.025);box-shadow:0 12px 28px rgba(0,0,0,.18);}
+    .generated-card span{display:block;font-size:.78rem;color:var(--muted);font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;}
+    .generated-card strong{display:block;font-family:"Cormorant Garamond",serif;font-size:2rem;line-height:1;color:#fff;}
+    .generated-card small{display:block;margin-top:8px;color:#8fc0ff;font-weight:800;line-height:1.35;}
     .status-card,.filters-card,.table-card{padding:22px;margin-bottom:22px;}
     .status-head,.filters-header,.table-header{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
     .status-head h3,.filters-header h3,.table-header h3{font-size:1.15rem;}
@@ -193,7 +199,7 @@
     .modal-close-btn{padding:0 16px;}
     .services-scroll{overflow-y:auto;padding-right:8px;margin-top:10px;flex-grow:1;}
     @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important;}}
-    @media (max-width:1180px){.stats-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.filters-grid,.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form .field:nth-child(4),.time-block-form .primary-btn,.custom-schedule-form .ghost-btn{grid-column:1 / -1;}}
+    @media (max-width:1180px){.stats-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.generated-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.filters-grid,.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form{grid-template-columns:repeat(2,minmax(0,1fr));}.time-block-form .field:nth-child(4),.time-block-form .primary-btn,.custom-schedule-form .ghost-btn{grid-column:1 / -1;}}
     @media (max-width:920px){
       .mobile-topbar{display:flex;}
       .admin-shell{grid-template-columns:1fr;}
@@ -209,6 +215,9 @@
     @media (max-width:640px){
       .main-content{padding:16px;}
       .stats-grid{grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+      .generated-grid{grid-template-columns:1fr;gap:10px;}
+      .generated-card{padding:16px;}
+      .generated-card strong{font-size:1.8rem;}
       .stat-card{padding:10px 12px;}
       .stat-card strong{font-size:1.4rem;}
       .filters-grid,.tools-grid,.service-editor-mode,.time-block-form{grid-template-columns:1fr;}
@@ -615,6 +624,7 @@
 
       <nav class="sidebar-nav">
         <a href="#dashboard" class="active">Dashboard</a>
+        <a href="#generatedSection">Generado</a>
         <a href="#customScheduleSection">Horario personalizado</a>
         <a href="#timeBlocksSection">Bloques de horas</a>
         <a href="#appointmentsSection">Citas</a>
@@ -646,6 +656,24 @@
         <article class="stat-card"><span>Aprobadas</span><strong id="statApproved">0</strong></article>
         <article class="stat-card"><span>Canceladas</span><strong id="statCancelled">0</strong></article>
         <article class="stat-card"><span>Hoy</span><strong id="statToday">0</strong></article>
+      </section>
+
+      <section class="status-card generated-section" id="generatedSection">
+        <div class="status-head">
+          <div>
+            <span class="eyebrow">Ingresos</span>
+            <h3>Generado por periodo</h3>
+          </div>
+          <div id="generatedApprovedBadge" class="badge-inline">0 citas aprobadas</div>
+        </div>
+        <p class="status-help">Calculado con las citas aprobadas y el precio de cada servicio.</p>
+        <div class="generated-grid">
+          <article class="generated-card"><span>Hoy</span><strong id="generatedToday">RD$0</strong><small id="generatedTodayCount">0 citas</small></article>
+          <article class="generated-card"><span>Semana</span><strong id="generatedWeek">RD$0</strong><small id="generatedWeekCount">0 citas</small></article>
+          <article class="generated-card"><span>Mes</span><strong id="generatedMonth">RD$0</strong><small id="generatedMonthCount">0 citas</small></article>
+          <article class="generated-card"><span>Año</span><strong id="generatedYear">RD$0</strong><small id="generatedYearCount">0 citas</small></article>
+          <article class="generated-card"><span>Total</span><strong id="generatedTotal">RD$0</strong><small id="generatedTotalCount">0 citas</small></article>
+        </div>
       </section>
 
       <section class="status-card">
@@ -926,6 +954,17 @@
     const statApproved = document.getElementById("statApproved");
     const statCancelled = document.getElementById("statCancelled");
     const statToday = document.getElementById("statToday");
+    const generatedApprovedBadge = document.getElementById("generatedApprovedBadge");
+    const generatedToday = document.getElementById("generatedToday");
+    const generatedWeek = document.getElementById("generatedWeek");
+    const generatedMonth = document.getElementById("generatedMonth");
+    const generatedYear = document.getElementById("generatedYear");
+    const generatedTotal = document.getElementById("generatedTotal");
+    const generatedTodayCount = document.getElementById("generatedTodayCount");
+    const generatedWeekCount = document.getElementById("generatedWeekCount");
+    const generatedMonthCount = document.getElementById("generatedMonthCount");
+    const generatedYearCount = document.getElementById("generatedYearCount");
+    const generatedTotalCount = document.getElementById("generatedTotalCount");
     const currentUserLabel = document.getElementById("currentUserLabel");
     const mobileMenuBtn = document.getElementById("mobileMenuBtn");
     const sidebar = document.getElementById("sidebar");
@@ -1105,6 +1144,7 @@
         fecha: appointment?.fecha || "",
         hora: appointment?.hora || "",
         duration: Number(appointment?.duration || 30),
+        precio: Number(appointment?.precio || appointment?.price || appointment?.total || 0),
         slots: Array.isArray(appointment?.slots) ? appointment.slots : [],
         clientToken: appointment?.clientToken || "",
         anonimo: Boolean(appointment?.anonimo),
@@ -2125,6 +2165,89 @@
       return "Pendiente";
     }
 
+    function getLocalDateFromISO(dateString) {
+      if (!dateString) return null;
+      const [year, month, day] = String(dateString).split("-").map(Number);
+      if (!year || !month || !day) return null;
+      return new Date(year, month - 1, day);
+    }
+
+    function getWeekStart(date) {
+      const value = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const day = value.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      value.setDate(value.getDate() + diff);
+      value.setHours(0, 0, 0, 0);
+      return value;
+    }
+
+    function getWeekEnd(date) {
+      const value = getWeekStart(date);
+      value.setDate(value.getDate() + 6);
+      value.setHours(23, 59, 59, 999);
+      return value;
+    }
+
+    function isBetweenDates(dateString, startDate, endDate) {
+      const date = getLocalDateFromISO(dateString);
+      if (!date) return false;
+      date.setHours(12, 0, 0, 0);
+      return date >= startDate && date <= endDate;
+    }
+
+    function getAppointmentAmount(appointment) {
+      const directAmount = Number(appointment?.precio || appointment?.price || appointment?.total || 0);
+      if (directAmount > 0) return directAmount;
+      const service = getServiceByName(appointment?.servicio);
+      return Number(service?.precio || 0);
+    }
+
+    function formatMoney(amount) {
+      return `RD$${Number(amount || 0).toLocaleString("es-DO", { maximumFractionDigits: 0 })}`;
+    }
+
+    function summarizeGenerated(items) {
+      return items.reduce((summary, appointment) => {
+        summary.count += 1;
+        summary.total += getAppointmentAmount(appointment);
+        return summary;
+      }, { total: 0, count: 0 });
+    }
+
+    function setGeneratedCard(amountElement, countElement, summary) {
+      if (amountElement) amountElement.textContent = formatMoney(summary.total);
+      if (countElement) countElement.textContent = `${summary.count} ${summary.count === 1 ? "cita" : "citas"}`;
+    }
+
+    function renderGeneratedStats() {
+      const todayISO = getTodayISO();
+      const now = new Date();
+      const weekStart = getWeekStart(now);
+      const weekEnd = getWeekEnd(now);
+
+      const approved = appointments.filter(item => item.status === "approved");
+      const todayItems = approved.filter(item => item.fecha === todayISO);
+      const weekItems = approved.filter(item => isBetweenDates(item.fecha, weekStart, weekEnd));
+      const monthItems = approved.filter(item => {
+        const date = getLocalDateFromISO(item.fecha);
+        return date && date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+      });
+      const yearItems = approved.filter(item => {
+        const date = getLocalDateFromISO(item.fecha);
+        return date && date.getFullYear() === now.getFullYear();
+      });
+
+      if (generatedApprovedBadge) {
+        generatedApprovedBadge.textContent = `${approved.length} ${approved.length === 1 ? "cita aprobada" : "citas aprobadas"}`;
+      }
+
+      setGeneratedCard(generatedToday, generatedTodayCount, summarizeGenerated(todayItems));
+      setGeneratedCard(generatedWeek, generatedWeekCount, summarizeGenerated(weekItems));
+      setGeneratedCard(generatedMonth, generatedMonthCount, summarizeGenerated(monthItems));
+      setGeneratedCard(generatedYear, generatedYearCount, summarizeGenerated(yearItems));
+      setGeneratedCard(generatedTotal, generatedTotalCount, summarizeGenerated(approved));
+    }
+
     function renderStats() {
       const today = getTodayISO();
       statTotal.textContent = appointments.length;
@@ -2132,6 +2255,7 @@
       statApproved.textContent = appointments.filter(item => item.status === "approved").length;
       statCancelled.textContent = appointments.filter(item => item.status === "cancelled").length;
       statToday.textContent = appointments.filter(item => item.fecha === today).length;
+      renderGeneratedStats();
     }
 
     function renderTable(data) {
