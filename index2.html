@@ -669,11 +669,21 @@
         <p class="status-help">Calculado con las citas aprobadas y el precio de cada servicio.</p>
         <div class="generated-grid">
           <article class="generated-card"><span>Hoy</span><strong id="generatedToday">RD$0</strong><small id="generatedTodayCount">0 citas</small></article>
-          <article class="generated-card"><span>Semana</span><strong id="generatedWeek">RD$0</strong><small id="generatedWeekCount">0 citas</small></article>
           <article class="generated-card"><span>Mes</span><strong id="generatedMonth">RD$0</strong><small id="generatedMonthCount">0 citas</small></article>
           <article class="generated-card"><span>Año</span><strong id="generatedYear">RD$0</strong><small id="generatedYearCount">0 citas</small></article>
           <article class="generated-card"><span>Total</span><strong id="generatedTotal">RD$0</strong><small id="generatedTotalCount">0 citas</small></article>
         </div>
+      </section>
+
+      <section class="status-card generated-section" id="monthlyHistorySection">
+        <div class="status-head">
+          <div>
+            <span class="eyebrow">Historial</span>
+            <h3>Ingresos guardados por mes</h3>
+          </div>
+        </div>
+        <p class="status-help">Estos totales quedan guardados de forma permanente aunque borres o venzan las citas.</p>
+        <div class="generated-grid" id="monthlyHistoryGrid"></div>
       </section>
 
       <section class="status-card">
@@ -906,6 +916,7 @@
     const auth = firebase.auth();
 
     const appointmentsRef = db.ref("appointments");
+    const ingresosRef = db.ref("ingresos");
     const slotLocksRef = db.ref("slotLocks");
     const shopStatusRef = db.ref("shopStatus");
     const customClosuresRef = db.ref("customClosures");
@@ -956,15 +967,14 @@
     const statToday = document.getElementById("statToday");
     const generatedApprovedBadge = document.getElementById("generatedApprovedBadge");
     const generatedToday = document.getElementById("generatedToday");
-    const generatedWeek = document.getElementById("generatedWeek");
     const generatedMonth = document.getElementById("generatedMonth");
     const generatedYear = document.getElementById("generatedYear");
     const generatedTotal = document.getElementById("generatedTotal");
     const generatedTodayCount = document.getElementById("generatedTodayCount");
-    const generatedWeekCount = document.getElementById("generatedWeekCount");
     const generatedMonthCount = document.getElementById("generatedMonthCount");
     const generatedYearCount = document.getElementById("generatedYearCount");
     const generatedTotalCount = document.getElementById("generatedTotalCount");
+    const monthlyHistoryGrid = document.getElementById("monthlyHistoryGrid");
     const currentUserLabel = document.getElementById("currentUserLabel");
     const mobileMenuBtn = document.getElementById("mobileMenuBtn");
     const sidebar = document.getElementById("sidebar");
@@ -992,6 +1002,7 @@
     const customScheduleCountBadge = document.getElementById("customScheduleCountBadge");
 
     let appointments = [];
+    let ingresosData = {};
     let servicesData = {};
     let customClosures = [];
     let shopIsOpen = true;
@@ -1382,7 +1393,8 @@
       const updates = {};
       expiredItems.forEach(item => { updates[item.id] = null; });
 
-      appointmentsRef.update(updates)
+      Promise.all(expiredItems.map(item => archiveAppointmentRevenue(item)))
+        .then(() => appointmentsRef.update(updates))
         .then(() => showToast("Citas vencidas eliminadas automaticamente"))
         .catch(error => {
           console.error("Error eliminando citas vencidas:", error);
@@ -2172,29 +2184,6 @@
       return new Date(year, month - 1, day);
     }
 
-    function getWeekStart(date) {
-      const value = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      const day = value.getDay();
-      const diff = day === 0 ? -6 : 1 - day;
-      value.setDate(value.getDate() + diff);
-      value.setHours(0, 0, 0, 0);
-      return value;
-    }
-
-    function getWeekEnd(date) {
-      const value = getWeekStart(date);
-      value.setDate(value.getDate() + 6);
-      value.setHours(23, 59, 59, 999);
-      return value;
-    }
-
-    function isBetweenDates(dateString, startDate, endDate) {
-      const date = getLocalDateFromISO(dateString);
-      if (!date) return false;
-      date.setHours(12, 0, 0, 0);
-      return date >= startDate && date <= endDate;
-    }
-
     function getAppointmentAmount(appointment) {
       const directAmount = Number(appointment?.precio || appointment?.price || appointment?.total || 0);
       if (directAmount > 0) return directAmount;
@@ -2219,33 +2208,100 @@
       if (countElement) countElement.textContent = `${summary.count} ${summary.count === 1 ? "cita" : "citas"}`;
     }
 
+    // Devuelve el mes en formato "YYYY-MM" a partir de una fecha "YYYY-MM-DD"
+    function getMonthKey(dateString) {
+      if (!dateString) return null;
+      const key = String(dateString).slice(0, 7);
+      return /^\d{4}-\d{2}$/.test(key) ? key : null;
+    }
+
+    // Guarda el ingreso de una cita aprobada en el historial permanente del mes
+    // correspondiente ANTES de que la cita se borre (por vencimiento o limpieza manual).
+    // Usa un incremento atomico de Firebase para que nunca se pierda ni se duplique.
+    function archiveAppointmentRevenue(item) {
+      if (!item || item.status !== "approved") return Promise.resolve();
+      const monthKey = getMonthKey(item.fecha);
+      if (!monthKey) return Promise.resolve();
+      const amount = getAppointmentAmount(item);
+      if (!amount) return Promise.resolve();
+      return ingresosRef.child(monthKey).update({
+        total: firebase.database.ServerValue.increment(amount),
+        count: firebase.database.ServerValue.increment(1)
+      });
+    }
+
+    // Suma los totales ya archivados (permanentes) de una lista de meses.
+    function getArchivedSummary(monthKeys) {
+      return monthKeys.reduce((summary, key) => {
+        const entry = ingresosData[key];
+        if (entry) {
+          summary.total += Number(entry.total || 0);
+          summary.count += Number(entry.count || 0);
+        }
+        return summary;
+      }, { total: 0, count: 0 });
+    }
+
+    function combineSummaries(a, b) {
+      return { total: a.total + b.total, count: a.count + b.count };
+    }
+
+    function formatMonthLabel(monthKey) {
+      const [year, month] = monthKey.split("-").map(Number);
+      if (!year || !month) return monthKey;
+      const label = new Date(year, month - 1, 1).toLocaleDateString("es-DO", { month: "long", year: "numeric" });
+      return label.charAt(0).toUpperCase() + label.slice(1);
+    }
+
+    function renderMonthlyHistory(monthKeys) {
+      if (!monthlyHistoryGrid) return;
+      const sortedKeys = [...monthKeys].sort().reverse();
+      if (!sortedKeys.length) {
+        monthlyHistoryGrid.innerHTML = `<p class="status-help">Aun no hay meses guardados en el historial.</p>`;
+        return;
+      }
+      monthlyHistoryGrid.innerHTML = sortedKeys.map(key => {
+        const entry = ingresosData[key] || {};
+        const total = Number(entry.total || 0);
+        const count = Number(entry.count || 0);
+        return `<article class="generated-card"><span>${formatMonthLabel(key)}</span><strong>${formatMoney(total)}</strong><small>${count} ${count === 1 ? "cita" : "citas"}</small></article>`;
+      }).join("");
+    }
+
+    // Ingresos = lo que ya quedo guardado permanentemente en el historial (ingresosData)
+    // + lo que todavia esta "en vivo" en appointments (citas aprobadas que aun no vencen).
+    // Asi el numero nunca baja aunque una cita se borre por vencimiento o limpieza manual.
     function renderGeneratedStats() {
       const todayISO = getTodayISO();
       const now = new Date();
-      const weekStart = getWeekStart(now);
-      const weekEnd = getWeekEnd(now);
+      const currentMonthKey = todayISO.slice(0, 7);
+      const currentYearPrefix = todayISO.slice(0, 4);
 
       const approved = appointments.filter(item => item.status === "approved");
       const todayItems = approved.filter(item => item.fecha === todayISO);
-      const weekItems = approved.filter(item => isBetweenDates(item.fecha, weekStart, weekEnd));
-      const monthItems = approved.filter(item => {
-        const date = getLocalDateFromISO(item.fecha);
-        return date && date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
-      });
-      const yearItems = approved.filter(item => {
+      const monthItemsLive = approved.filter(item => getMonthKey(item.fecha) === currentMonthKey);
+      const yearItemsLive = approved.filter(item => {
         const date = getLocalDateFromISO(item.fecha);
         return date && date.getFullYear() === now.getFullYear();
       });
 
+      const archivedKeys = Object.keys(ingresosData);
+      const yearArchivedKeys = archivedKeys.filter(key => key.startsWith(currentYearPrefix));
+
+      const monthSummary = combineSummaries(getArchivedSummary([currentMonthKey]), summarizeGenerated(monthItemsLive));
+      const yearSummary = combineSummaries(getArchivedSummary(yearArchivedKeys), summarizeGenerated(yearItemsLive));
+      const totalSummary = combineSummaries(getArchivedSummary(archivedKeys), summarizeGenerated(approved));
+
       if (generatedApprovedBadge) {
-        generatedApprovedBadge.textContent = `${approved.length} ${approved.length === 1 ? "cita aprobada" : "citas aprobadas"}`;
+        generatedApprovedBadge.textContent = `${totalSummary.count} ${totalSummary.count === 1 ? "cita aprobada" : "citas aprobadas"}`;
       }
 
       setGeneratedCard(generatedToday, generatedTodayCount, summarizeGenerated(todayItems));
-      setGeneratedCard(generatedWeek, generatedWeekCount, summarizeGenerated(weekItems));
-      setGeneratedCard(generatedMonth, generatedMonthCount, summarizeGenerated(monthItems));
-      setGeneratedCard(generatedYear, generatedYearCount, summarizeGenerated(yearItems));
-      setGeneratedCard(generatedTotal, generatedTotalCount, summarizeGenerated(approved));
+      setGeneratedCard(generatedMonth, generatedMonthCount, monthSummary);
+      setGeneratedCard(generatedYear, generatedYearCount, yearSummary);
+      setGeneratedCard(generatedTotal, generatedTotalCount, totalSummary);
+
+      renderMonthlyHistory(archivedKeys);
     }
 
     function renderStats() {
@@ -2448,6 +2504,7 @@
       expiredItems.forEach(item => { updates[item.id] = null; });
 
       try {
+        await Promise.all(expiredItems.map(item => archiveAppointmentRevenue(item)));
         await appointmentsRef.update(updates);
         await Promise.all(expiredItems.map(item => releaseAppointmentLocks(item.id, item)));
         showToast("Citas vencidas eliminadas");
@@ -2458,9 +2515,10 @@
 
     async function clearAllAppointments() {
       if (!requireAuthAction()) return;
-      if (!confirm("Seguro que quieres vaciar todas las citas?")) return;
+      if (!confirm("Seguro que quieres vaciar todas las citas? Los ingresos generados quedaran guardados en el historial mensual.")) return;
       try {
         const itemsToRelease = [...appointments];
+        await Promise.all(itemsToRelease.map(item => archiveAppointmentRevenue(item)));
         await appointmentsRef.remove();
         await Promise.all(itemsToRelease.map(item => releaseAppointmentLocks(item.id, item)));
         showToast("Todas las citas fueron eliminadas");
@@ -2529,6 +2587,14 @@
         appointments = Object.entries(data).map(([id, app]) => normalizeAppointment(id, app));
         autoDeleteExpiredAppointments();
         renderAll();
+      });
+    }
+
+    // Historial permanente de ingresos por mes (no se pierde aunque se borren las citas).
+    function listenIngresos() {
+      ingresosRef.on("value", snapshot => {
+        ingresosData = snapshot.val() || {};
+        renderGeneratedStats();
       });
     }
 
@@ -2678,6 +2744,7 @@
         if (auth.currentUser) autoDeleteExpiredAppointments();
       });
       listenAppointments();
+      listenIngresos();
       listenShopStatus();
       listenDailyOverrides();
       listenServices();
