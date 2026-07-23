@@ -668,10 +668,7 @@
         </div>
         <p class="status-help">Calculado con las citas aprobadas y el precio de cada servicio.</p>
         <div class="generated-grid">
-          <article class="generated-card"><span>Hoy</span><strong id="generatedToday">RD$0</strong><small id="generatedTodayCount">0 citas</small></article>
           <article class="generated-card"><span>Mes</span><strong id="generatedMonth">RD$0</strong><small id="generatedMonthCount">0 citas</small></article>
-          <article class="generated-card"><span>Año</span><strong id="generatedYear">RD$0</strong><small id="generatedYearCount">0 citas</small></article>
-          <article class="generated-card"><span>Total</span><strong id="generatedTotal">RD$0</strong><small id="generatedTotalCount">0 citas</small></article>
         </div>
       </section>
 
@@ -966,14 +963,8 @@
     const statCancelled = document.getElementById("statCancelled");
     const statToday = document.getElementById("statToday");
     const generatedApprovedBadge = document.getElementById("generatedApprovedBadge");
-    const generatedToday = document.getElementById("generatedToday");
     const generatedMonth = document.getElementById("generatedMonth");
-    const generatedYear = document.getElementById("generatedYear");
-    const generatedTotal = document.getElementById("generatedTotal");
-    const generatedTodayCount = document.getElementById("generatedTodayCount");
     const generatedMonthCount = document.getElementById("generatedMonthCount");
-    const generatedYearCount = document.getElementById("generatedYearCount");
-    const generatedTotalCount = document.getElementById("generatedTotalCount");
     const monthlyHistoryGrid = document.getElementById("monthlyHistoryGrid");
     const currentUserLabel = document.getElementById("currentUserLabel");
     const mobileMenuBtn = document.getElementById("mobileMenuBtn");
@@ -2273,33 +2264,19 @@
     // Asi el numero nunca baja aunque una cita se borre por vencimiento o limpieza manual.
     function renderGeneratedStats() {
       const todayISO = getTodayISO();
-      const now = new Date();
       const currentMonthKey = todayISO.slice(0, 7);
-      const currentYearPrefix = todayISO.slice(0, 4);
 
       const approved = appointments.filter(item => item.status === "approved");
-      const todayItems = approved.filter(item => item.fecha === todayISO);
       const monthItemsLive = approved.filter(item => getMonthKey(item.fecha) === currentMonthKey);
-      const yearItemsLive = approved.filter(item => {
-        const date = getLocalDateFromISO(item.fecha);
-        return date && date.getFullYear() === now.getFullYear();
-      });
 
       const archivedKeys = Object.keys(ingresosData);
-      const yearArchivedKeys = archivedKeys.filter(key => key.startsWith(currentYearPrefix));
-
       const monthSummary = combineSummaries(getArchivedSummary([currentMonthKey]), summarizeGenerated(monthItemsLive));
-      const yearSummary = combineSummaries(getArchivedSummary(yearArchivedKeys), summarizeGenerated(yearItemsLive));
-      const totalSummary = combineSummaries(getArchivedSummary(archivedKeys), summarizeGenerated(approved));
 
       if (generatedApprovedBadge) {
-        generatedApprovedBadge.textContent = `${totalSummary.count} ${totalSummary.count === 1 ? "cita aprobada" : "citas aprobadas"}`;
+        generatedApprovedBadge.textContent = `${monthSummary.count} ${monthSummary.count === 1 ? "cita aprobada" : "citas aprobadas"}`;
       }
 
-      setGeneratedCard(generatedToday, generatedTodayCount, summarizeGenerated(todayItems));
       setGeneratedCard(generatedMonth, generatedMonthCount, monthSummary);
-      setGeneratedCard(generatedYear, generatedYearCount, yearSummary);
-      setGeneratedCard(generatedTotal, generatedTotalCount, totalSummary);
 
       renderMonthlyHistory(archivedKeys);
     }
