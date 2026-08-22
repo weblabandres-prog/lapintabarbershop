@@ -102,7 +102,7 @@
     .stat-card span{display:block;font-size:.82rem;color:var(--muted);font-weight:700;}
     .stat-card strong{font-family:"Cormorant Garamond",serif;font-size:1.7rem;color:#fff;line-height:1;}
     .generated-section{padding:22px;margin-bottom:22px;}
-    .generated-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;}
+    .generated-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
     .generated-card{padding:18px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.025);box-shadow:0 12px 28px rgba(0,0,0,.18);}
     .generated-card span{display:block;font-size:.78rem;color:var(--muted);font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;}
     .generated-card strong{display:block;font-family:"Cormorant Garamond",serif;font-size:2rem;line-height:1;color:#fff;}
@@ -668,8 +668,21 @@
         </div>
         <p class="status-help">Calculado con las citas aprobadas y el precio de cada servicio.</p>
         <div class="generated-grid">
+          <article class="generated-card"><span>Semana</span><strong id="generatedWeek">RD$0</strong><small id="generatedWeekCount">0 citas</small></article>
           <article class="generated-card"><span>Mes</span><strong id="generatedMonth">RD$0</strong><small id="generatedMonthCount">0 citas</small></article>
+          <article class="generated-card"><span>Año</span><strong id="generatedYear">RD$0</strong><small id="generatedYearCount">0 citas</small></article>
         </div>
+      </section>
+
+      <section class="status-card generated-section" id="weeklyHistorySection">
+        <div class="status-head">
+          <div>
+            <span class="eyebrow">Historial</span>
+            <h3>Ingresos guardados por semana</h3>
+          </div>
+        </div>
+        <p class="status-help">Estos totales quedan guardados de forma permanente aunque borres o venzan las citas.</p>
+        <div class="generated-grid" id="weeklyHistoryGrid"></div>
       </section>
 
       <section class="status-card generated-section" id="monthlyHistorySection">
@@ -681,6 +694,17 @@
         </div>
         <p class="status-help">Estos totales quedan guardados de forma permanente aunque borres o venzan las citas.</p>
         <div class="generated-grid" id="monthlyHistoryGrid"></div>
+      </section>
+
+      <section class="status-card generated-section" id="yearlyHistorySection">
+        <div class="status-head">
+          <div>
+            <span class="eyebrow">Historial</span>
+            <h3>Ingresos guardados por año</h3>
+          </div>
+        </div>
+        <p class="status-help">Suma de todos los meses guardados en cada año.</p>
+        <div class="generated-grid" id="yearlyHistoryGrid"></div>
       </section>
 
       <section class="status-card">
@@ -914,6 +938,7 @@
 
     const appointmentsRef = db.ref("appointments");
     const ingresosRef = db.ref("ingresos");
+    const ingresosSemanaRef = db.ref("ingresosSemana");
     const slotLocksRef = db.ref("slotLocks");
     const shopStatusRef = db.ref("shopStatus");
     const customClosuresRef = db.ref("customClosures");
@@ -963,9 +988,15 @@
     const statCancelled = document.getElementById("statCancelled");
     const statToday = document.getElementById("statToday");
     const generatedApprovedBadge = document.getElementById("generatedApprovedBadge");
+    const generatedWeek = document.getElementById("generatedWeek");
+    const generatedWeekCount = document.getElementById("generatedWeekCount");
     const generatedMonth = document.getElementById("generatedMonth");
     const generatedMonthCount = document.getElementById("generatedMonthCount");
+    const generatedYear = document.getElementById("generatedYear");
+    const generatedYearCount = document.getElementById("generatedYearCount");
+    const weeklyHistoryGrid = document.getElementById("weeklyHistoryGrid");
     const monthlyHistoryGrid = document.getElementById("monthlyHistoryGrid");
+    const yearlyHistoryGrid = document.getElementById("yearlyHistoryGrid");
     const currentUserLabel = document.getElementById("currentUserLabel");
     const mobileMenuBtn = document.getElementById("mobileMenuBtn");
     const sidebar = document.getElementById("sidebar");
@@ -994,6 +1025,7 @@
 
     let appointments = [];
     let ingresosData = {};
+    let ingresosSemanaData = {};
     let servicesData = {};
     let customClosures = [];
     let shopIsOpen = true;
@@ -2206,28 +2238,112 @@
       return /^\d{4}-\d{2}$/.test(key) ? key : null;
     }
 
-    // Guarda el ingreso de una cita aprobada en el historial permanente del mes
+    // Devuelve el año "YYYY" a partir de una fecha "YYYY-MM-DD"
+    function getYearKey(dateString) {
+      if (!dateString) return null;
+      const key = String(dateString).slice(0, 4);
+      return /^\d{4}$/.test(key) ? key : null;
+    }
+
+    // Calcula el año y numero de semana ISO-8601 (semana empieza en lunes) de una fecha "YYYY-MM-DD"
+    function getISOWeekYearAndNumber(dateString) {
+      const parts = String(dateString || "").split("-").map(Number);
+      if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+      const [year, month, day] = parts;
+      const utcDate = new Date(Date.UTC(year, month - 1, day));
+      utcDate.setUTCDate(utcDate.getUTCDate() + 4 - (utcDate.getUTCDay() || 7));
+      const yearStart = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1));
+      const weekNumber = Math.ceil((((utcDate - yearStart) / 86400000) + 1) / 7);
+      return { year: utcDate.getUTCFullYear(), week: weekNumber };
+    }
+
+    // Devuelve la semana en formato "YYYY-Www" (ISO-8601) a partir de una fecha "YYYY-MM-DD"
+    function getWeekKey(dateString) {
+      const info = getISOWeekYearAndNumber(dateString);
+      if (!info) return null;
+      return `${info.year}-W${String(info.week).padStart(2, "0")}`;
+    }
+
+    // Devuelve el lunes (fecha UTC) de una semana ISO dada por año y numero de semana
+    function getMondayOfISOWeek(year, week) {
+      const jan4 = new Date(Date.UTC(year, 0, 4));
+      const jan4Day = jan4.getUTCDay() || 7;
+      const week1Monday = new Date(jan4);
+      week1Monday.setUTCDate(jan4.getUTCDate() - jan4Day + 1);
+      const monday = new Date(week1Monday);
+      monday.setUTCDate(week1Monday.getUTCDate() + (week - 1) * 7);
+      return monday;
+    }
+
+    // Convierte "YYYY-Www" en una etiqueta legible: "11 - 17 ago 2026"
+    function formatWeekLabel(weekKey) {
+      const match = String(weekKey).match(/^(\d{4})-W(\d{2})$/);
+      if (!match) return weekKey;
+      const year = Number(match[1]);
+      const week = Number(match[2]);
+      const monday = getMondayOfISOWeek(year, week);
+      const sunday = new Date(monday);
+      sunday.setUTCDate(monday.getUTCDate() + 6);
+      const startLabel = monday.toLocaleDateString("es-DO", { day: "numeric", month: "short", timeZone: "UTC" });
+      const endLabel = sunday.toLocaleDateString("es-DO", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+      return `${startLabel} - ${endLabel}`;
+    }
+
+    // Guarda el ingreso de una cita aprobada en el historial permanente (mes y semana)
     // correspondiente ANTES de que la cita se borre (por vencimiento o limpieza manual).
     // Usa un incremento atomico de Firebase para que nunca se pierda ni se duplique.
     function archiveAppointmentRevenue(item) {
       if (!item || item.status !== "approved") return Promise.resolve();
       const monthKey = getMonthKey(item.fecha);
-      if (!monthKey) return Promise.resolve();
+      const weekKey = getWeekKey(item.fecha);
       const amount = getAppointmentAmount(item);
-      if (!amount) return Promise.resolve();
-      return ingresosRef.child(monthKey).update({
-        total: firebase.database.ServerValue.increment(amount),
-        count: firebase.database.ServerValue.increment(1)
-      });
+      if (!amount || (!monthKey && !weekKey)) return Promise.resolve();
+
+      const tasks = [];
+
+      if (monthKey) {
+        tasks.push(ingresosRef.child(monthKey).update({
+          total: firebase.database.ServerValue.increment(amount),
+          count: firebase.database.ServerValue.increment(1)
+        }));
+      }
+
+      if (weekKey) {
+        tasks.push(ingresosSemanaRef.child(weekKey).update({
+          total: firebase.database.ServerValue.increment(amount),
+          count: firebase.database.ServerValue.increment(1)
+        }));
+      }
+
+      return Promise.all(tasks);
     }
 
-    // Suma los totales ya archivados (permanentes) de una lista de meses.
-    function getArchivedSummary(monthKeys) {
-      return monthKeys.reduce((summary, key) => {
-        const entry = ingresosData[key];
+    // Suma los totales ya archivados (permanentes) de una lista de claves (meses o semanas).
+    function sumArchivedKeys(dataSource, keys) {
+      return keys.reduce((summary, key) => {
+        const entry = dataSource[key];
         if (entry) {
           summary.total += Number(entry.total || 0);
           summary.count += Number(entry.count || 0);
+        }
+        return summary;
+      }, { total: 0, count: 0 });
+    }
+
+    function getArchivedSummary(monthKeys) {
+      return sumArchivedKeys(ingresosData, monthKeys);
+    }
+
+    function getArchivedSummaryWeek(weekKeys) {
+      return sumArchivedKeys(ingresosSemanaData, weekKeys);
+    }
+
+    // Suma todos los meses archivados que pertenecen a un año especifico.
+    function getArchivedSummaryForYear(year) {
+      return Object.entries(ingresosData).reduce((summary, [key, entry]) => {
+        if (key.startsWith(`${year}-`)) {
+          summary.total += Number(entry?.total || 0);
+          summary.count += Number(entry?.count || 0);
         }
         return summary;
       }, { total: 0, count: 0 });
@@ -2259,26 +2375,75 @@
       }).join("");
     }
 
-    // Ingresos = lo que ya quedo guardado permanentemente en el historial (ingresosData)
+    function renderWeeklyHistory(weekKeys) {
+      if (!weeklyHistoryGrid) return;
+      const sortedKeys = [...weekKeys].sort().reverse();
+      if (!sortedKeys.length) {
+        weeklyHistoryGrid.innerHTML = `<p class="status-help">Aun no hay semanas guardadas en el historial.</p>`;
+        return;
+      }
+      weeklyHistoryGrid.innerHTML = sortedKeys.map(key => {
+        const entry = ingresosSemanaData[key] || {};
+        const total = Number(entry.total || 0);
+        const count = Number(entry.count || 0);
+        return `<article class="generated-card"><span>${formatWeekLabel(key)}</span><strong>${formatMoney(total)}</strong><small>${count} ${count === 1 ? "cita" : "citas"}</small></article>`;
+      }).join("");
+    }
+
+    function renderYearlyHistory() {
+      if (!yearlyHistoryGrid) return;
+      const totalsByYear = {};
+
+      Object.entries(ingresosData).forEach(([key, entry]) => {
+        const year = key.slice(0, 4);
+        if (!/^\d{4}$/.test(year)) return;
+        if (!totalsByYear[year]) totalsByYear[year] = { total: 0, count: 0 };
+        totalsByYear[year].total += Number(entry?.total || 0);
+        totalsByYear[year].count += Number(entry?.count || 0);
+      });
+
+      const years = Object.keys(totalsByYear).sort().reverse();
+      if (!years.length) {
+        yearlyHistoryGrid.innerHTML = `<p class="status-help">Aun no hay años guardados en el historial.</p>`;
+        return;
+      }
+
+      yearlyHistoryGrid.innerHTML = years.map(year => {
+        const entry = totalsByYear[year];
+        return `<article class="generated-card"><span>${year}</span><strong>${formatMoney(entry.total)}</strong><small>${entry.count} ${entry.count === 1 ? "cita" : "citas"}</small></article>`;
+      }).join("");
+    }
+
+    // Ingresos = lo que ya quedo guardado permanentemente en el historial (ingresosData / ingresosSemanaData)
     // + lo que todavia esta "en vivo" en appointments (citas aprobadas que aun no vencen).
     // Asi el numero nunca baja aunque una cita se borre por vencimiento o limpieza manual.
     function renderGeneratedStats() {
       const todayISO = getTodayISO();
       const currentMonthKey = todayISO.slice(0, 7);
+      const currentWeekKey = getWeekKey(todayISO);
+      const currentYearKey = todayISO.slice(0, 4);
 
       const approved = appointments.filter(item => item.status === "approved");
-      const monthItemsLive = approved.filter(item => getMonthKey(item.fecha) === currentMonthKey);
 
-      const archivedKeys = Object.keys(ingresosData);
+      const monthItemsLive = approved.filter(item => getMonthKey(item.fecha) === currentMonthKey);
+      const weekItemsLive = approved.filter(item => getWeekKey(item.fecha) === currentWeekKey);
+      const yearItemsLive = approved.filter(item => getYearKey(item.fecha) === currentYearKey);
+
       const monthSummary = combineSummaries(getArchivedSummary([currentMonthKey]), summarizeGenerated(monthItemsLive));
+      const weekSummary = combineSummaries(getArchivedSummaryWeek([currentWeekKey]), summarizeGenerated(weekItemsLive));
+      const yearSummary = combineSummaries(getArchivedSummaryForYear(currentYearKey), summarizeGenerated(yearItemsLive));
 
       if (generatedApprovedBadge) {
         generatedApprovedBadge.textContent = `${monthSummary.count} ${monthSummary.count === 1 ? "cita aprobada" : "citas aprobadas"}`;
       }
 
+      setGeneratedCard(generatedWeek, generatedWeekCount, weekSummary);
       setGeneratedCard(generatedMonth, generatedMonthCount, monthSummary);
+      setGeneratedCard(generatedYear, generatedYearCount, yearSummary);
 
-      renderMonthlyHistory(archivedKeys);
+      renderWeeklyHistory(Object.keys(ingresosSemanaData));
+      renderMonthlyHistory(Object.keys(ingresosData));
+      renderYearlyHistory();
     }
 
     function renderStats() {
@@ -2492,7 +2657,7 @@
 
     async function clearAllAppointments() {
       if (!requireAuthAction()) return;
-      if (!confirm("Seguro que quieres vaciar todas las citas? Los ingresos generados quedaran guardados en el historial mensual.")) return;
+      if (!confirm("Seguro que quieres vaciar todas las citas? Los ingresos generados quedaran guardados en el historial.")) return;
       try {
         const itemsToRelease = [...appointments];
         await Promise.all(itemsToRelease.map(item => archiveAppointmentRevenue(item)));
@@ -2571,6 +2736,14 @@
     function listenIngresos() {
       ingresosRef.on("value", snapshot => {
         ingresosData = snapshot.val() || {};
+        renderGeneratedStats();
+      });
+    }
+
+    // Historial permanente de ingresos por semana (no se pierde aunque se borren las citas).
+    function listenIngresosSemana() {
+      ingresosSemanaRef.on("value", snapshot => {
+        ingresosSemanaData = snapshot.val() || {};
         renderGeneratedStats();
       });
     }
@@ -2722,6 +2895,7 @@
       });
       listenAppointments();
       listenIngresos();
+      listenIngresosSemana();
       listenShopStatus();
       listenDailyOverrides();
       listenServices();
